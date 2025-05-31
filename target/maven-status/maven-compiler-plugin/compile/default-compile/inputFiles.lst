@@ -12,9 +12,6 @@
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/component/MenuLayout.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/component/Profile.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/event/EventMenuSelected.java
-/Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/form/Form_1.java
-/Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/form/Form_2.java
-/Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/form/MainForm.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/main/Main.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/model/ModelStaff.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/model/Model_Menu.java
@@ -33,3 +30,6 @@
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/swing/WindowSnapshots.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/swing/shadow/GraphicsUtilities.java
 /Users/macbook/NetBeansProjects/MarketMini/src/main/java/com/raven/swing/shadow/ShadowRenderer.java
+/Users/macbook/NetBeansProjects/MarketMini/src/main/java/view/Form_2.java
+/Users/macbook/NetBeansProjects/MarketMini/src/main/java/view/MainForm.java
+/Users/macbook/NetBeansProjects/MarketMini/src/main/java/view/ThongKeView.java

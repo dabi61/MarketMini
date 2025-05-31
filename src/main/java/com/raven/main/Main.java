@@ -2,9 +2,9 @@ package com.raven.main;
 
 import com.raven.component.MenuLayout;
 import com.raven.event.EventMenuSelected;
-import com.raven.form.Form_1;
-import com.raven.form.Form_2;
-import com.raven.form.MainForm;
+import view.ThongKeView;
+import view.Form_2;
+import view.MainForm;
 import com.raven.swing.WindowSnapshots;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -110,7 +110,7 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void selected(int index) {
                 if (index == 0) {
-                    main.show(new Form_1());
+                    main.show(new ThongKeView());
                 } else if (index == 1) {
                     main.show(new Form_2());
                 }

@@ -1,5 +1,6 @@
-package com.raven.form;
+package view;
 
+import view.ThongKeView;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import javax.swing.JFrame;
@@ -8,7 +9,7 @@ public class MainForm extends javax.swing.JPanel {
 
     public MainForm() {
         initComponents();
-        show(new Form_1());
+        show(new ThongKeView());
     }
 
     @SuppressWarnings("unchecked")

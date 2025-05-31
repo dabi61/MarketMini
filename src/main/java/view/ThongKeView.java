@@ -1,4 +1,4 @@
-package com.raven.form;
+package view;
 
 import com.raven.chart.ModelChartLine;
 import com.raven.chart.ModelChartPie;
@@ -10,9 +10,9 @@ import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.table.DefaultTableModel;
 
-public class Form_1 extends javax.swing.JPanel {
+public class ThongKeView extends javax.swing.JPanel {
 
-    public Form_1() {
+    public ThongKeView() {
         initComponents();
         initData();
     }
