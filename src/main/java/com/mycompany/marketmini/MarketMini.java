@@ -19,6 +19,7 @@ public class MarketMini {
     public static void main(String[] args) {
         Main view = new Main();
 //        new CRUDController(view);
+        System.setProperty("flatlaf.uiScale", "1.0");
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (UnsupportedLookAndFeelException ex) {
