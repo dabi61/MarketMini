@@ -113,6 +113,7 @@ public class Main extends javax.swing.JFrame {
                     main.show(new ThongKeView());
                 } else if (index == 1) {
                     main.show(new Form_2());
+                }else if (index == 3) {
                 }
             }
         });

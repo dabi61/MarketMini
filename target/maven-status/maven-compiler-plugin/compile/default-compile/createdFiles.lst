@@ -25,6 +25,7 @@ com\raven\chart\ItemChartLine.class
 com\raven\swing\TableCell_Status.class
 com\raven\swing\ScrollBar.class
 com\raven\swing\MenuItem.class
+view\Form_24.class
 com\raven\chart\ChartLine.class
 com\raven\chart\ModelChartPie.class
 com\raven\swing\ModernScrollBarUI.class

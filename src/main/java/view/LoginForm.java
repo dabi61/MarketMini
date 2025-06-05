@@ -30,6 +30,7 @@ public class LoginForm extends javax.swing.JFrame {
             Logger.getLogger(LoginForm.class.getName()).log(Level.SEVERE, null, ex);
             JOptionPane.showMessageDialog(this, "Lỗi kết nối database: " + ex.getMessage());
         }
+        setLocationRelativeTo(null);
     }
 
     public LoginForm(LoginController loginController) {
