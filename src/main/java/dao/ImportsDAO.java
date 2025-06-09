@@ -28,24 +28,6 @@ public class ImportsDAO {
     public ImportsDAO(Connection connection) {
         this.connection = connection;
     }
-
-    public boolean insertImport(Imports importRecord) {
-        String sql = "INSERT INTO imports (product_id, supplier_id, quantity, import_price, import_date, employee_id) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, importRecord.getProduct_id());
-            stmt.setInt(2, importRecord.getSupplier_id());
-            stmt.setInt(3, importRecord.getQuantity());
-            stmt.setInt(4, importRecord.getImport_price());
-            stmt.setDate(5, Date.valueOf(importRecord.getImport_date()));
-            stmt.setInt(6, importRecord.getEmployee_id());
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
     
     // Get all imports
     public List<Imports> getAllImports() {
@@ -69,4 +51,62 @@ public class ImportsDAO {
         }
         return importsList;
     }
+    
+    public boolean insertOrUpdateImport(String productName, int categoryId, String unit, int quantity, int importPrice,
+            Date importDate, int supplierId, int employeeId) {
+        try {
+            // Kiểm tra sản phẩm đã tồn tại chưa
+            String checkProductSql = "SELECT product_id, stock_quantity FROM products WHERE product_name = ?";
+            PreparedStatement checkPs = connection.prepareStatement(checkProductSql);
+            checkPs.setString(1, productName);
+            ResultSet rs = checkPs.executeQuery();
+
+            int productId;
+            if (rs.next()) {
+                // Sản phẩm đã tồn tại, cập nhật số lượng
+                productId = rs.getInt("product_id");
+                int currentStock = rs.getInt("stock_quantity");
+                String updateProductSql = "UPDATE products SET stock_quantity = ? WHERE product_id = ?";
+                PreparedStatement updatePs = connection.prepareStatement(updateProductSql);
+                updatePs.setInt(1, currentStock + quantity);
+                updatePs.setInt(2, productId);
+                updatePs.executeUpdate();
+            } else {
+                // Sản phẩm chưa tồn tại, chèn mới
+                String insertProductSql = "INSERT INTO products (product_name, category_id, unit, stock_quantity) VALUES (?, ?, ?, ?)";
+                PreparedStatement insertPs = connection.prepareStatement(insertProductSql, PreparedStatement.RETURN_GENERATED_KEYS);
+                insertPs.setString(1, productName);
+                insertPs.setInt(2, categoryId);
+                insertPs.setString(3, unit);
+                insertPs.setInt(4, quantity);
+                insertPs.executeUpdate();
+
+                // Lấy product_id vừa chèn
+                rs = insertPs.getGeneratedKeys();
+                if (rs.next()) {
+                    productId = rs.getInt(1);
+                } else {
+                    throw new SQLException("Không thể lấy product_id sau khi chèn.");
+                }
+            }
+
+            // Chèn vào bảng imports
+            String insertImportSql = "INSERT INTO imports (product_id, supplier_id, quantity, import_price, import_date, employee_id) VALUES (?, ?, ?, ?, ?, ?)";
+            PreparedStatement importPs = connection.prepareStatement(insertImportSql);
+            importPs.setInt(1, productId);
+            importPs.setInt(2, supplierId);
+            importPs.setInt(3, quantity);
+            importPs.setInt(4, importPrice);
+            importPs.setDate(5, importDate);
+            importPs.setInt(6, employeeId);
+            int affectedRows = importPs.executeUpdate();
+            return affectedRows > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
+
+

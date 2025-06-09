@@ -5,17 +5,335 @@
  */
 package view;
 
+import com.toedter.calendar.JDateChooser;
+import controller.ImportsController;
+import dao.ImportsDAO;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+import model.DBConnection;
+import model.Imports;
+
 /**
  *
  * @author RAVEN
  */
 public class StoreForm extends javax.swing.JPanel {
 
+    ImportsController importsController;
+    Connection con;
+    Map< String, Integer> categoryMap = new HashMap<>();
+    Map< String, Integer> supplierMap = new HashMap<>();
+    Map< String, Integer> employeeMap = new HashMap<>();
+    private String status;
+
     /**
      * Creates new form Form_2
      */
     public StoreForm() {
         initComponents();
+        initController();
+    }
+
+    private void initController() {
+        try {
+            con = DBConnection.getConnection(); // Khởi tạo kết nối database
+            if (con == null) {
+                throw new SQLDataException("Failed to establish database connection");
+            }
+            ImportsDAO importsDAO = new ImportsDAO(con); // Khởi tạo ImportsDAO
+            importsController = new ImportsController(importsDAO, this); // Khởi tạo ImportsController
+        } catch (SQLDataException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khởi tạo controller: " + e.getMessage());
+        }
+    }
+
+    private void loadCategory() {
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT category_id, category_name FROM category"); ResultSet rs = ps.executeQuery()) {
+
+            cboLoaiHangNhap.removeAllItems();
+            cboLoaiHangNhap.addItem("--Chọn loại hàng");
+
+            while (rs.next()) {
+                String categoryName = rs.getString("category_name");
+                int categoryId = rs.getInt("category_id"); // Lấy ID dưới dạng int
+                cboLoaiHangNhap.addItem(categoryName);
+                categoryMap.put(categoryName, categoryId); // Lưu vào map với value là Integer
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách loại hàng: " + e.getMessage());
+        }
+    }
+
+    private void loadSupplier() {
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT supplier_id, supplier_name FROM suppliers"); ResultSet rs = ps.executeQuery()) {
+
+            cboNCCNhap.removeAllItems();
+            cboNCCNhap.addItem("--Chọn nhà cung cấp");
+
+            while (rs.next()) {
+                String supplierName = rs.getString("supplier_name");
+                int supplierId = rs.getInt("supplier_id");
+                cboNCCNhap.addItem(supplierName);
+                supplierMap.put(supplierName, supplierId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách nhà cung cấp: " + e.getMessage());
+        }
+    }
+    
+    private void loadEmployee() {
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT employee_id, employee_name FROM employees"); ResultSet rs = ps.executeQuery()){
+
+            cboNhanVienNhap.removeAllItems();
+            cboNhanVienNhap.addItem("--Chọn nhân viên nhập");
+
+            while (rs.next()) {
+                String employeeName = rs.getString("employee_name");
+                int employeeId = rs.getInt("employee_id");
+                cboNhanVienNhap.addItem(employeeName);
+                employeeMap.put(employeeName, employeeId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách nhân viên: " + e.getMessage());
+        }
+    }
+    
+
+    public String getCategoryComboBoxSelection() {
+        return cboLoaiHangNhap.getSelectedItem() != null ? cboLoaiHangNhap.getSelectedItem().toString() : null;
+    }
+
+    public String getSupplierComboBoxSelection() {
+        return cboNCCNhap.getSelectedItem() != null ? cboNCCNhap.getSelectedItem().toString() : null;
+    }
+    
+    public String getEmployeeComboBoxSelection() {
+        return cboNhanVienNhap.getSelectedItem() != null ? cboNhanVienNhap.getSelectedItem().toString() : null;
+    }
+
+//    private void loadEmployee() {
+//        try {
+//            con = DBConnection.getConnection();
+//
+//            String sql = "SELECT * From employees  ";
+//            PreparedStatement ps = con.prepareStatement(sql);
+//
+//            ResultSet rs = ps.executeQuery();
+//            cboNhanVienNhap.addItem("--Chọn nhân viên nhập");
+//            employeeMap.put("--Chọn nhân viên nhập", "");
+//
+//            while (rs.next()) {
+//                cboNhanVienNhap.addItem(rs.getString("full_name"));
+//                employeeMap.put(rs.getString("full_name"), rs.getString("employee_id"));
+//            }
+//            con.close();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    private void loadDuLieu() {
+        try {
+            setMacDinh();
+            tblViewNhapHang.removeAll();
+            con = DBConnection.getConnection();
+            //String sql = "SELECT * FROM products";
+            String sql = "SELECT p.product_name, i.quantity, i.import_price, p.unit, i.import_date, "
+                    + "s.supplier_name, c.category_name, e.employee_name "
+                    + "FROM products p "
+                    + "LEFT JOIN category c ON p.category_id = c.category_id "
+                    + "LEFT JOIN imports i ON p.product_id = i.product_id "
+                    + "LEFT JOIN suppliers s ON i.supplier_id = s.supplier_id "
+                    + "LEFT JOIN employees e ON i.employee_id = e.employee_id";
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+
+            String[] td = {"Tên sản phẩm", "Số lượng", "Giá nhập", "Đơn vị", "Ngày nhập", "Nhà cung cấp", "Loại hàng", "Nhân viên"};
+            DefaultTableModel tb = new DefaultTableModel(td, 0);
+            while (rs.next()) {
+                Vector vt = new Vector();
+                vt.add(rs.getString("product_name"));
+                vt.add(rs.getString("quantity"));
+                vt.add(rs.getString("import_price"));
+                vt.add(rs.getString("unit"));
+                vt.add(rs.getString("import_date"));
+                vt.add(rs.getString("supplier_name"));
+                vt.add(rs.getString("category_name"));
+                vt.add(rs.getString("employee_name"));
+                tb.addRow(vt);
+            }
+            tblViewNhapHang.setModel(tb);
+            con.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enty() {
+        txtTenSPNhap.setText("");
+        txtSoLuongNhap.setText("");
+        txtGiaNhap.setText("");
+        txtDonViNhap.setText("");
+        //jDateNgayNhap.cleanup();
+        cboLoaiHangNhap.setSelectedIndex(0);
+        cboNCCNhap.setSelectedIndex(0);
+        cboNhanVienNhap.setSelectedIndex(0);
+    }
+
+    private void setMacDinh() {
+        txtTenSPNhap.setEnabled(false);
+        txtSoLuongNhap.setEnabled(false);
+        txtGiaNhap.setEnabled(false);
+        txtDonViNhap.setEnabled(false);
+        jDateNgayNhap.setEnabled(false);
+        cboLoaiHangNhap.setEnabled(false);
+        cboNCCNhap.setEnabled(false);
+        cboNhanVienNhap.setEnabled(false);
+        btnLuuNhap.setEnabled(false);
+        btnBoQuaNhap.setEnabled(false);
+        btnSuaNhap.setEnabled(true);
+        btnXoaNhap.setEnabled(true);
+        btnThemNhap.setEnabled(true);
+    }
+
+    private void setThem() {
+        txtTenSPNhap.setEnabled(true);
+        txtSoLuongNhap.setEnabled(true);
+        txtGiaNhap.setEnabled(true);
+        txtDonViNhap.setEnabled(true);
+        jDateNgayNhap.setEnabled(true);
+        cboLoaiHangNhap.setEnabled(true);
+        cboNCCNhap.setEnabled(true);
+        cboNhanVienNhap.setEnabled(true);
+        btnLuuNhap.setEnabled(true);
+        btnBoQuaNhap.setEnabled(true);
+        btnXoaNhap.setEnabled(false);
+        btnSuaNhap.setEnabled(false);
+    }
+
+    private void setSua() {
+        txtTenSPNhap.setEnabled(true);
+        txtSoLuongNhap.setEnabled(true);
+        txtGiaNhap.setEnabled(true);
+        txtDonViNhap.setEnabled(true);
+        jDateNgayNhap.setEnabled(true);
+        cboLoaiHangNhap.setEnabled(true);
+        cboNCCNhap.setEnabled(true);
+        cboNhanVienNhap.setEnabled(true);
+        btnLuuNhap.setEnabled(true);
+        btnBoQuaNhap.setEnabled(true);
+        btnXoaNhap.setEnabled(false);
+        btnThemNhap.setEnabled(false);
+    }
+
+    public Connection getCon() {
+
+        return con;
+    }
+
+    public Map<String, Integer> getCategoryMap() {
+        return categoryMap;
+    }
+
+    public Map<String, Integer> getSupplierMap() {
+        return supplierMap;
+    }
+
+    public Map<String, Integer> getEmployeeMap() {
+        return employeeMap;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public JButton getBtnBoQuaNhap() {
+        return btnBoQuaNhap;
+    }
+
+    public JButton getBtnLuuNhap() {
+        return btnLuuNhap;
+    }
+
+    public JButton getBtnSuaNhap() {
+        return btnSuaNhap;
+    }
+
+    public JButton getBtnThemNhap() {
+        return btnThemNhap;
+    }
+
+    public JButton getBtnTim() {
+        return btnTim;
+    }
+
+    public JButton getBtnXoaNhap() {
+        return btnXoaNhap;
+    }
+
+    public JComboBox<String> getCboCategory() {
+        return cboCategory;
+    }
+
+    public JComboBox<String> getCboLoaiHangNhap() {
+        return cboLoaiHangNhap;
+    }
+
+    public JComboBox<String> getCboNCCNhap() {
+        return cboNCCNhap;
+    }
+
+    public JComboBox<String> getCboNhanVienNhap() {
+        return cboNhanVienNhap;
+    }
+
+    public JDateChooser getjDateNgayNhap() {
+        return jDateNgayNhap;
+    }
+
+    public JTable getTblViewNhapHang() {
+        return tblViewNhapHang;
+    }
+
+    public JTextField getTxtDonViNhap() {
+        return txtDonViNhap;
+    }
+
+    public JTextField getTxtGiaNhap() {
+        return txtGiaNhap;
+    }
+
+    public JTextField getTxtSoLuongNhap() {
+        return txtSoLuongNhap;
+    }
+
+    public JTextField getTxtTenSPNhap() {
+        return txtTenSPNhap;
+    }
+
+    public void setTblViewNhapHang(JTable tblViewNhapHang) {
+        this.tblViewNhapHang = tblViewNhapHang;
     }
 
     /**
@@ -113,6 +431,12 @@ public class StoreForm extends javax.swing.JPanel {
 
         jTabbedPane1.addTab("Kho hàng", jPanel2);
 
+        jPanel3.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                jPanel3ComponentShown(evt);
+            }
+        });
+
         jLabel1.setText("Tên sản phẩm");
 
         jLabel3.setText("Nhà cung cấp");
@@ -142,6 +466,11 @@ public class StoreForm extends javax.swing.JPanel {
         });
 
         btnThemNhap.setText("Thêm");
+        btnThemNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThemNhapActionPerformed(evt);
+            }
+        });
 
         btnSuaNhap.setText("Sửa");
         btnSuaNhap.addActionListener(new java.awt.event.ActionListener() {
@@ -153,6 +482,11 @@ public class StoreForm extends javax.swing.JPanel {
         btnXoaNhap.setText("Xóa");
 
         btnLuuNhap.setText("Lưu");
+        btnLuuNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLuuNhapActionPerformed(evt);
+            }
+        });
 
         jLabel8.setText("Đơn vị");
 
@@ -163,6 +497,11 @@ public class StoreForm extends javax.swing.JPanel {
         });
 
         btnBoQuaNhap.setText("Bỏ qua");
+        btnBoQuaNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBoQuaNhapActionPerformed(evt);
+            }
+        });
 
         jLabel9.setText("Loại hàng");
 
@@ -253,19 +592,21 @@ public class StoreForm extends javax.swing.JPanel {
                             .addComponent(cboNCCNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtSoLuongNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(23, 23, 23)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel5)
-                            .addComponent(txtGiaNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel9)
-                                .addComponent(cboLoaiHangNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(cboLoaiHangNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabel5)
+                                .addComponent(txtGiaNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(txtDonViNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel7)
-                        .addComponent(cboNhanVienNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cboNhanVienNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel8)
+                        .addComponent(txtDonViNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnThemNhap)
@@ -328,7 +669,8 @@ public class StoreForm extends javax.swing.JPanel {
     }//GEN-LAST:event_btnTimActionPerformed
 
     private void btnSuaNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaNhapActionPerformed
-        // TODO add your handling code here:
+        status = "sua";
+        setSua();
     }//GEN-LAST:event_btnSuaNhapActionPerformed
 
     private void txtSoLuongNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSoLuongNhapActionPerformed
@@ -338,6 +680,36 @@ public class StoreForm extends javax.swing.JPanel {
     private void txtGiaNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGiaNhapActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtGiaNhapActionPerformed
+
+    private void jPanel3ComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jPanel3ComponentShown
+        loadCategory();
+        loadSupplier();
+        loadEmployee();
+        loadDuLieu();
+    }//GEN-LAST:event_jPanel3ComponentShown
+
+    private void btnThemNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemNhapActionPerformed
+        status = "them";
+        setThem();
+    }//GEN-LAST:event_btnThemNhapActionPerformed
+
+    private void btnBoQuaNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBoQuaNhapActionPerformed
+        setMacDinh();
+        enty();
+    }//GEN-LAST:event_btnBoQuaNhapActionPerformed
+
+    private void btnLuuNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLuuNhapActionPerformed
+        try {
+            if (status == "them") {
+                importsController.addImport();
+                loadDuLieu();
+            } else if (status == "sua") {
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_btnLuuNhapActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -374,4 +746,5 @@ public class StoreForm extends javax.swing.JPanel {
     private javax.swing.JTextField txtSoLuongNhap;
     private javax.swing.JTextField txtTenSPNhap;
     // End of variables declaration//GEN-END:variables
+
 }
