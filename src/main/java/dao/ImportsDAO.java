@@ -28,13 +28,12 @@ public class ImportsDAO {
     public ImportsDAO(Connection connection) {
         this.connection = connection;
     }
-    
+
     // Get all imports
     public List<Imports> getAllImports() {
         List<Imports> importsList = new ArrayList<>();
         String sql = "SELECT * FROM imports";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 Imports imp = new Imports();
                 imp.setImport_id(rs.getInt("import_id"));
@@ -51,7 +50,7 @@ public class ImportsDAO {
         }
         return importsList;
     }
-    
+
     public boolean insertOrUpdateImport(String productName, int categoryId, String unit, int quantity, int importPrice,
             Date importDate, int supplierId, int employeeId) {
         try {
@@ -73,12 +72,13 @@ public class ImportsDAO {
                 updatePs.executeUpdate();
             } else {
                 // Sản phẩm chưa tồn tại, chèn mới
-                String insertProductSql = "INSERT INTO products (product_name, category_id, unit, stock_quantity) VALUES (?, ?, ?, ?)";
+                String insertProductSql = "INSERT INTO products (product_name, category_id, unit, stock_quantity, price) VALUES (?, ?, ?, ?, ?)";
                 PreparedStatement insertPs = connection.prepareStatement(insertProductSql, PreparedStatement.RETURN_GENERATED_KEYS);
                 insertPs.setString(1, productName);
                 insertPs.setInt(2, categoryId);
                 insertPs.setString(3, unit);
                 insertPs.setInt(4, quantity);
+                insertPs.setInt(5, importPrice);
                 insertPs.executeUpdate();
 
                 // Lấy product_id vừa chèn
@@ -107,6 +107,18 @@ public class ImportsDAO {
             return false;
         }
     }
+
+    public boolean deleteImport(int import_id) {
+        String deleteImportSql = "DELETE FROM imports WHERE import_id = ?";
+        try {
+            PreparedStatement importPs = connection.prepareStatement(deleteImportSql);
+            importPs.setInt(1, import_id);
+
+            int rowsAffected = importPs.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
-
-

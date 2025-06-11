@@ -13,6 +13,7 @@ view\ThongKeView$1.class
 com\raven\component\Menu$2.class
 com\raven\main\Main$1.class
 view\LoginForm$2.class
+view\StoreForm$10.class
 com\raven\component\MenuLayout$1.class
 view\MainForm.class
 view\StoreForm$5.class
@@ -63,6 +64,7 @@ com\raven\swing\TableCell_Status.class
 com\raven\swing\ScrollBar.class
 model\Category.class
 com\raven\chart\ChartLine.class
+view\StoreForm$9.class
 com\raven\swing\ModernScrollBarUI$InvisibleScrollBarButton.class
 com\raven\chart\ChartPie.class
 com\raven\model\Model_Menu$MenuType.class

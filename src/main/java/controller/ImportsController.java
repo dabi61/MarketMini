@@ -6,7 +6,9 @@ package controller;
 
 import dao.ImportsDAO;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import model.DBConnection;
@@ -21,9 +23,6 @@ public class ImportsController {
     private ImportsDAO importsDAO;
     private StoreForm importsView;
     private Connection connection;
-//    private Map<String, String> categoryMap;
-//    private Map<String, String> supplierMap;
-//    private Map<String, String> employeeMap;
 
     public ImportsController(ImportsDAO importsDAO, StoreForm importsView) throws SQLDataException {
         this.importsDAO = importsDAO;
@@ -31,7 +30,6 @@ public class ImportsController {
         this.connection = DBConnection.getConnection(); // Kết nối database
         importsDAO = new ImportsDAO(connection); // Khởi tạo DAO với connection
     }
-    
 
     public void addImport() {
         Map<String, Integer> supplierMap = importsView.getSupplierMap(); // Lấy supplierMap từ StoreForm
@@ -39,7 +37,7 @@ public class ImportsController {
         Map<String, Integer> categoryMap = importsView.getCategoryMap(); // Lấy categoryMap từ StoreForm
         String categoryName = importsView.getCategoryComboBoxSelection();
         Map<String, Integer> employeeMap = importsView.getEmployeeMap(); // Lấy employeeStoreForm
-        String employeeName = importsView.getEmployeeComboBoxSelection();
+        String fullname = importsView.getEmployeeComboBoxSelection();
         // Lấy dữ liệu từ form
         String tenSPNhap = importsView.getTxtTenSPNhap().getText().trim();
         String soLuongNhap = importsView.getTxtSoLuongNhap().getText().trim();
@@ -54,17 +52,17 @@ public class ImportsController {
             throw new IllegalArgumentException("Vui lòng chọn một nhà cung cấp hợp lệ!");
         }
         Integer supplierId = supplierMap.get(supplierName); // Lấy ID từ supplierMap
-        
+
         if (categoryName == null || categoryName.equals("--Chọn loại hàng")) {
             throw new IllegalArgumentException("Vui lòng chọn một loại hàng hợp lệ!");
         }
         Integer categoryId = categoryMap.get(categoryName);
-        
-        if (employeeName == null || employeeName.equals("--Chọn nhân viên")) {
+
+        if (fullname == null || fullname.equals("--Chọn nhân viên")) {
             throw new IllegalArgumentException("Vui lòng chọn một nhân viên hợp lệ!");
         }
-        Integer employeeId = employeeMap.get(employeeName);
-        
+        Integer employeeId = employeeMap.get(fullname);
+
         // Kiểm tra dữ liệu đầu vào
         if (tenSPNhap.isEmpty() || soLuongNhap.isEmpty() || giaNhap.isEmpty() || donViNhap.isEmpty()
                 || NCCNhap.isEmpty() || LoaiHangNhap.isEmpty() || NhanVienNhap.isEmpty()) {
@@ -78,9 +76,6 @@ public class ImportsController {
         try {
             int soLuong = Integer.parseInt(soLuongNhap);
             int gia = Integer.parseInt(giaNhap);
-            //int nccId = Integer.parseInt(NCCNhap);
-            //int loaiHangId = Integer.parseInt(LoaiHangNhap);
-            //int nhanVienId = Integer.parseInt(NhanVienNhap);
             java.sql.Date ngayNhap = new java.sql.Date(utilDate.getTime());
 
             // Gọi phương thức insertOrUpdateImport từ ImportsDAO
@@ -93,11 +88,35 @@ public class ImportsController {
             } else {
                 JOptionPane.showMessageDialog(importsView, "Thêm nhập hàng thất bại!");
             }
-//        } catch (NumberFormatException e) {
-//            JOptionPane.showMessageDialog(importsView, "Số lượng, giá nhập, hoặc ID phải là số hợp lệ!");
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(importsView, "Lỗi khi xử lý: " + e.getMessage());
+        }
+    }
+
+    public void deleteImport() {
+        int selectedRow = importsView.getTblViewNhapHang().getSelectedRow();
+
+        if (selectedRow >= 0) {
+            // Lấy import_id từ dòng được chọn
+            int importId = Integer.parseInt(importsView.getTblViewNhapHang().getValueAt(selectedRow, 0).toString());
+
+            // Xác nhận xóa
+            int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn xóa bản ghi này không?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean success = importsDAO.deleteImport(importId); // Gọi DAO để xóa
+
+                if (success) {
+                    JOptionPane.showMessageDialog(null, "Xóa thành công!");
+                    // Có thể gọi phương thức load lại bảng ở đây, ví dụ:
+                    // importsView.loadImportsTable();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Không tìm thấy bản ghi để xóa hoặc xóa thất bại.");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để xóa.");
         }
     }
 }

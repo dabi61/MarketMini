@@ -9,11 +9,13 @@ import com.toedter.calendar.JDateChooser;
 import controller.ImportsController;
 import dao.ImportsDAO;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -24,7 +26,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import model.DBConnection;
-import model.Imports;
 
 /**
  *
@@ -98,25 +99,25 @@ public class StoreForm extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách nhà cung cấp: " + e.getMessage());
         }
     }
-    
+
     private void loadEmployee() {
-        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT employee_id, employee_name FROM employees"); ResultSet rs = ps.executeQuery()){
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT employee_id, full_name FROM employees"); ResultSet rs = ps.executeQuery()) {
 
             cboNhanVienNhap.removeAllItems();
             cboNhanVienNhap.addItem("--Chọn nhân viên nhập");
 
             while (rs.next()) {
-                String employeeName = rs.getString("employee_name");
+//                String employeeName = rs.getString("employee_name");
+                String full_name = rs.getString("full_name");
                 int employeeId = rs.getInt("employee_id");
-                cboNhanVienNhap.addItem(employeeName);
-                employeeMap.put(employeeName, employeeId);
+                cboNhanVienNhap.addItem(full_name);
+                employeeMap.put(full_name, employeeId);
             }
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách nhân viên: " + e.getMessage());
         }
     }
-    
 
     public String getCategoryComboBoxSelection() {
         return cboLoaiHangNhap.getSelectedItem() != null ? cboLoaiHangNhap.getSelectedItem().toString() : null;
@@ -125,54 +126,34 @@ public class StoreForm extends javax.swing.JPanel {
     public String getSupplierComboBoxSelection() {
         return cboNCCNhap.getSelectedItem() != null ? cboNCCNhap.getSelectedItem().toString() : null;
     }
-    
+
     public String getEmployeeComboBoxSelection() {
         return cboNhanVienNhap.getSelectedItem() != null ? cboNhanVienNhap.getSelectedItem().toString() : null;
     }
 
-//    private void loadEmployee() {
-//        try {
-//            con = DBConnection.getConnection();
-//
-//            String sql = "SELECT * From employees  ";
-//            PreparedStatement ps = con.prepareStatement(sql);
-//
-//            ResultSet rs = ps.executeQuery();
-//            cboNhanVienNhap.addItem("--Chọn nhân viên nhập");
-//            employeeMap.put("--Chọn nhân viên nhập", "");
-//
-//            while (rs.next()) {
-//                cboNhanVienNhap.addItem(rs.getString("full_name"));
-//                employeeMap.put(rs.getString("full_name"), rs.getString("employee_id"));
-//            }
-//            con.close();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-    private void loadDuLieu() {
+    private void loadDuLieuNhap() {
         try {
             setMacDinh();
             tblViewNhapHang.removeAll();
             con = DBConnection.getConnection();
             //String sql = "SELECT * FROM products";
-            String sql = "SELECT p.product_name, i.quantity, i.import_price, p.unit, i.import_date, "
-                    + "s.supplier_name, c.category_name, e.employee_name "
+            String sql = "SELECT i.import_id, p.product_name, i.quantity, i.import_price, p.unit, i.import_date, "
+                    + "s.supplier_name, c.category_name, e.full_name "
                     + "FROM products p "
                     + "LEFT JOIN category c ON p.category_id = c.category_id "
                     + "LEFT JOIN imports i ON p.product_id = i.product_id "
                     + "LEFT JOIN suppliers s ON i.supplier_id = s.supplier_id "
-                    + "LEFT JOIN employees e ON i.employee_id = e.employee_id";
+                    + "LEFT JOIN employees e ON i.employee_id = e.employee_id "
+                    + "WHERE i.import_id IS NOT NULL";
             PreparedStatement ps = con.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
-            String[] td = {"Tên sản phẩm", "Số lượng", "Giá nhập", "Đơn vị", "Ngày nhập", "Nhà cung cấp", "Loại hàng", "Nhân viên"};
+            String[] td = {"Mã nhập", "Tên sản phẩm", "Số lượng", "Giá nhập", "Đơn vị", "Ngày nhập", "Nhà cung cấp", "Loại hàng", "Nhân viên"};
             DefaultTableModel tb = new DefaultTableModel(td, 0);
             while (rs.next()) {
                 Vector vt = new Vector();
+                vt.add(rs.getString("import_id"));
                 vt.add(rs.getString("product_name"));
                 vt.add(rs.getString("quantity"));
                 vt.add(rs.getString("import_price"));
@@ -180,7 +161,7 @@ public class StoreForm extends javax.swing.JPanel {
                 vt.add(rs.getString("import_date"));
                 vt.add(rs.getString("supplier_name"));
                 vt.add(rs.getString("category_name"));
-                vt.add(rs.getString("employee_name"));
+                vt.add(rs.getString("full_name"));
                 tb.addRow(vt);
             }
             tblViewNhapHang.setModel(tb);
@@ -196,6 +177,7 @@ public class StoreForm extends javax.swing.JPanel {
         txtGiaNhap.setText("");
         txtDonViNhap.setText("");
         //jDateNgayNhap.cleanup();
+        jDateNgayNhap.setDate(null);
         cboLoaiHangNhap.setSelectedIndex(0);
         cboNCCNhap.setSelectedIndex(0);
         cboNhanVienNhap.setSelectedIndex(0);
@@ -230,6 +212,7 @@ public class StoreForm extends javax.swing.JPanel {
         btnBoQuaNhap.setEnabled(true);
         btnXoaNhap.setEnabled(false);
         btnSuaNhap.setEnabled(false);
+        enty();
     }
 
     private void setSua() {
@@ -457,6 +440,11 @@ public class StoreForm extends javax.swing.JPanel {
 
             }
         ));
+        tblViewNhapHang.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblViewNhapHangMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(tblViewNhapHang);
 
         txtSoLuongNhap.addActionListener(new java.awt.event.ActionListener() {
@@ -480,6 +468,11 @@ public class StoreForm extends javax.swing.JPanel {
         });
 
         btnXoaNhap.setText("Xóa");
+        btnXoaNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaNhapActionPerformed(evt);
+            }
+        });
 
         btnLuuNhap.setText("Lưu");
         btnLuuNhap.addActionListener(new java.awt.event.ActionListener() {
@@ -685,7 +678,7 @@ public class StoreForm extends javax.swing.JPanel {
         loadCategory();
         loadSupplier();
         loadEmployee();
-        loadDuLieu();
+        loadDuLieuNhap();
     }//GEN-LAST:event_jPanel3ComponentShown
 
     private void btnThemNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemNhapActionPerformed
@@ -702,7 +695,7 @@ public class StoreForm extends javax.swing.JPanel {
         try {
             if (status == "them") {
                 importsController.addImport();
-                loadDuLieu();
+                loadDuLieuNhap();
             } else if (status == "sua") {
 
             }
@@ -710,6 +703,55 @@ public class StoreForm extends javax.swing.JPanel {
             e.printStackTrace();
         }
     }//GEN-LAST:event_btnLuuNhapActionPerformed
+
+    private void tblViewNhapHangMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblViewNhapHangMouseClicked
+        try {
+            int i = tblViewNhapHang.getSelectedRow();
+            DefaultTableModel tb = (DefaultTableModel) tblViewNhapHang.getModel();
+            txtTenSPNhap.setText(tb.getValueAt(i, 1).toString());
+            txtSoLuongNhap.setText(tb.getValueAt(i, 2).toString());
+            txtGiaNhap.setText(tb.getValueAt(i, 3).toString());
+            txtDonViNhap.setText(tb.getValueAt(i, 4).toString());
+            
+            String ngayNhapStr = tb.getValueAt(i, 5).toString();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            LocalDate localDate = LocalDate.parse(ngayNhapStr, formatter);
+            Date date = java.sql.Date.valueOf(localDate); // chuyển sang java.util.Date
+            jDateNgayNhap.setDate(date);
+
+            String tenNCC = tb.getValueAt(i, 6).toString();
+            supplierMap.forEach((supplier_name, supplier_id)
+                    -> {
+                if (supplier_name.equals(tenNCC)) {
+                    cboNCCNhap.setSelectedItem(supplier_name);
+                }
+            });
+
+            String tenLoaiHangNhap = tb.getValueAt(i, 7).toString();
+            categoryMap.forEach((category_name, category_id)
+                    -> {
+                if (category_name.equals(tenLoaiHangNhap)) {
+                    cboLoaiHangNhap.setSelectedItem(category_name);
+                }
+            });
+
+            String tenNhanVienNhap = tb.getValueAt(i, 8).toString();
+            employeeMap.forEach((full_name, employee_id)
+                    -> {
+                if (full_name.equals(tenNhanVienNhap)) {
+                    cboNhanVienNhap.setSelectedItem(full_name);
+                }
+            });
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+    }//GEN-LAST:event_tblViewNhapHangMouseClicked
+
+    private void btnXoaNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaNhapActionPerformed
+        importsController.deleteImport();
+        loadDuLieuNhap();
+        enty();
+    }//GEN-LAST:event_btnXoaNhapActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
