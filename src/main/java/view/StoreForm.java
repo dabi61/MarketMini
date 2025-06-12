@@ -216,7 +216,7 @@ public class StoreForm extends javax.swing.JPanel {
     }
 
     private void setSua() {
-        txtTenSPNhap.setEnabled(true);
+        txtTenSPNhap.setEnabled(false);
         txtSoLuongNhap.setEnabled(true);
         txtGiaNhap.setEnabled(true);
         txtDonViNhap.setEnabled(true);
@@ -228,6 +228,7 @@ public class StoreForm extends javax.swing.JPanel {
         btnBoQuaNhap.setEnabled(true);
         btnXoaNhap.setEnabled(false);
         btnThemNhap.setEnabled(false);
+        //enty();
     }
 
     public Connection getCon() {
@@ -697,7 +698,9 @@ public class StoreForm extends javax.swing.JPanel {
                 importsController.addImport();
                 loadDuLieuNhap();
             } else if (status == "sua") {
-
+                importsController.updateImport();
+                enty();
+                loadDuLieuNhap();
             }
         } catch (Exception e) {
             e.printStackTrace();

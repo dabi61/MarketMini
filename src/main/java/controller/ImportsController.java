@@ -119,4 +119,73 @@ public class ImportsController {
             JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để xóa.");
         }
     }
+
+    public void updateImport() {
+        int selectedRow = importsView.getTblViewNhapHang().getSelectedRow();
+
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(importsView, "Vui lòng chọn một dòng để cập nhật.");
+            return;
+        }
+
+        try {
+            int importId = Integer.parseInt(importsView.getTblViewNhapHang().getValueAt(selectedRow, 0).toString());
+
+            // Lấy dữ liệu từ form
+            String tenSPNhap = importsView.getTxtTenSPNhap().getText().trim();
+            String soLuongNhap = importsView.getTxtSoLuongNhap().getText().trim();
+            String giaNhap = importsView.getTxtGiaNhap().getText().trim();
+            String donViNhap = importsView.getTxtDonViNhap().getText().trim();
+            java.util.Date utilDate = importsView.getjDateNgayNhap().getDate();
+
+            String supplierName = importsView.getSupplierComboBoxSelection();
+            String categoryName = importsView.getCategoryComboBoxSelection();
+            String fullname = importsView.getEmployeeComboBoxSelection();
+
+            if (supplierName == null || supplierName.equals("--Chọn nhà cung cấp")
+                    || categoryName == null || categoryName.equals("--Chọn loại hàng")
+                    || fullname == null || fullname.equals("--Chọn nhân viên")) {
+                JOptionPane.showMessageDialog(importsView, "Vui lòng chọn đầy đủ nhà cung cấp, loại hàng và nhân viên.");
+                return;
+            }
+
+            // Ánh xạ ID từ tên
+            Map<String, Integer> supplierMap = importsView.getSupplierMap();
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            Map<String, Integer> employeeMap = importsView.getEmployeeMap();
+
+            int supplierId = supplierMap.get(supplierName);
+            int categoryId = categoryMap.get(categoryName);
+            int employeeId = employeeMap.get(fullname);
+
+            // Kiểm tra rỗng
+            if (tenSPNhap.isEmpty() || soLuongNhap.isEmpty() || giaNhap.isEmpty() || donViNhap.isEmpty() || utilDate == null) {
+                JOptionPane.showMessageDialog(importsView, "Vui lòng điền đầy đủ thông tin cần cập nhật.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int soLuong = Integer.parseInt(soLuongNhap);
+            int gia = Integer.parseInt(giaNhap);
+            java.sql.Date ngayNhap = new java.sql.Date(utilDate.getTime());
+
+            // Gọi phương thức DAO để cập nhật
+            boolean success = importsDAO.updateImport(
+                    importId, tenSPNhap, categoryId, donViNhap, soLuong, gia, ngayNhap, supplierId, employeeId
+            );
+
+            if (success) {
+                JOptionPane.showMessageDialog(importsView, "Cập nhật đơn nhập thành công!");
+                // importsView.loadImportsTable(); // hoặc gọi hàm để reload bảng nếu bạn có
+            } else {
+                JOptionPane.showMessageDialog(importsView, "Cập nhật thất bại. Kiểm tra lại dữ liệu.");
+            }
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(importsView, "Giá và số lượng phải là số!", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi cập nhật: " + e.getMessage());
+        }
+    }
+
 }

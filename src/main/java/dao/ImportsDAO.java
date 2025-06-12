@@ -121,4 +121,67 @@ public class ImportsDAO {
             return false;
         }
     }
+
+    public boolean updateImport(int importId, String productName, int categoryId, String unit, int newQuantity,
+            int importPrice, Date importDate, int supplierId, int employeeId) {
+        try {
+            // 1. Lấy product_id từ tên sản phẩm, và lấy hàng tồn ban đầu
+            String getProductSql = "SELECT product_id, stock_quantity FROM products WHERE product_name = ?";
+            PreparedStatement getProductPs = connection.prepareStatement(getProductSql);
+            getProductPs.setString(1, productName);
+            ResultSet rs = getProductPs.executeQuery();
+
+            int productId;
+            int currentStock;
+            if (rs.next()) {
+                productId = rs.getInt("product_id");
+                currentStock = rs.getInt("stock_quantity");
+            } else {
+                throw new SQLException("Không tìm thấy sản phẩm.");
+            }
+
+            // 2. Lấy quantity cũ từ bảng imports
+            String getOldImportSql = "SELECT quantity FROM imports WHERE import_id = ?";
+            PreparedStatement getOldImportPs = connection.prepareStatement(getOldImportSql);
+            getOldImportPs.setInt(1, importId);
+            ResultSet rsOldImport = getOldImportPs.executeQuery();
+
+            int oldQuantity;
+            if (rsOldImport.next()) {
+                oldQuantity = rsOldImport.getInt("quantity");
+            } else {
+                throw new SQLException("Không tìm thấy bản ghi nhập hàng.");
+            }
+
+            // 3. Tính lại số lượng tồn kho
+            int updatedStock = currentStock - oldQuantity + newQuantity;
+
+            // 4. Cập nhật bảng products
+            String updateProductSql = "UPDATE products SET category_id = ?, unit = ?, stock_quantity = ?, price = ? WHERE product_id = ?";
+            PreparedStatement updateProductPs = connection.prepareStatement(updateProductSql);
+            updateProductPs.setInt(1, categoryId);
+            updateProductPs.setString(2, unit);
+            updateProductPs.setInt(3, updatedStock);
+            updateProductPs.setInt(4, importPrice);
+            updateProductPs.setInt(5, productId);
+            updateProductPs.executeUpdate();
+
+            // 5. Cập nhật bảng imports
+            String updateImportSql = "UPDATE imports SET supplier_id = ?, quantity = ?, import_price = ?, import_date = ?, employee_id = ? WHERE import_id = ?";
+            PreparedStatement updateImportPs = connection.prepareStatement(updateImportSql);
+            updateImportPs.setInt(1, supplierId);
+            updateImportPs.setInt(2, newQuantity);
+            updateImportPs.setInt(3, importPrice);
+            updateImportPs.setDate(4, importDate);
+            updateImportPs.setInt(5, employeeId);
+            updateImportPs.setInt(6, importId);
+
+            int affectedRows = updateImportPs.executeUpdate();
+
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
