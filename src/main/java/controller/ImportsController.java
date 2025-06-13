@@ -9,9 +9,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import model.DBConnection;
+import model.Products;
 import view.StoreForm;
 
 /**
@@ -188,4 +190,104 @@ public class ImportsController {
         }
     }
 
+    public void deleteProduct() {
+        int selectedRow = importsView.getTblViewKhoHang().getSelectedRow();
+
+        if (selectedRow >= 0) {
+            int productId = Integer.parseInt(importsView.getTblViewKhoHang().getValueAt(selectedRow, 0).toString());
+            // Xác nhận xóa
+            int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn xóa sản phẩm này không?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean success = importsDAO.deleteProduct(productId); // Gọi DAO để xóa
+
+                if (success) {
+                    JOptionPane.showMessageDialog(null, "Xóa thành công!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Không tìm thấy bản ghi để xóa hoặc xóa thất bại.");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn một sản phẩm để xóa.");
+        }
+    }
+
+    public void updateProduct() {
+        int selectedRow = importsView.getTblViewKhoHang().getSelectedRow();
+
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(importsView, "Vui lòng chọn một dòng để cập nhật.");
+            return;
+        }
+
+        try {
+            int productId = Integer.parseInt(importsView.getTblViewKhoHang().getValueAt(selectedRow, 0).toString());
+            // Lấy dữ liệu từ form
+            String tenSPKho = importsView.getTxtTenSPKho().getText().trim();
+            String giaKho = importsView.getTxtGiaKho().getText().trim();
+            String donViKho = importsView.getTxtDonViKho().getText().trim();
+            String categoryName = importsView.getCategoryStoreComboBox();
+
+            if (categoryName == null || categoryName.equals("--Chọn loại hàng")) {
+                JOptionPane.showMessageDialog(importsView, "Vui lòng chọn đầy đủ loại hàng.");
+                return;
+            }
+
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            int categoryId = categoryMap.get(categoryName);
+
+            // Kiểm tra rỗng
+            if (tenSPKho.isEmpty() || giaKho.isEmpty() || donViKho.isEmpty() || categoryName.isEmpty()) {
+                JOptionPane.showMessageDialog(importsView, "Vui lòng điền đầy đủ thông tin cần cập nhật.", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int gia = Integer.parseInt(giaKho);
+
+            // Gọi phương thức DAO để cập nhật
+            boolean success = importsDAO.updateProduct(productId, tenSPKho, categoryId, gia, donViKho);
+
+            if (success) {
+                JOptionPane.showMessageDialog(importsView, "Cập nhật đơn nhập thành công!");
+            } else {
+                JOptionPane.showMessageDialog(importsView, "Cập nhật thất bại. Kiểm tra lại dữ liệu.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi cập nhật: " + e.getMessage());
+        }
+    }
+
+    public void searchProduct() {
+        try {
+            // Lấy dữ liệu người dùng chọn trên giao diện
+            String productName = importsView.getTxtTenSPTimKho().getText().trim();
+
+            String categoryName = importsView.getCategorySearchComboBox(); 
+            String supplierName = importsView.getSupplierSearchComboBox();
+
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            Map<String, Integer> supplierMap = importsView.getSupplierMap();
+
+            Integer categoryId = null;
+            Integer supplierId = null;
+
+            if (categoryName != null && !categoryName.equals("--Chọn loại hàng")) {
+                categoryId = categoryMap.get(categoryName);
+            }
+
+            if (supplierName != null && !supplierName.equals("--Chọn nhà cung cấp")) {
+                supplierId = supplierMap.get(supplierName);
+            }
+
+            // Gọi DAO
+            List<Products> results = importsDAO.searchProduct(categoryId, supplierId, productName);
+
+            // Hiển thị kết quả tìm kiếm lên bảng
+            importsView.loadDuLieuKho1(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi tìm kiếm: " + e.getMessage());
+        }
+    }
 }

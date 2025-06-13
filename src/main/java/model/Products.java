@@ -16,6 +16,8 @@ public class Products {
     private int stock_quantity;
     private String unit;
 
+    //thêm phục vụ tìm kiếm
+    private String categoryName;
     public Products() {
     }
 
@@ -74,6 +76,14 @@ public class Products {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
     
     

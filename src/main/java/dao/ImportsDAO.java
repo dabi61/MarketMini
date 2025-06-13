@@ -13,6 +13,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import model.Imports;
+import model.Products;
 
 /**
  *
@@ -27,28 +28,6 @@ public class ImportsDAO {
 
     public ImportsDAO(Connection connection) {
         this.connection = connection;
-    }
-
-    // Get all imports
-    public List<Imports> getAllImports() {
-        List<Imports> importsList = new ArrayList<>();
-        String sql = "SELECT * FROM imports";
-        try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                Imports imp = new Imports();
-                imp.setImport_id(rs.getInt("import_id"));
-                imp.setProduct_id(rs.getInt("product_id"));
-                imp.setSupplier_id(rs.getInt("supplier_id"));
-                imp.setQuantity(rs.getInt("quantity"));
-                imp.setImport_price(rs.getInt("import_price"));
-                imp.setImport_date(rs.getDate("import_date").toLocalDate());
-                imp.setEmployee_id(rs.getInt("employee_id"));
-                importsList.add(imp);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return importsList;
     }
 
     public boolean insertOrUpdateImport(String productName, int categoryId, String unit, int quantity, int importPrice,
@@ -184,4 +163,83 @@ public class ImportsDAO {
             return false;
         }
     }
+
+    // Phần quản lý kho
+    public boolean deleteProduct(int product_id) {
+        String deleteProductSql = "DELETE FROM products WHERE product_id = ?";
+        try {
+            PreparedStatement importPs = connection.prepareStatement(deleteProductSql);
+            importPs.setInt(1, product_id);
+
+            int rowsAffected = importPs.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateProduct(int product_id, String productName, int categoryId, int price, String unit) {
+        try {
+            String updateProductSql = "UPDATE products SET product_name = ?, category_id = ?, price = ?, unit = ? WHERE product_id = ?";
+            PreparedStatement updateStoreProductPs = connection.prepareStatement(updateProductSql);
+            updateStoreProductPs.setString(1, productName);
+            updateStoreProductPs.setInt(2, categoryId);
+            updateStoreProductPs.setInt(3, price);
+            updateStoreProductPs.setString(4, unit);
+            updateStoreProductPs.setInt(5, product_id);
+            updateStoreProductPs.executeUpdate();
+
+            int affectedRows = updateStoreProductPs.executeUpdate();
+            return affectedRows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Products> searchProduct(Integer categoryId, Integer supplierId, String productName) {
+        List<Products> productList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT p.product_id, p.product_name, c.category_name, p.price, p.stock_quantity, p.unit "
+                + "FROM products p "
+                + "JOIN imports i ON p.product_id = i.product_id "
+                + "JOIN category c ON p.category_id = c.category_id "
+                + "WHERE 1=1");
+
+        // Thêm điều kiện lọc nếu có
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND p.category_id = ").append(categoryId);
+        }
+        if (supplierId != null && supplierId > 0) {
+            sql.append(" AND i.supplier_id = ").append(supplierId);
+        }
+        if (productName != null && !productName.trim().isEmpty()) {
+            sql.append(" AND p.product_name LIKE ?");
+        }
+
+        try {
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+
+            if (productName != null && !productName.trim().isEmpty()) {
+                stmt.setString(1, "%" + productName + "%");
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Products p = new Products();
+                p.setProduct_id(rs.getInt("product_id"));
+                p.setProduct_name(rs.getString("product_name"));
+                p.setCategoryName(rs.getString("category_name"));
+                p.setPrice(rs.getInt("price"));
+                p.setUnit(rs.getString("unit"));
+                p.setStock_quantity(rs.getInt("stock_quantity"));
+                productList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return productList;
+    }
+
 }

@@ -12,7 +12,7 @@ public class Category {
     private int category_id;
     private String category_name;
     private String description;
-
+    
     public Category() {
     }
 
@@ -45,6 +45,6 @@ public class Category {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package view;
 
 import com.toedter.calendar.JDateChooser;
@@ -17,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JButton;
@@ -26,6 +22,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 import model.DBConnection;
+import model.Products;
 
 /**
  *
@@ -40,9 +37,6 @@ public class StoreForm extends javax.swing.JPanel {
     Map< String, Integer> employeeMap = new HashMap<>();
     private String status;
 
-    /**
-     * Creates new form Form_2
-     */
     public StoreForm() {
         initComponents();
         initController();
@@ -62,7 +56,7 @@ public class StoreForm extends javax.swing.JPanel {
         }
     }
 
-    private void loadCategory() {
+    private void loadCategoryNhap() {
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT category_id, category_name FROM category"); ResultSet rs = ps.executeQuery()) {
 
             cboLoaiHangNhap.removeAllItems();
@@ -81,7 +75,32 @@ public class StoreForm extends javax.swing.JPanel {
         }
     }
 
-    private void loadSupplier() {
+    private void loadCategoryKho() {
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT category_id, category_name FROM category"); ResultSet rs = ps.executeQuery()) {
+
+            cboLoaiHangKho.removeAllItems();
+            cboLoaiHangKho.addItem("--Chọn loại hàng");
+
+            cboLoaiHangKhoTim.removeAllItems();
+            cboLoaiHangKhoTim.addItem("--Chọn loại hàng");
+
+            while (rs.next()) {
+                String categoryName = rs.getString("category_name");
+                int categoryId = rs.getInt("category_id"); // Lấy ID dưới dạng int
+                cboLoaiHangKho.addItem(categoryName);
+                categoryMap.put(categoryName, categoryId); // Lưu vào map với value là Integer
+
+                cboLoaiHangKhoTim.addItem(categoryName);
+                categoryMap.put(categoryName, categoryId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách loại hàng: " + e.getMessage());
+        }
+    }
+
+    private void loadSupplierNhap() {
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT supplier_id, supplier_name FROM suppliers"); ResultSet rs = ps.executeQuery()) {
 
             cboNCCNhap.removeAllItems();
@@ -100,7 +119,26 @@ public class StoreForm extends javax.swing.JPanel {
         }
     }
 
-    private void loadEmployee() {
+    private void loadSupplierKho() {
+        try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT supplier_id, supplier_name FROM suppliers"); ResultSet rs = ps.executeQuery()) {
+
+            cboNCCKhoTim.removeAllItems();
+            cboNCCKhoTim.addItem("--Chọn nhà cung cấp");
+
+            while (rs.next()) {
+                String supplierName = rs.getString("supplier_name");
+                int supplierId = rs.getInt("supplier_id");
+                cboNCCKhoTim.addItem(supplierName);
+                supplierMap.put(supplierName, supplierId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách nhà cung cấp: " + e.getMessage());
+        }
+    }
+
+    private void loadEmployeeNhap() {
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement("SELECT employee_id, full_name FROM employees"); ResultSet rs = ps.executeQuery()) {
 
             cboNhanVienNhap.removeAllItems();
@@ -129,6 +167,18 @@ public class StoreForm extends javax.swing.JPanel {
 
     public String getEmployeeComboBoxSelection() {
         return cboNhanVienNhap.getSelectedItem() != null ? cboNhanVienNhap.getSelectedItem().toString() : null;
+    }
+
+    public String getCategoryStoreComboBox() {
+        return cboLoaiHangKho.getSelectedItem() != null ? cboLoaiHangKho.getSelectedItem().toString() : null;
+    }
+
+    public String getCategorySearchComboBox() {
+        return cboLoaiHangKhoTim.getSelectedItem() != null ? cboLoaiHangKhoTim.getSelectedItem().toString() : null;
+    }
+
+    public String getSupplierSearchComboBox() {
+        return cboNCCKhoTim.getSelectedItem() != null ? cboNCCKhoTim.getSelectedItem().toString() : null;
     }
 
     private void loadDuLieuNhap() {
@@ -171,6 +221,64 @@ public class StoreForm extends javax.swing.JPanel {
         }
     }
 
+    public void loadDuLieuKho() {
+        try {
+            setMacDinhKho();
+            tblViewKhoHang.removeAll();
+            con = DBConnection.getConnection();
+            String sql = "SELECT p.product_id, p.product_name, c.category_name, p.price, p.stock_quantity, p.unit "
+                    + "FROM products p "
+                    + "LEFT JOIN category c ON p.category_id = c.category_id ";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            String[] td = {"Mã sản phẩm", "Tên sản phẩm", "Tên loại hàng", "Giá", "Số lượng tồn kho", "Đơn vị"};
+            DefaultTableModel tb = new DefaultTableModel(td, 0);
+            while (rs.next()) {
+                Vector vt = new Vector();
+                vt.add(rs.getString("product_id"));
+                vt.add(rs.getString("product_name"));
+                vt.add(rs.getString("category_name"));
+                vt.add(rs.getString("price"));
+                vt.add(rs.getString("stock_quantity"));
+                vt.add(rs.getString("unit"));
+                tb.addRow(vt);
+            }
+            tblViewKhoHang.setModel(tb);
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadDuLieuKho1(List<Products> results) {
+        try {
+            setMacDinhKho(); // Nếu bạn có dùng để reset các trường
+
+            // Đặt tiêu đề cột
+            String[] columnNames = {"Mã sản phẩm", "Tên sản phẩm", "Tên loại hàng", "Giá", "Số lượng tồn kho", "Đơn vị"};
+            DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+
+            // Duyệt danh sách sản phẩm và thêm vào model
+            for (Products product : results) {
+                Vector<Object> row = new Vector<>();
+                row.add(product.getProduct_id());
+                row.add(product.getProduct_name());
+                row.add(product.getCategoryName());
+                row.add(product.getPrice());
+                row.add(product.getStock_quantity());
+                row.add(product.getUnit());
+                tableModel.addRow(row);
+            }
+
+            // Gán model vào bảng
+            tblViewKhoHang.setModel(tableModel);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void enty() {
         txtTenSPNhap.setText("");
         txtSoLuongNhap.setText("");
@@ -181,6 +289,14 @@ public class StoreForm extends javax.swing.JPanel {
         cboLoaiHangNhap.setSelectedIndex(0);
         cboNCCNhap.setSelectedIndex(0);
         cboNhanVienNhap.setSelectedIndex(0);
+    }
+
+    private void entyKho() {
+        txtTenSPKho.setText("");
+        cboLoaiHangKho.setSelectedIndex(0);
+        txtGiaKho.setText("");
+        txtTonKho.setText("");
+        txtDonViKho.setText("");
     }
 
     private void setMacDinh() {
@@ -197,6 +313,18 @@ public class StoreForm extends javax.swing.JPanel {
         btnSuaNhap.setEnabled(true);
         btnXoaNhap.setEnabled(true);
         btnThemNhap.setEnabled(true);
+    }
+
+    private void setMacDinhKho() {
+        txtTenSPKho.setEnabled(false);
+        txtGiaKho.setEnabled(false);
+        txtTonKho.setEnabled(false);
+        txtDonViKho.setEnabled(false);
+        cboLoaiHangKho.setEnabled(false);
+        btnLuuKho.setEnabled(false);
+        btnBoQuaKho.setEnabled(false);
+        btnSuaKho.setEnabled(true);
+        btnXoaKho.setEnabled(true);
     }
 
     private void setThem() {
@@ -231,8 +359,19 @@ public class StoreForm extends javax.swing.JPanel {
         //enty();
     }
 
-    public Connection getCon() {
+    private void setSuaKho() {
+        txtTenSPKho.setEnabled(true);
+        txtGiaKho.setEnabled(true);
+        txtTonKho.setEnabled(false);
+        txtDonViKho.setEnabled(true);
+        cboLoaiHangKho.setEnabled(true);
+        btnLuuKho.setEnabled(true);
+        btnBoQuaKho.setEnabled(true);
+        btnXoaKho.setEnabled(false);
+        btnSuaKho.setEnabled(false);
+    }
 
+    public Connection getCon() {
         return con;
     }
 
@@ -269,7 +408,7 @@ public class StoreForm extends javax.swing.JPanel {
     }
 
     public JButton getBtnTim() {
-        return btnTim;
+        return btnTimKho;
     }
 
     public JButton getBtnXoaNhap() {
@@ -277,7 +416,7 @@ public class StoreForm extends javax.swing.JPanel {
     }
 
     public JComboBox<String> getCboCategory() {
-        return cboCategory;
+        return cboLoaiHangKhoTim;
     }
 
     public JComboBox<String> getCboLoaiHangNhap() {
@@ -320,11 +459,46 @@ public class StoreForm extends javax.swing.JPanel {
         this.tblViewNhapHang = tblViewNhapHang;
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
+    public JTable getTblViewKhoHang() {
+        return tblViewKhoHang;
+    }
+
+    public void setTblViewKhoHang(JTable tblViewKhoHang) {
+        this.tblViewKhoHang = tblViewKhoHang;
+    }
+
+    public JComboBox<String> getCboLoaiHangKho() {
+        return cboLoaiHangKho;
+    }
+
+    public JComboBox<String> getCboLoaiHangKhoTim() {
+        return cboLoaiHangKhoTim;
+    }
+
+    public JComboBox<String> getCboNCCKhoTim() {
+        return cboNCCKhoTim;
+    }
+
+    public JTextField getTxtDonViKho() {
+        return txtDonViKho;
+    }
+
+    public JTextField getTxtGiaKho() {
+        return txtGiaKho;
+    }
+
+    public JTextField getTxtTenSPKho() {
+        return txtTenSPKho;
+    }
+
+    public JTextField getTxtTenSPTimKho() {
+        return txtTenSPTimKho;
+    }
+
+    public JTextField getTxtTonKho() {
+        return txtTonKho;
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -332,10 +506,28 @@ public class StoreForm extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel2 = new javax.swing.JPanel();
-        cboCategory = new javax.swing.JComboBox<>();
-        btnTim = new javax.swing.JButton();
+        cboLoaiHangKhoTim = new javax.swing.JComboBox<>();
+        btnTimKho = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblViewKhoHang = new javax.swing.JTable();
+        cboNCCKhoTim = new javax.swing.JComboBox<>();
+        txtTenSPTimKho = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        txtTenSPKho = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        txtGiaKho = new javax.swing.JTextField();
+        jLabel13 = new javax.swing.JLabel();
+        txtTonKho = new javax.swing.JTextField();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        txtDonViKho = new javax.swing.JTextField();
+        cboLoaiHangKho = new javax.swing.JComboBox<>();
+        btnSuaKho = new javax.swing.JButton();
+        btnXoaKho = new javax.swing.JButton();
+        btnLuuKho = new javax.swing.JButton();
+        btnBoQuaKho = new javax.swing.JButton();
+        btnXuatExcel = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -360,56 +552,212 @@ public class StoreForm extends javax.swing.JPanel {
         btnBoQuaNhap = new javax.swing.JButton();
         jLabel9 = new javax.swing.JLabel();
         cboLoaiHangNhap = new javax.swing.JComboBox<>();
+        btnNhapExcel = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(250, 250, 250));
 
-        cboCategory.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
-        btnTim.setText("Tìm");
-        btnTim.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTimActionPerformed(evt);
+        jPanel2.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                jPanel2ComponentShown(evt);
             }
         });
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        btnTimKho.setText("Tìm");
+        btnTimKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTimKhoActionPerformed(evt);
+            }
+        });
+
+        tblViewKhoHang.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        tblViewKhoHang.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblViewKhoHangMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(tblViewKhoHang);
+
+        txtTenSPTimKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTenSPTimKhoActionPerformed(evt);
+            }
+        });
+
+        jLabel10.setText("Tên sản phẩm");
+
+        jLabel11.setText("Tên sản phẩm");
+
+        txtTenSPKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTenSPKhoActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setText("Tên loại hàng");
+
+        txtGiaKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtGiaKhoActionPerformed(evt);
+            }
+        });
+
+        jLabel13.setText("Giá");
+
+        txtTonKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTonKhoActionPerformed(evt);
+            }
+        });
+
+        jLabel14.setText("Tồn kho");
+
+        jLabel15.setText("Đơn vị");
+
+        txtDonViKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtDonViKhoActionPerformed(evt);
+            }
+        });
+
+        btnSuaKho.setText("Sửa");
+        btnSuaKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSuaKhoActionPerformed(evt);
+            }
+        });
+
+        btnXoaKho.setText("Xóa");
+        btnXoaKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaKhoActionPerformed(evt);
+            }
+        });
+
+        btnLuuKho.setText("Lưu");
+        btnLuuKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLuuKhoActionPerformed(evt);
+            }
+        });
+
+        btnBoQuaKho.setText("Bỏ qua");
+        btnBoQuaKho.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBoQuaKhoActionPerformed(evt);
+            }
+        });
+
+        btnXuatExcel.setText("Xuất excel");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cboCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnTim)
-                .addGap(20, 20, 20))
-            .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(288, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(btnSuaKho)
+                        .addGap(33, 33, 33)
+                        .addComponent(btnXoaKho)
+                        .addGap(30, 30, 30)
+                        .addComponent(btnLuuKho)
+                        .addGap(32, 32, 32)
+                        .addComponent(btnBoQuaKho)
+                        .addGap(32, 32, 32)
+                        .addComponent(btnXuatExcel)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(cboLoaiHangKhoTim, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(34, 34, 34)
+                                        .addComponent(cboNCCKhoTim, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel11)
+                                            .addComponent(jLabel13)
+                                            .addComponent(jLabel15))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(txtDonViKho, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                                            .addComponent(txtGiaKho, javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(txtTenSPKho, javax.swing.GroupLayout.Alignment.LEADING))))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel10)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtTenSPTimKho, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(51, 51, 51)
+                                        .addComponent(btnTimKho))
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                                                .addComponent(jLabel12)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED))
+                                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                                .addComponent(jLabel14)
+                                                .addGap(42, 42, 42)))
+                                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addComponent(txtTonKho)
+                                            .addComponent(cboLoaiHangKho, 0, 229, Short.MAX_VALUE))))))
+                        .addGap(21, 21, 21))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(cboLoaiHangKhoTim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnTimKho)
+                        .addComponent(cboNCCKhoTim, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(txtTenSPTimKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel10)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtTenSPKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel11))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtGiaKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel12)
+                            .addComponent(cboLoaiHangKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtTonKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel14))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cboCategory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnTim))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 75, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDonViKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel15))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSuaKho)
+                    .addComponent(btnXoaKho)
+                    .addComponent(btnLuuKho)
+                    .addComponent(btnBoQuaKho)
+                    .addComponent(btnXuatExcel))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                 .addGap(17, 17, 17))
         );
 
@@ -499,6 +847,8 @@ public class StoreForm extends javax.swing.JPanel {
 
         jLabel9.setText("Loại hàng");
 
+        btnNhapExcel.setText("Nhập excel");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -543,6 +893,8 @@ public class StoreForm extends javax.swing.JPanel {
                                 .addComponent(btnLuuNhap)
                                 .addGap(28, 28, 28)
                                 .addComponent(btnBoQuaNhap)
+                                .addGap(34, 34, 34)
+                                .addComponent(btnNhapExcel)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(jPanel3Layout.createSequentialGroup()
                                 .addGap(41, 41, 41)
@@ -553,7 +905,7 @@ public class StoreForm extends javax.swing.JPanel {
                                         .addComponent(cboLoaiHangNhap, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(jPanel3Layout.createSequentialGroup()
                                         .addComponent(jLabel7)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
                                         .addComponent(cboNhanVienNhap, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -601,14 +953,20 @@ public class StoreForm extends javax.swing.JPanel {
                     .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(jLabel8)
                         .addComponent(txtDonViNhap, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnThemNhap)
-                    .addComponent(btnSuaNhap)
-                    .addComponent(btnXoaNhap)
-                    .addComponent(btnLuuNhap)
-                    .addComponent(btnBoQuaNhap))
-                .addGap(18, 18, 18)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnThemNhap)
+                            .addComponent(btnSuaNhap)
+                            .addComponent(btnXoaNhap)
+                            .addComponent(btnLuuNhap)
+                            .addComponent(btnBoQuaNhap))
+                        .addGap(18, 18, 18))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(btnNhapExcel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(15, 15, 15))
         );
@@ -658,9 +1016,10 @@ public class StoreForm extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnTimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnTimActionPerformed
+    private void btnTimKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKhoActionPerformed
+        importsController.searchProduct();
+        //loadDuLieuKho();
+    }//GEN-LAST:event_btnTimKhoActionPerformed
 
     private void btnSuaNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaNhapActionPerformed
         status = "sua";
@@ -676,9 +1035,9 @@ public class StoreForm extends javax.swing.JPanel {
     }//GEN-LAST:event_txtGiaNhapActionPerformed
 
     private void jPanel3ComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jPanel3ComponentShown
-        loadCategory();
-        loadSupplier();
-        loadEmployee();
+        loadCategoryNhap();
+        loadSupplierNhap();
+        loadEmployeeNhap();
         loadDuLieuNhap();
     }//GEN-LAST:event_jPanel3ComponentShown
 
@@ -715,7 +1074,7 @@ public class StoreForm extends javax.swing.JPanel {
             txtSoLuongNhap.setText(tb.getValueAt(i, 2).toString());
             txtGiaNhap.setText(tb.getValueAt(i, 3).toString());
             txtDonViNhap.setText(tb.getValueAt(i, 4).toString());
-            
+
             String ngayNhapStr = tb.getValueAt(i, 5).toString();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             LocalDate localDate = LocalDate.parse(ngayNhapStr, formatter);
@@ -756,20 +1115,107 @@ public class StoreForm extends javax.swing.JPanel {
         enty();
     }//GEN-LAST:event_btnXoaNhapActionPerformed
 
+    private void txtTenSPTimKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenSPTimKhoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTenSPTimKhoActionPerformed
+
+    private void jPanel2ComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jPanel2ComponentShown
+        loadDuLieuKho();
+        loadCategoryKho();
+        loadSupplierKho();
+    }//GEN-LAST:event_jPanel2ComponentShown
+
+    private void txtTenSPKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTenSPKhoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTenSPKhoActionPerformed
+
+    private void txtGiaKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtGiaKhoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtGiaKhoActionPerformed
+
+    private void txtTonKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTonKhoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTonKhoActionPerformed
+
+    private void txtDonViKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDonViKhoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtDonViKhoActionPerformed
+
+    private void tblViewKhoHangMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblViewKhoHangMouseClicked
+        try {
+            int i = tblViewKhoHang.getSelectedRow();
+            DefaultTableModel tb = (DefaultTableModel) tblViewKhoHang.getModel();
+            txtTenSPKho.setText(tb.getValueAt(i, 1).toString());
+            String tenLoaiHangKho = tb.getValueAt(i, 2).toString();
+            categoryMap.forEach((category_name, category_id)
+                    -> {
+                if (category_name.equals(tenLoaiHangKho)) {
+                    cboLoaiHangKho.setSelectedItem(category_name);
+                }
+            });
+            txtGiaKho.setText(tb.getValueAt(i, 3).toString());
+            txtTonKho.setText(tb.getValueAt(i, 4).toString());
+            txtDonViKho.setText(tb.getValueAt(i, 5).toString());
+        } catch (Exception e) {
+            e.getStackTrace();
+        }
+    }//GEN-LAST:event_tblViewKhoHangMouseClicked
+
+    private void btnBoQuaKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBoQuaKhoActionPerformed
+        setMacDinhKho();
+        entyKho();
+    }//GEN-LAST:event_btnBoQuaKhoActionPerformed
+
+    private void btnSuaKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaKhoActionPerformed
+        status = "suaKho";
+        setSuaKho();
+    }//GEN-LAST:event_btnSuaKhoActionPerformed
+
+    private void btnXoaKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaKhoActionPerformed
+        importsController.deleteProduct();
+        loadDuLieuKho();
+        entyKho();
+    }//GEN-LAST:event_btnXoaKhoActionPerformed
+
+    private void btnLuuKhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLuuKhoActionPerformed
+        try {
+            if (status == "suaKho") {
+                importsController.updateProduct();
+                loadDuLieuKho();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_btnLuuKhoActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBoQuaKho;
     private javax.swing.JButton btnBoQuaNhap;
+    private javax.swing.JButton btnLuuKho;
     private javax.swing.JButton btnLuuNhap;
+    private javax.swing.JButton btnNhapExcel;
+    private javax.swing.JButton btnSuaKho;
     private javax.swing.JButton btnSuaNhap;
     private javax.swing.JButton btnThemNhap;
-    private javax.swing.JButton btnTim;
+    private javax.swing.JButton btnTimKho;
+    private javax.swing.JButton btnXoaKho;
     private javax.swing.JButton btnXoaNhap;
-    private javax.swing.JComboBox<String> cboCategory;
+    private javax.swing.JButton btnXuatExcel;
+    private javax.swing.JComboBox<String> cboLoaiHangKho;
+    private javax.swing.JComboBox<String> cboLoaiHangKhoTim;
     private javax.swing.JComboBox<String> cboLoaiHangNhap;
+    private javax.swing.JComboBox<String> cboNCCKhoTim;
     private javax.swing.JComboBox<String> cboNCCNhap;
     private javax.swing.JComboBox<String> cboNhanVienNhap;
     private com.toedter.calendar.JDateChooser jDateNgayNhap;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -784,12 +1230,17 @@ public class StoreForm extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable tblViewKhoHang;
     private javax.swing.JTable tblViewNhapHang;
+    private javax.swing.JTextField txtDonViKho;
     private javax.swing.JTextField txtDonViNhap;
+    private javax.swing.JTextField txtGiaKho;
     private javax.swing.JTextField txtGiaNhap;
     private javax.swing.JTextField txtSoLuongNhap;
+    private javax.swing.JTextField txtTenSPKho;
     private javax.swing.JTextField txtTenSPNhap;
+    private javax.swing.JTextField txtTenSPTimKho;
+    private javax.swing.JTextField txtTonKho;
     // End of variables declaration//GEN-END:variables
 
 }
