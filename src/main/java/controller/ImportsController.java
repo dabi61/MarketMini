@@ -4,8 +4,10 @@
  */
 package controller;
 
+import com.toedter.calendar.JDateChooser;
 import dao.ImportsDAO;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import model.DBConnection;
+import model.Imports;
 import model.Products;
 import view.StoreForm;
 
@@ -190,6 +193,40 @@ public class ImportsController {
         }
     }
 
+    public void searchImport(){
+        try {
+            // Lấy dữ liệu người dùng chọn trên giao diện
+            JDateChooser dateTimTu = importsView.getjDateTimTu();
+            JDateChooser dateTimDen = importsView.getjDateTimDen();
+            
+            String categoryName = importsView.getCboLoaiHangNhapTim(); 
+            String supplierName = importsView.getCboNCCNhapTim();
+            
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            Map<String, Integer> supplierMap = importsView.getSupplierMap();
+            
+            Integer categoryId = null;
+            Integer supplierId = null;
+
+            if (categoryName != null && !categoryName.equals("--Chọn loại hàng")) {
+                categoryId = categoryMap.get(categoryName);
+            }
+
+            if (supplierName != null && !supplierName.equals("--Chọn nhà cung cấp")) {
+                supplierId = supplierMap.get(supplierName);
+            }
+            
+            // Gọi DAO
+            List<Imports> results = importsDAO.searchImport(dateTimTu, dateTimDen, categoryId, supplierId);
+
+            // Hiển thị kết quả tìm kiếm lên bảng
+            importsView.loadDuLieuNhap1(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi tìm kiếm: " + e.getMessage());
+        }
+    }
+    
     public void deleteProduct() {
         int selectedRow = importsView.getTblViewKhoHang().getSelectedRow();
 

@@ -19,6 +19,12 @@ public class Imports {
     private LocalDate import_date;
     private int employee_id;
 
+    //thêm phục vụ tìm kiếm
+    private String unit;
+    private String supplier_name;
+    private String category_name;
+    private String employee_name;
+    private String product_name;
     public Imports() {
     }
 
@@ -87,6 +93,44 @@ public class Imports {
     public void setEmployee_id(int employee_id) {
         this.employee_id = employee_id;
     }
-    
-    
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getSupplier_name() {
+        return supplier_name;
+    }
+
+    public void setSupplier_name(String supplier_name) {
+        this.supplier_name = supplier_name;
+    }
+
+    public String getCategory_name() {
+        return category_name;
+    }
+
+    public void setCategory_name(String category_name) {
+        this.category_name = category_name;
+    }
+
+    public String getEmployee_name() {
+        return employee_name;
+    }
+
+    public void setEmployee_name(String employee_name) {
+        this.employee_name = employee_name;
+    }
+
+    public String getProduct_name() {
+        return product_name;
+    }
+
+    public void setProduct_name(String product_name) {
+        this.product_name = product_name;
+    }
 }

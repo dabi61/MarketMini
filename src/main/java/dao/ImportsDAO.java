@@ -4,12 +4,14 @@
  */
 package dao;
 
+import com.toedter.calendar.JDateChooser;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import model.Imports;
@@ -164,6 +166,53 @@ public class ImportsDAO {
         }
     }
 
+    public List<Imports> searchImport(JDateChooser tuNgay, JDateChooser denNgay, Integer categoryId, Integer supplierId) {
+        List<Imports> importList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT i.import_id, p.product_name, i.quantity, i.import_price, p.unit, i.import_date, s.supplier_name, c.category_name, e.employee_name "
+                + "FROM imports i "
+                + "JOIN products p ON i.product_id = p.product_id "
+                + "JOIN category c ON p.category_id = c.category_id "
+                + "JOIN suppliers s ON i.supplier_id = s.supplier_id "
+                + "JOIN employees e ON i.employee_id = e.employee_id "
+                + "WHERE 1=1");
+        // Thêm điều kiện lọc nếu có
+        if (tuNgay != null) {
+            sql.append(" AND i.import_date >= ?");
+        }
+        if (denNgay != null) {
+            sql.append(" AND i.import_date <= ?");
+        }
+       
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND p.category_id = ").append(categoryId);
+        }
+        if (supplierId != null && supplierId > 0) {
+            sql.append(" AND i.supplier_id = ").append(supplierId);
+        }
+
+        try {
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Imports i = new Imports();
+                i.setImport_id(rs.getInt("import_id"));
+                i.setProduct_name(rs.getString("product_name"));
+                i.setQuantity(rs.getInt("quantity"));
+                i.setImport_price(rs.getInt("import_price"));
+                i.setUnit(rs.getString("unit"));
+                i.setImport_date(rs.getDate("import_date").toLocalDate());
+                i.setSupplier_name(rs.getString("supplier_name"));
+                i.setCategory_name(rs.getString("category_name"));
+                i.setEmployee_name(rs.getString("employee_name"));
+                importList.add(i);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return importList;
+    }
+
     // Phần quản lý kho
     public boolean deleteProduct(int product_id) {
         String deleteProductSql = "DELETE FROM products WHERE product_id = ?";
@@ -238,7 +287,6 @@ public class ImportsDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return productList;
     }
 

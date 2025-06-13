@@ -46,6 +46,7 @@ model\Employees.class
 com\raven\chart\ItemChartPie.class
 model\Suppliers.class
 view\StoreForm$17.class
+view\StoreForm$22.class
 com\raven\swing\TableCell.class
 com\raven\component\Header$1.class
 com\raven\chart\PanelChartPie.class
