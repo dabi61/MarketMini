@@ -166,7 +166,7 @@ public class ImportsDAO {
         }
     }
 
-    public List<Imports> searchImport(JDateChooser tuNgay, JDateChooser denNgay, Integer categoryId, Integer supplierId) {
+    public List<Imports> searchImport(java.util.Date tuNgay, java.util.Date denNgay, Integer categoryId, Integer supplierId) {
         List<Imports> importList = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT i.import_id, p.product_name, i.quantity, i.import_price, p.unit, i.import_date, s.supplier_name, c.category_name, e.employee_name "
                 + "FROM imports i "
@@ -175,14 +175,19 @@ public class ImportsDAO {
                 + "JOIN suppliers s ON i.supplier_id = s.supplier_id "
                 + "JOIN employees e ON i.employee_id = e.employee_id "
                 + "WHERE 1=1");
+        // Biến đếm để set parameter thứ mấy
+        int paramIndex = 1;
+        boolean hasTuNgay = false;
+        boolean hasDenNgay = false;
         // Thêm điều kiện lọc nếu có
         if (tuNgay != null) {
             sql.append(" AND i.import_date >= ?");
+            hasTuNgay = true;
         }
         if (denNgay != null) {
             sql.append(" AND i.import_date <= ?");
+            hasDenNgay = true;
         }
-       
         if (categoryId != null && categoryId > 0) {
             sql.append(" AND p.category_id = ").append(categoryId);
         }
@@ -192,6 +197,14 @@ public class ImportsDAO {
 
         try {
             PreparedStatement stmt = connection.prepareStatement(sql.toString());
+
+            // Gán giá trị tham số cho câu lệnh PreparedStatement
+            if (hasTuNgay) {
+                stmt.setDate(paramIndex++, new java.sql.Date(tuNgay.getTime()));
+            }
+            if (hasDenNgay) {
+                stmt.setDate(paramIndex++, new java.sql.Date(denNgay.getTime()));
+            }
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {

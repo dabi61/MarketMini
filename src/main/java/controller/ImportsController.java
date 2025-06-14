@@ -193,18 +193,21 @@ public class ImportsController {
         }
     }
 
-    public void searchImport(){
+    public void searchImport() {
         try {
             // Lấy dữ liệu người dùng chọn trên giao diện
             JDateChooser dateTimTu = importsView.getjDateTimTu();
             JDateChooser dateTimDen = importsView.getjDateTimDen();
-            
-            String categoryName = importsView.getCboLoaiHangNhapTim(); 
+            // Lấy ngày từ JDateChooser
+            java.util.Date tuNgay = dateTimTu.getDate();
+            java.util.Date denNgay = dateTimDen.getDate();
+
+            String categoryName = importsView.getCboLoaiHangNhapTim();
             String supplierName = importsView.getCboNCCNhapTim();
-            
+
             Map<String, Integer> categoryMap = importsView.getCategoryMap();
             Map<String, Integer> supplierMap = importsView.getSupplierMap();
-            
+
             Integer categoryId = null;
             Integer supplierId = null;
 
@@ -215,9 +218,9 @@ public class ImportsController {
             if (supplierName != null && !supplierName.equals("--Chọn nhà cung cấp")) {
                 supplierId = supplierMap.get(supplierName);
             }
-            
+
             // Gọi DAO
-            List<Imports> results = importsDAO.searchImport(dateTimTu, dateTimDen, categoryId, supplierId);
+            List<Imports> results = importsDAO.searchImport(tuNgay, denNgay, categoryId, supplierId);
 
             // Hiển thị kết quả tìm kiếm lên bảng
             importsView.loadDuLieuNhap1(results);
@@ -226,7 +229,7 @@ public class ImportsController {
             JOptionPane.showMessageDialog(importsView, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
     }
-    
+
     public void deleteProduct() {
         int selectedRow = importsView.getTblViewKhoHang().getSelectedRow();
 
@@ -300,7 +303,7 @@ public class ImportsController {
             // Lấy dữ liệu người dùng chọn trên giao diện
             String productName = importsView.getTxtTenSPTimKho().getText().trim();
 
-            String categoryName = importsView.getCategorySearchComboBox(); 
+            String categoryName = importsView.getCategorySearchComboBox();
             String supplierName = importsView.getSupplierSearchComboBox();
 
             Map<String, Integer> categoryMap = importsView.getCategoryMap();
