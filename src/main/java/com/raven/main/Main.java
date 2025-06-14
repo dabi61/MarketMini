@@ -18,6 +18,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
+import view.SalesForm;
 import view.StoreForm;
 
 public class Main extends javax.swing.JFrame {
@@ -116,6 +117,8 @@ public class Main extends javax.swing.JFrame {
                     main.show(new Form_2());
                 }else if (index == 6) {
                     main.show(new StoreForm());
+                }else if (index == 7){
+                    main.show(new SalesForm());
                 }
             }
         });
