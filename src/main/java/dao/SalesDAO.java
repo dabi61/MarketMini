@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import model.Customers;
 import model.DBConnection;
+import model.Products;
 
 /**
  *
@@ -55,9 +56,9 @@ public class SalesDAO {
 
         while (rs.next()) {
             customers.add(new Customers(
-                rs.getInt("customer_id"),
-                rs.getString("full_name"),
-                rs.getString("phone_number")
+                    rs.getInt("customer_id"),
+                    rs.getString("full_name"),
+                    rs.getString("phone_number")
             ));
         }
 
@@ -66,4 +67,50 @@ public class SalesDAO {
         return customers;
     }
 
+    public List<Products> searchProduct(String productName) {
+        List<Products> productList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT p.product_id, p.product_name, c.category_name, p.price, p.stock_quantity, p.unit "
+                + "FROM products p "
+                + "JOIN imports i ON p.product_id = i.product_id "
+                + "JOIN category c ON p.category_id = c.category_id "
+                + "WHERE 1=1");
+
+        // Thêm điều kiện lọc nếu có
+        if (productName != null && !productName.trim().isEmpty()) {
+            sql.append(" AND p.product_name LIKE ?");
+        }
+
+        try {
+            PreparedStatement stmt = con.prepareStatement(sql.toString());
+
+            if (productName != null && !productName.trim().isEmpty()) {
+                stmt.setString(1, "%" + productName + "%");
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Products p = new Products();
+                p.setProduct_id(rs.getInt("product_id"));
+                p.setProduct_name(rs.getString("product_name"));
+                p.setCategoryName(rs.getString("category_name"));
+                p.setPrice(rs.getInt("price"));
+                p.setUnit(rs.getString("unit"));
+                p.setStock_quantity(rs.getInt("stock_quantity"));
+                productList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
+    }
+
+//    public List<Products> addProductToCart(String productName){
+//        List<Products> productList = new ArrayList<>();
+//        try {
+//            
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return productList;
+//    }
 }

@@ -7,10 +7,12 @@ package controller;
 import dao.SalesDAO;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import model.Customers;
+import model.Products;
 import view.SalesForm;
 
 public class SalesController {
@@ -74,6 +76,22 @@ public class SalesController {
         } catch (Exception e) {
             e.printStackTrace();
             javax.swing.JOptionPane.showMessageDialog(salesView, "Lỗi tìm kiếm khách hàng: " + e.getMessage());
+        }
+    }
+
+    public void searchProduct() {
+        try {
+            // Lấy dữ liệu người dùng chọn trên giao diện
+            String productName = salesView.getTxtTimSP().getText().trim();
+
+            // Gọi DAO
+            List<Products> results = salesDAO.searchProduct(productName);
+
+            // Hiển thị kết quả tìm kiếm lên bảng
+            salesView.loadDuLieuProduct1(results);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(salesView, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
     }
 }

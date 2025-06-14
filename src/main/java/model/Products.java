@@ -18,6 +18,9 @@ public class Products {
 
     //thêm phục vụ tìm kiếm
     private String categoryName;
+    
+    //thêm phục vụ bán hàng
+    private int selling_price;
     public Products() {
     }
 
@@ -84,6 +87,14 @@ public class Products {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public int getSelling_price() {
+        return selling_price;
+    }
+
+    public void setSelling_price(int selling_price) {
+        this.selling_price = selling_price;
     }
     
     

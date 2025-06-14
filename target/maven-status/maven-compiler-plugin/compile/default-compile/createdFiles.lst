@@ -3,6 +3,7 @@ view\StoreForm$16.class
 view\LoginForm.class
 com\raven\chart\ModelChartLine.class
 com\raven\swing\shadow\ShadowRenderer.class
+view\SalesForm$13.class
 view\SalesForm$2.class
 com\raven\swing\shadow\GraphicsUtilities.class
 com\raven\swing\Table$2.class
@@ -29,6 +30,7 @@ com\raven\swing\MenuItem.class
 view\StoreForm$21.class
 com\raven\chart\ModelChartPie.class
 controller\SalesController.class
+view\SalesForm$10.class
 com\raven\swing\ModernScrollBarUI.class
 view\StoreForm$19.class
 view\StoreForm$2.class
@@ -84,6 +86,7 @@ com\raven\swing\ScrollBar.class
 view\SalesForm$4.class
 model\Category.class
 com\raven\chart\ChartLine.class
+view\SalesForm$11.class
 view\StoreForm$9.class
 com\raven\swing\ModernScrollBarUI$InvisibleScrollBarButton.class
 com\raven\chart\ChartPie.class
@@ -97,6 +100,7 @@ view\LoginForm$3.class
 view\StoreForm$15.class
 view\StoreForm$20.class
 com\raven\main\Main$2.class
+view\SalesForm$12.class
 com\raven\event\EventMenuSelected.class
 view\ThongKeView.class
 com\raven\model\ModelStaff.class
@@ -105,3 +109,4 @@ view\LoginForm$4.class
 view\StoreForm$14.class
 com\raven\main\Main$3.class
 com\raven\component\Profile.class
+view\SalesForm$9.class
