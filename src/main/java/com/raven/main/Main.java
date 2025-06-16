@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import model.Session;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
@@ -31,6 +32,7 @@ public class Main extends javax.swing.JFrame {
 
     public Main() {
         initComponents();
+        displayEmployeeName();
         layout = new MigLayout("fill", "0[fill]0", "0[fill]0");
         main = new MainForm();
         menu = new MenuLayout();
@@ -124,6 +126,9 @@ public class Main extends javax.swing.JFrame {
         });
     }
 
+    private void displayEmployeeName() {
+        String employeeName = Session.getInstance().getEmployeeName();
+    }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

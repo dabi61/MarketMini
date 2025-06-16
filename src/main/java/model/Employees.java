@@ -30,6 +30,12 @@ public class Employees {
         this.phone = phone;
         this.email = email;
     }
+    
+    public Employees(int employee_id, String employee_name, String password) {
+        this.employee_id = employee_id;
+        this.employee_name = employee_name;
+        this.password = password;
+    }
 
     public int getEmployee_id() {
         return employee_id;

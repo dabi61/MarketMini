@@ -26,6 +26,7 @@ import javax.swing.table.DefaultTableModel;
 import model.Customers;
 import model.DBConnection;
 import model.Products;
+import model.Session;
 
 /**
  *
@@ -47,6 +48,18 @@ public class SalesForm extends javax.swing.JPanel {
         loadDuLieuProduct();
         initCustomerSuggestionPopup();
         initTableDonHang();
+        enty();
+    }
+
+    private void enty() {
+        txtTongTienHang.setText("0");
+        txtGiamGia.setText("0");
+        txtKhachCanTra.setText("0");
+        txtKhachTra.setText("0");
+        txtTienThua.setText("0");
+        txtTimKiemKhachHang.setText("");
+        txtPoint.setText("");
+        chkDungPoint.setSelected(false);
     }
 
     private void initController() {
@@ -138,7 +151,7 @@ public class SalesForm extends javax.swing.JPanel {
 
     private void initTableDonHang() {
         DefaultTableModel modelDonHang = new DefaultTableModel(
-                new Object[]{"Tên sản phẩm", "Giá bán", "Số lượng"}, 0
+                new Object[]{"Mã sản phẩm", "Tên sản phẩm", "Giá bán", "Số lượng"}, 0
         );
         tblDonHangView.setModel(modelDonHang);
     }
@@ -177,10 +190,10 @@ public class SalesForm extends javax.swing.JPanel {
             DefaultTableModel tb = new DefaultTableModel(td, 0);
             while (rs.next()) {
                 Vector vt = new Vector();
-                vt.add(rs.getString("product_id"));
+                vt.add(rs.getInt("product_id"));
                 vt.add(rs.getString("product_name"));
                 vt.add(rs.getString("category_name"));
-                vt.add(rs.getString("price"));
+                vt.add(rs.getInt("price"));
                 vt.add(rs.getString("stock_quantity"));
                 vt.add(rs.getString("unit"));
                 tb.addRow(vt);
@@ -223,8 +236,8 @@ public class SalesForm extends javax.swing.JPanel {
         DefaultTableModel modelDonHang = (DefaultTableModel) tblDonHangView.getModel();
         int tongTien = 0;
         for (int i = 0; i < modelDonHang.getRowCount(); i++) {
-            int gia = Integer.parseInt(modelDonHang.getValueAt(i, 1).toString());
-            int soLuong = Integer.parseInt(modelDonHang.getValueAt(i, 2).toString());
+            int gia = Integer.parseInt(modelDonHang.getValueAt(i, 2).toString());
+            int soLuong = Integer.parseInt(modelDonHang.getValueAt(i, 3).toString());
             tongTien += gia * soLuong;
         }
         txtTongTienHang.setText(String.valueOf(tongTien));
@@ -299,6 +312,28 @@ public class SalesForm extends javax.swing.JPanel {
         return txtKhachTra;
     }
 
+    public JTextField getTxtGiamGia() {
+        return txtGiamGia;
+    }
+
+    public JTextField getTxtKhachCanTra() {
+        return txtKhachCanTra;
+    }
+
+    public JTextField getTxtTongTienHang() {
+        return txtTongTienHang;
+    }
+
+    public int getEmployeeId() {
+        return Session.getInstance().getEmployeeId();
+    }
+
+    public JTable getTblDonHangView() {
+        return tblDonHangView;
+    }
+    
+    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -316,6 +351,7 @@ public class SalesForm extends javax.swing.JPanel {
         btnXoaSP = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
         spnSoLuong = new javax.swing.JSpinner();
+        btnDonHangMoi = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
         jPanel4 = new javax.swing.JPanel();
@@ -429,13 +465,20 @@ public class SalesForm extends javax.swing.JPanel {
 
         jLabel10.setText("Số lượng");
 
+        btnDonHangMoi.setText("Đơn hàng mới");
+        btnDonHangMoi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDonHangMoiActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel10)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -443,14 +486,15 @@ public class SalesForm extends javax.swing.JPanel {
                         .addGap(12, 12, 12)
                         .addComponent(btnThemSP, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(btnXoaSP, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jTabbedPane1)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(txtTimSP, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(btnTimSP))
-                        .addComponent(jScrollPane1)))
+                        .addComponent(btnXoaSP, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnDonHangMoi))
+                    .addComponent(jTabbedPane1)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(txtTimSP, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnTimSP))
+                    .addComponent(jScrollPane1))
                 .addContainerGap(14, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -467,7 +511,8 @@ public class SalesForm extends javax.swing.JPanel {
                     .addComponent(btnThemSP)
                     .addComponent(btnXoaSP)
                     .addComponent(jLabel10)
-                    .addComponent(spnSoLuong, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(spnSoLuong, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDonHangMoi))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addGap(17, 17, 17))
@@ -597,6 +642,11 @@ public class SalesForm extends javax.swing.JPanel {
         jLabel4.setText("Khách cần trả");
 
         btnThanhToan.setText("Thanh toán");
+        btnThanhToan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThanhToanActionPerformed(evt);
+            }
+        });
 
         btnInHoaDon.setText("In");
 
@@ -765,19 +815,19 @@ public class SalesForm extends javax.swing.JPanel {
         DefaultTableModel modelSanPham = (DefaultTableModel) tblViewProduct.getModel();
         DefaultTableModel modelDonHang = (DefaultTableModel) tblDonHangView.getModel();
 
+        int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0); // cột 0: mã sản phẩm
         String tenSanPham = (String) modelSanPham.getValueAt(selectedRow, 1); // cột 1: tên sản phẩm
-        String giaBanStr = (String) modelSanPham.getValueAt(selectedRow, 3); // cột 3: giá bán
+        int giaBanStr = (int) modelSanPham.getValueAt(selectedRow, 3); // cột 3: giá bán
         // Tăng thành giá bán
-        int giaBanGoc = Integer.parseInt(giaBanStr);
-        int giaBanTang = (int) (giaBanGoc * 1.2); // tăng 20%
+        int giaBanTang = (int) (giaBanStr * 1.2); // tăng 20%
 
         // Kiểm tra nếu sản phẩm đã có trong đơn hàng thì cộng dồn số lượng
         boolean daCo = false;
         for (int i = 0; i < modelDonHang.getRowCount(); i++) {
-            String tenTrongDonHang = (String) modelDonHang.getValueAt(i, 0);
+            String tenTrongDonHang = (String) modelDonHang.getValueAt(i, 1);
             if (tenSanPham.equals(tenTrongDonHang)) {
-                int soLuongCu = (int) modelDonHang.getValueAt(i, 2);
-                modelDonHang.setValueAt(soLuongCu + soLuongThem, i, 2);
+                int soLuongCu = (int) modelDonHang.getValueAt(i, 3);
+                modelDonHang.setValueAt(soLuongCu + soLuongThem, i, 3);
                 daCo = true;
                 break;
             }
@@ -785,6 +835,7 @@ public class SalesForm extends javax.swing.JPanel {
         // Nếu chưa có thì thêm dòng mới
         if (!daCo) {
             modelDonHang.addRow(new Object[]{
+                maSanPham,
                 tenSanPham,
                 giaBanTang,
                 soLuongThem
@@ -825,8 +876,20 @@ public class SalesForm extends javax.swing.JPanel {
         loadTienThua();
     }//GEN-LAST:event_btnTienThuaTraKhachActionPerformed
 
+    private void btnThanhToanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanActionPerformed
+        salesController.insertOrder();
+        loadDuLieuProduct();
+    }//GEN-LAST:event_btnThanhToanActionPerformed
+
+    private void btnDonHangMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDonHangMoiActionPerformed
+        DefaultTableModel model = (DefaultTableModel) tblDonHangView.getModel();
+        model.setRowCount(0);
+        enty();
+    }//GEN-LAST:event_btnDonHangMoiActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnDonHangMoi;
     private javax.swing.JButton btnInHoaDon;
     private javax.swing.JButton btnThanhToan;
     private javax.swing.JButton btnThemKhachHang;

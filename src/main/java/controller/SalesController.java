@@ -6,6 +6,9 @@ package controller;
 
 import dao.SalesDAO;
 import java.sql.Connection;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -93,5 +96,60 @@ public class SalesController {
             e.printStackTrace();
             JOptionPane.showMessageDialog(salesView, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
+    }
+
+    // Phần add point khi mua hàng của khách chưa hoàn thiện
+    // gợi ý: bảng order thêm 1 trường là tiền khách phải trả để lưu, tránh gây xung đột giữa tổng tiền hàng và tiền thực nhận
+    public void insertOrder() {
+        try {
+            // Lấy dữ liệu từ form
+            int employeeId = salesView.getEmployeeId();
+            // Lấy ngày hiện tại theo múi giờ Việt Nam
+            ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+            LocalDate localDate = LocalDate.now(zoneId);
+            Date orderDate = Date.valueOf(localDate); // java.sql.Date
+            String totalAmountStr = salesView.getTxtTongTienHang().getText().trim();
+            int totalAmount = Integer.parseInt(totalAmountStr);
+            String customerName = salesView.getTxtTimKiemKhachHang().getText().trim();
+            int customerId = salesDAO.getCustomerIdByName(customerName);
+
+            if (customerId == -1) {
+                JOptionPane.showMessageDialog(salesView, "Không tìm thấy khách hàng: " + customerName);
+                return;
+            }
+
+            // Chèn đơn hàng vào DB
+            int orderId = salesDAO.insertOrder(employeeId, orderDate, totalAmount, customerId);
+            if (orderId == -1) {
+                JOptionPane.showMessageDialog(salesView, "Không thể tạo đơn hàng!");
+                return;
+            }
+
+            // Lấy dữ liệu sản phẩm từ bảng JTable
+            DefaultTableModel tableModel = (DefaultTableModel) salesView.getTblDonHangView().getModel();
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                int productId = Integer.parseInt(tableModel.getValueAt(i, 0).toString()); // Cột product_id
+                int quantity = Integer.parseInt(tableModel.getValueAt(i, 3).toString()); // Cột quantity
+                int unitPrice = Integer.parseInt(tableModel.getValueAt(i, 2).toString()); // Cột unit price
+
+                boolean success = salesDAO.insertOrderDetail(orderId, productId, quantity, unitPrice);
+                if (!success) {
+                    JOptionPane.showMessageDialog(salesView, "Lỗi khi lưu chi tiết sản phẩm.");
+                    return;
+                }
+                // Cập nhật tồn kho
+                boolean stockUpdated = salesDAO.updateProductStock(productId, quantity);
+                if (!stockUpdated) {
+                    JOptionPane.showMessageDialog(salesView, "Lỗi cập nhật tồn kho. Sản phẩm có thể không đủ số lượng.");
+                    return;
+                }
+            }
+
+            JOptionPane.showMessageDialog(salesView, "Thanh toán thành công!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(salesView, "Lỗi tạo đơn hàng: " + e.getMessage());
+        }
+
     }
 }

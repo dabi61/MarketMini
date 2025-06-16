@@ -8,6 +8,7 @@ import com.raven.main.Main;
 import dao.EmployeeDAO;
 import javax.swing.JOptionPane;
 import model.Employees;
+import model.Session;
 import view.LoginForm;
 import view.MainForm;
 
@@ -22,36 +23,61 @@ public class LoginController {
 
     public LoginController() {
     }
-    
+
     public LoginController(LoginForm loginForm, EmployeeDAO employeeDAO) {
         this.loginForm = loginForm;
         this.employeeDAO = employeeDAO;
     }
-    
+
     public LoginController(LoginForm loginForm) {
         this.loginForm = loginForm;
     }
 
+//    public void login() {
+//        String username = loginForm.getTxtTaiKhoan().getText();
+//        String password = loginForm.getTxtPassWord().getText();
+//
+//        Employees employee = new Employees();
+//        employee.setEmployee_name(username);
+//        employee.setPassword(password);
+//
+//        boolean isAuthenticated = employeeDAO.login(employee);
+//
+//        if (isAuthenticated) {
+//            JOptionPane.showMessageDialog(loginForm, "Đăng nhập thành công!");
+//           
+//            loginForm.dispose();
+//            
+//            Main main = new Main();
+//            main.setVisible(true);
+//        } else {
+//            JOptionPane.showMessageDialog(loginForm, "Tên đăng nhập hoặc mật khẩu không đúng!");
+//        }
+//    }
     public void login() {
-        String username = loginForm.getTxtTaiKhoan().getText();
-        String password = loginForm.getTxtPassWord().getText();
+        String username = loginForm.getTxtTaiKhoan().getText().trim();
+        String password = loginForm.getTxtPassWord().getText().trim();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(loginForm, "Vui lòng nhập tên đăng nhập và mật khẩu!");
+            return;
+        }
 
         Employees employee = new Employees();
         employee.setEmployee_name(username);
         employee.setPassword(password);
 
-        boolean isAuthenticated = employeeDAO.login(employee);
+        Employees loggedInEmployee = employeeDAO.login(employee);
 
-        if (isAuthenticated) {
+        if (loggedInEmployee != null) {
+            // Lưu thông tin nhân viên vào Session
+            Session.getInstance().setCurrentEmployee(loggedInEmployee);
             JOptionPane.showMessageDialog(loginForm, "Đăng nhập thành công!");
-           
             loginForm.dispose();
-            
             Main main = new Main();
             main.setVisible(true);
         } else {
             JOptionPane.showMessageDialog(loginForm, "Tên đăng nhập hoặc mật khẩu không đúng!");
         }
     }
-
 }

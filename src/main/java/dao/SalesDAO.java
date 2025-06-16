@@ -5,13 +5,16 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import model.Customers;
 import model.DBConnection;
+import model.Orders;
 import model.Products;
 
 /**
@@ -104,13 +107,134 @@ public class SalesDAO {
         return productList;
     }
 
-//    public List<Products> addProductToCart(String productName){
-//        List<Products> productList = new ArrayList<>();
-//        try {
-//            
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return productList;
-//    }
+    public boolean insertOrder1(int employeeId, Date orderDate, int totalAmount, int customerId, int productId, int quantity, int unitPrice) {
+        try {
+            String insertOrderSql = "INSERT INTO orders (employee_id,order_date, total_amount, customer_id) VALUES (?, ?, ?, ?)";
+            PreparedStatement orderPs = con.prepareStatement(insertOrderSql);
+            orderPs.setInt(1, employeeId);
+            orderPs.setDate(2, orderDate);
+            orderPs.setInt(3, totalAmount);
+            orderPs.setInt(4, customerId);
+            int orderResult = orderPs.executeUpdate();
+
+            // Lấy order_id được sinh ra
+            int generatedOrderId = -1;
+            ResultSet rs = orderPs.getGeneratedKeys();
+            if (rs.next()) {
+                generatedOrderId = rs.getInt(1);
+            } else {
+                throw new SQLException("Không lấy được order_id mới tạo.");
+            }
+
+            String insertOrderDetailsSql = "INSERT INTO ordersdetails (order_id,product_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
+            PreparedStatement orderDetailsPs = con.prepareStatement(insertOrderDetailsSql);
+            orderDetailsPs.setInt(1, generatedOrderId);
+            orderDetailsPs.setInt(2, productId);
+            orderDetailsPs.setInt(3, quantity);
+            orderDetailsPs.setInt(4, unitPrice);
+            int orderDetailsResult = orderDetailsPs.executeUpdate();
+
+            return orderResult > 0 && orderDetailsResult > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int insertOrder(int employeeId, Date orderDate, int totalAmount, int customerId) {
+        try {
+            String insertOrderSql = "INSERT INTO orders (employee_id, order_date, total_amount, customer_id) VALUES (?, ?, ?, ?)";
+            PreparedStatement orderPs = con.prepareStatement(insertOrderSql, Statement.RETURN_GENERATED_KEYS);
+            orderPs.setInt(1, employeeId);
+            orderPs.setDate(2, orderDate);
+            orderPs.setInt(3, totalAmount);
+            orderPs.setInt(4, customerId);
+
+            int result = orderPs.executeUpdate();
+            if (result > 0) {
+                ResultSet rs = orderPs.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1); // Trả về order_id
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1; // Lỗi
+    }
+
+    public boolean insertOrderDetail(int orderId, int productId, int quantity, int unitPrice) {
+        try {
+            String insertDetailSql = "INSERT INTO orderdetails (order_id, product_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
+            PreparedStatement ps = con.prepareStatement(insertDetailSql);
+            ps.setInt(1, orderId);
+            ps.setInt(2, productId);
+            ps.setInt(3, quantity);
+            ps.setInt(4, unitPrice);
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateProductStock(int productId, int quantitySold) {
+        String sql = "UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ? AND stock_quantity >= ?";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, quantitySold);
+            ps.setInt(2, productId);
+            ps.setInt(3, quantitySold); // tránh trừ khi không đủ hàng
+
+            int result = ps.executeUpdate();
+            return result > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public int getCustomerIdByName(String customerName) {
+        String sql = "SELECT customer_id FROM customers WHERE full_name = ?";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, customerName);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("customer_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Trả về -1 nếu không tìm thấy hoặc có lỗi
+    }
+
+    public int getCustomerPoint(int customerId) {
+        String sql = "SELECT point FROM customers WHERE customer_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("point");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean updateCustomerPoint(int customerId, int newPoint) {
+        String sql = "UPDATE customers SET point = ? WHERE customer_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, newPoint);
+            stmt.setInt(2, customerId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
