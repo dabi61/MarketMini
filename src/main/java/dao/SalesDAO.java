@@ -141,14 +141,15 @@ public class SalesDAO {
         }
     }
 
-    public int insertOrder(int employeeId, Date orderDate, int totalAmount, int customerId) {
+    public int insertOrder(int employeeId, Date orderDate, int totalAmount, int customerId, int finalAmount) {
         try {
-            String insertOrderSql = "INSERT INTO orders (employee_id, order_date, total_amount, customer_id) VALUES (?, ?, ?, ?)";
+            String insertOrderSql = "INSERT INTO orders (employee_id, order_date, total_amount, customer_id, final_amount) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement orderPs = con.prepareStatement(insertOrderSql, Statement.RETURN_GENERATED_KEYS);
             orderPs.setInt(1, employeeId);
             orderPs.setDate(2, orderDate);
             orderPs.setInt(3, totalAmount);
             orderPs.setInt(4, customerId);
+            orderPs.setInt(5, finalAmount);
 
             int result = orderPs.executeUpdate();
             if (result > 0) {
@@ -211,22 +212,8 @@ public class SalesDAO {
         return -1; // Trả về -1 nếu không tìm thấy hoặc có lỗi
     }
 
-    public int getCustomerPoint(int customerId) {
-        String sql = "SELECT point FROM customers WHERE customer_id = ?";
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, customerId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("point");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     public boolean updateCustomerPoint(int customerId, int newPoint) {
-        String sql = "UPDATE customers SET point = ? WHERE customer_id = ?";
+        String sql = "UPDATE customers SET points = ? WHERE customer_id = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, newPoint);
             stmt.setInt(2, customerId);
@@ -237,4 +224,18 @@ public class SalesDAO {
         return false;
     }
 
+    public boolean subtractCustomerPoints(int customerId, int pointsUsed) {
+        String sql = "UPDATE customers SET points = points - ? WHERE customer_id = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, pointsUsed);
+            stmt.setInt(2, customerId);
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

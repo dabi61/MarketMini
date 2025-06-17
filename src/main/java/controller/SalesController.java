@@ -112,20 +112,35 @@ public class SalesController {
             int totalAmount = Integer.parseInt(totalAmountStr);
             String customerName = salesView.getTxtTimKiemKhachHang().getText().trim();
             int customerId = salesDAO.getCustomerIdByName(customerName);
+            String pointStr = salesView.getTxtPoint().getText().trim();
+            int point = Integer.parseInt(pointStr);
 
             if (customerId == -1) {
                 JOptionPane.showMessageDialog(salesView, "Không tìm thấy khách hàng: " + customerName);
                 return;
             }
 
-            // Chèn đơn hàng vào DB
-            int orderId = salesDAO.insertOrder(employeeId, orderDate, totalAmount, customerId);
+            String finalAmountStr = salesView.getTxtKhachCanTra().getText().trim();
+            int finalAmount = Integer.parseInt(finalAmountStr);
+
+            // 1. Chèn đơn hàng vào DB
+            int orderId = salesDAO.insertOrder(employeeId, orderDate, totalAmount, customerId, finalAmount);
             if (orderId == -1) {
                 JOptionPane.showMessageDialog(salesView, "Không thể tạo đơn hàng!");
                 return;
             }
+            // 2. Tính điểm sau khi giảm giá(nếu có)
+            if (salesView.getChkDungPoint().isSelected()) {
+                int usedPoints = point;
 
-            // Lấy dữ liệu sản phẩm từ bảng JTable
+                boolean updated = salesDAO.subtractCustomerPoints(customerId, usedPoints);
+                if (!updated) {
+                    JOptionPane.showMessageDialog(salesView, "Lỗi khi trừ điểm khách hàng.");
+                    return;
+                }
+            }
+
+            // 3. Lấy dữ liệu sản phẩm từ bảng JTable
             DefaultTableModel tableModel = (DefaultTableModel) salesView.getTblDonHangView().getModel();
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 int productId = Integer.parseInt(tableModel.getValueAt(i, 0).toString()); // Cột product_id
@@ -144,7 +159,17 @@ public class SalesController {
                     return;
                 }
             }
-
+            
+            // 4. Tích điểm point cho khách hàng
+            int earnedPoints = (int) (totalAmount * 0.02);
+            int updatedPoints;
+            if (salesView.getChkDungPoint().isSelected()) {
+                updatedPoints = earnedPoints;
+            }else{
+                updatedPoints = point + earnedPoints;
+            }
+            salesDAO.updateCustomerPoint(customerId, updatedPoints);
+            
             JOptionPane.showMessageDialog(salesView, "Thanh toán thành công!");
         } catch (Exception e) {
             e.printStackTrace();

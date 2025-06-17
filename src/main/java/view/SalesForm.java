@@ -14,6 +14,7 @@ import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -331,9 +332,15 @@ public class SalesForm extends javax.swing.JPanel {
     public JTable getTblDonHangView() {
         return tblDonHangView;
     }
-    
-    
 
+    public JTextField getTxtPoint() {
+        return txtPoint;
+    }
+
+    public JCheckBox getChkDungPoint() {
+        return chkDungPoint;
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
