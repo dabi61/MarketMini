@@ -55,4 +55,8 @@ public class Session {
     public boolean isLoggedIn() {
         return currentEmployee != null;
     }
+    
+    public void logout() {
+        currentEmployee = null; // Xoá thông tin nhân viên đã đăng nhập
+    }
 }

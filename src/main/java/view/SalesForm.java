@@ -50,6 +50,7 @@ public class SalesForm extends javax.swing.JPanel {
         initCustomerSuggestionPopup();
         initTableDonHang();
         enty();
+        setMacDinh();
     }
 
     private void enty() {
@@ -61,6 +62,13 @@ public class SalesForm extends javax.swing.JPanel {
         txtTimKiemKhachHang.setText("");
         txtPoint.setText("");
         chkDungPoint.setSelected(false);
+    }
+    
+    private void setMacDinh() {
+        txtTongTienHang.setEnabled(false);
+        txtGiamGia.setEnabled(false);
+        txtKhachCanTra.setEnabled(false);
+        txtTienThua.setEnabled(false);
     }
 
     private void initController() {

@@ -43,6 +43,7 @@ public class StoreForm extends javax.swing.JPanel {
     public StoreForm() {
         initComponents();
         initController();
+        setMacDinh();
     }
 
     private void initController() {
@@ -214,7 +215,7 @@ public class StoreForm extends javax.swing.JPanel {
 
     private void loadDuLieuNhap() {
         try {
-            setMacDinh();
+            //setMacDinh();
             tblViewNhapHang.removeAll();
             con = DBConnection.getConnection();
             //String sql = "SELECT * FROM products";
@@ -360,7 +361,7 @@ public class StoreForm extends javax.swing.JPanel {
         txtDonViKho.setText("");
     }
 
-    private void setMacDinh() {
+    public void setMacDinh() {
         txtTenSPNhap.setEnabled(false);
         txtSoLuongNhap.setEnabled(false);
         txtGiaNhap.setEnabled(false);
@@ -1175,6 +1176,7 @@ public class StoreForm extends javax.swing.JPanel {
             if (status == "them") {
                 importsController.addImport();
                 loadDuLieuNhap();
+                
             } else if (status == "sua") {
                 importsController.updateImport();
                 enty();

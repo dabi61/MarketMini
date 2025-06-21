@@ -11,7 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import model.Session;
@@ -19,6 +21,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
+import view.LoginForm;
 import view.SalesForm;
 import view.StoreForm;
 
@@ -117,10 +120,23 @@ public class Main extends javax.swing.JFrame {
                     main.show(new ThongKeView());
                 } else if (index == 1) {
                     main.show(new Form_2());
-                }else if (index == 6) {
+                } else if (index == 6) {
                     main.show(new StoreForm());
-                }else if (index == 7){
+                } else if (index == 7) {
                     main.show(new SalesForm());
+                } else if (index == 9) {
+                    int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn đăng xuất?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        Session.getInstance().logout(); // Xoá nhân viên đang đăng nhập
+
+                        // Đóng cửa sổ chính
+                        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(menu); // hoặc main nếu nó là component
+                        topFrame.dispose();
+
+                        // Mở lại LoginForm
+                        LoginForm loginForm = new LoginForm();
+                        loginForm.setVisible(true);
+                    }
                 }
             }
         });
@@ -129,6 +145,7 @@ public class Main extends javax.swing.JFrame {
     private void displayEmployeeName() {
         String employeeName = Session.getInstance().getEmployeeName();
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

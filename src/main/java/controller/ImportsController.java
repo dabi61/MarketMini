@@ -57,17 +57,20 @@ public class ImportsController {
         String NhanVienNhap = importsView.getCboNhanVienNhap().getItemAt(0);
 
         if (supplierName == null || supplierName.equals("--Chọn nhà cung cấp")) {
-            throw new IllegalArgumentException("Vui lòng chọn một nhà cung cấp hợp lệ!");
+            JOptionPane.showMessageDialog(importsView, "Vui lòng chọn một nhà cung cấp hợp lệ!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return;
         }
         Integer supplierId = supplierMap.get(supplierName); // Lấy ID từ supplierMap
 
         if (categoryName == null || categoryName.equals("--Chọn loại hàng")) {
-            throw new IllegalArgumentException("Vui lòng chọn một loại hàng hợp lệ!");
+            JOptionPane.showMessageDialog(importsView, "Vui lòng chọn một loại hàng hợp lệ!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return;
         }
         Integer categoryId = categoryMap.get(categoryName);
 
         if (fullname == null || fullname.equals("--Chọn nhân viên")) {
-            throw new IllegalArgumentException("Vui lòng chọn một nhân viên hợp lệ!");
+            JOptionPane.showMessageDialog(importsView, "Vui lòng chọn một nhân viên hợp lệ!", "Thiếu thông tin", JOptionPane.WARNING_MESSAGE);
+            return;
         }
         Integer employeeId = employeeMap.get(fullname);
 
@@ -82,6 +85,17 @@ public class ImportsController {
             return;
         }
         try {
+            // Kiểm tra số lượng và giá nhập có phải là số hợp lệ
+            if (!soLuongNhap.matches("\\d+")) {
+                JOptionPane.showMessageDialog(importsView, "Số lượng nhập phải là số nguyên dương!", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (!giaNhap.matches("\\d+")) {
+                JOptionPane.showMessageDialog(importsView, "Giá nhập phải là số nguyên dương!", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             int soLuong = Integer.parseInt(soLuongNhap);
             int gia = Integer.parseInt(giaNhap);
             java.sql.Date ngayNhap = new java.sql.Date(utilDate.getTime());
@@ -92,7 +106,7 @@ public class ImportsController {
 
             if (success) {
                 JOptionPane.showMessageDialog(importsView, "Thêm nhập hàng thành công!");
-                //showAllImports(); // Cập nhật danh sách sau khi thêm
+                importsView.setMacDinh();
             } else {
                 JOptionPane.showMessageDialog(importsView, "Thêm nhập hàng thất bại!");
             }
@@ -104,7 +118,7 @@ public class ImportsController {
 
     public void importExcelToDatabase(File file) {
         try {
-            List<String[]> dataList = ExcelImporter.readExcel(file); 
+            List<String[]> dataList = ExcelImporter.readExcel(file);
             if (dataList.size() <= 1) {
                 JOptionPane.showMessageDialog(importsView, "File Excel không có dữ liệu!");
                 return;
@@ -116,7 +130,7 @@ public class ImportsController {
             Map<String, Integer> employeeMap = importsView.getEmployeeMap();
 
             int successCount = 0; // Đếm số dòng nhập thành công
-            
+
             // Bỏ dòng tiêu đề
             for (int i = 1; i < dataList.size(); i++) {
                 String[] row = dataList.get(i);
@@ -157,7 +171,7 @@ public class ImportsController {
             }
 
             JOptionPane.showMessageDialog(importsView,
-                "Nhập từ Excel hoàn tất!\nĐã nhập thành công: " + successCount + " sản phẩm.");
+                    "Nhập từ Excel hoàn tất!\nĐã nhập thành công: " + successCount + " sản phẩm.");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -246,7 +260,7 @@ public class ImportsController {
 
             if (success) {
                 JOptionPane.showMessageDialog(importsView, "Cập nhật đơn nhập thành công!");
-                // importsView.loadImportsTable(); // hoặc gọi hàm để reload bảng nếu bạn có
+                importsView.setMacDinh();
             } else {
                 JOptionPane.showMessageDialog(importsView, "Cập nhật thất bại. Kiểm tra lại dữ liệu.");
             }

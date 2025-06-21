@@ -43,6 +43,11 @@ public class SalesController {
             return;
         }
 
+        if (!phoneNumber.matches("\\d+")) {
+            JOptionPane.showMessageDialog(salesView, "Số điện thoại chỉ được chứa chữ số.", "Dữ liệu không hợp lệ", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         Customers customer = new Customers(phoneNumber, fullName);
         boolean success = salesDAO.addCustomer(customer);
 
@@ -159,17 +164,17 @@ public class SalesController {
                     return;
                 }
             }
-            
+
             // 4. Tích điểm point cho khách hàng
             int earnedPoints = (int) (totalAmount * 0.02);
             int updatedPoints;
             if (salesView.getChkDungPoint().isSelected()) {
                 updatedPoints = earnedPoints;
-            }else{
+            } else {
                 updatedPoints = point + earnedPoints;
             }
             salesDAO.updateCustomerPoint(customerId, updatedPoints);
-            
+
             JOptionPane.showMessageDialog(salesView, "Thanh toán thành công!");
         } catch (Exception e) {
             e.printStackTrace();

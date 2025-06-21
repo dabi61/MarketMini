@@ -45,25 +45,6 @@ public class ExcelImporter {
         return dataList;
     }
 
-//    private static String getCellValue(Cell cell) {
-//        return switch (cell.getCellType()) {
-//            case STRING ->
-//                cell.getStringCellValue();
-//            case NUMERIC ->
-//                DateUtil.isCellDateFormatted(cell)
-//                ? cell.getDateCellValue().toString()
-//                : String.valueOf((long) cell.getNumericCellValue());
-//            case BOOLEAN ->
-//                String.valueOf(cell.getBooleanCellValue());
-//            case FORMULA ->
-//                cell.getCellFormula();
-//            case BLANK ->
-//                "";
-//            default ->
-//                cell.toString();
-//        };
-//    }
-
     private static String getCellValue(Cell cell) {
         return switch (cell.getCellType()) {
             case STRING ->
