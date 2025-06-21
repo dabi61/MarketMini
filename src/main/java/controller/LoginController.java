@@ -33,30 +33,9 @@ public class LoginController {
         this.loginForm = loginForm;
     }
 
-//    public void login() {
-//        String username = loginForm.getTxtTaiKhoan().getText();
-//        String password = loginForm.getTxtPassWord().getText();
-//
-//        Employees employee = new Employees();
-//        employee.setEmployee_name(username);
-//        employee.setPassword(password);
-//
-//        boolean isAuthenticated = employeeDAO.login(employee);
-//
-//        if (isAuthenticated) {
-//            JOptionPane.showMessageDialog(loginForm, "Đăng nhập thành công!");
-//           
-//            loginForm.dispose();
-//            
-//            Main main = new Main();
-//            main.setVisible(true);
-//        } else {
-//            JOptionPane.showMessageDialog(loginForm, "Tên đăng nhập hoặc mật khẩu không đúng!");
-//        }
-//    }
     public void login() {
         String username = loginForm.getTxtTaiKhoan().getText().trim();
-        String password = loginForm.getTxtPassWord().getText().trim();
+        String password = loginForm.getTxtPass().getText().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(loginForm, "Vui lòng nhập tên đăng nhập và mật khẩu!");

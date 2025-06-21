@@ -3,6 +3,7 @@ package view;
 import com.toedter.calendar.JDateChooser;
 import controller.ImportsController;
 import dao.ImportsDAO;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -62,7 +64,7 @@ public class StoreForm extends javax.swing.JPanel {
 
             cboLoaiHangNhap.removeAllItems();
             cboLoaiHangNhap.addItem("--Chọn loại hàng");
-            
+
             cboLoaiHangNhapTim.removeAllItems();
             cboLoaiHangNhapTim.addItem("--Chọn loại hàng");
 
@@ -71,7 +73,7 @@ public class StoreForm extends javax.swing.JPanel {
                 int categoryId = rs.getInt("category_id"); // Lấy ID dưới dạng int
                 cboLoaiHangNhap.addItem(categoryName);
                 categoryMap.put(categoryName, categoryId); // Lưu vào map với value là Integer
-                
+
                 cboLoaiHangNhapTim.addItem(categoryName);
                 categoryMap.put(categoryName, categoryId);
             }
@@ -112,7 +114,7 @@ public class StoreForm extends javax.swing.JPanel {
 
             cboNCCNhap.removeAllItems();
             cboNCCNhap.addItem("--Chọn nhà cung cấp");
-            
+
             cboNCCNhapTim.removeAllItems();
             cboNCCNhapTim.addItem("--Chọn nhà cung cấp");
 
@@ -121,7 +123,7 @@ public class StoreForm extends javax.swing.JPanel {
                 int supplierId = rs.getInt("supplier_id");
                 cboNCCNhap.addItem(supplierName);
                 supplierMap.put(supplierName, supplierId);
-                
+
                 cboNCCNhapTim.addItem(supplierName);
                 supplierMap.put(supplierName, supplierId);
             }
@@ -209,7 +211,7 @@ public class StoreForm extends javax.swing.JPanel {
     public JDateChooser getjDateTimTu() {
         return jDateTimTu;
     }
-    
+
     private void loadDuLieuNhap() {
         try {
             setMacDinh();
@@ -250,7 +252,7 @@ public class StoreForm extends javax.swing.JPanel {
         }
     }
 
-    public void loadDuLieuNhap1(List<Imports> results){
+    public void loadDuLieuNhap1(List<Imports> results) {
         try {
             setMacDinhKho(); // Nếu bạn có dùng để reset các trường
 
@@ -279,7 +281,7 @@ public class StoreForm extends javax.swing.JPanel {
             e.printStackTrace();
         }
     }
-    
+
     public void loadDuLieuKho() {
         try {
             setMacDinhKho();
@@ -922,6 +924,11 @@ public class StoreForm extends javax.swing.JPanel {
         jLabel9.setText("Loại hàng");
 
         btnNhapExcel.setText("Nhập excel");
+        btnNhapExcel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNhapExcelActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Tìm kiếm");
 
@@ -1303,6 +1310,31 @@ public class StoreForm extends javax.swing.JPanel {
     private void btnTimNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimNhapActionPerformed
         importsController.searchImport();
     }//GEN-LAST:event_btnTimNhapActionPerformed
+
+    private void btnNhapExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNhapExcelActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file Excel để nhập");
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            // Kiểm tra phần mở rộng
+            if (!selectedFile.getName().toLowerCase().endsWith(".xlsx")) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn file Excel định dạng .xlsx", "Định dạng không hợp lệ", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Gọi controller xử lý nhập Excel
+            try {
+                importsController.importExcelToDatabase(selectedFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi nhập Excel: " + e.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnNhapExcelActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -177,6 +177,7 @@ public class SalesForm extends javax.swing.JPanel {
         }
     }
 
+    // Gợi ý: load thêm 1 trường vào table là giá sau giảm giá nối bảng promotion, để từ đó tính ở nút thêm để đỡ phải sửa logic
     public void loadDuLieuProduct() {
         try {
             tblViewProduct.removeAll();

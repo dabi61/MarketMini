@@ -6,15 +6,18 @@ package controller;
 
 import com.toedter.calendar.JDateChooser;
 import dao.ImportsDAO;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import model.DBConnection;
+import model.ExcelImporter;
 import model.Imports;
 import model.Products;
 import view.StoreForm;
@@ -96,6 +99,69 @@ public class ImportsController {
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(importsView, "Lỗi khi xử lý: " + e.getMessage());
+        }
+    }
+
+    public void importExcelToDatabase(File file) {
+        try {
+            List<String[]> dataList = ExcelImporter.readExcel(file); 
+            if (dataList.size() <= 1) {
+                JOptionPane.showMessageDialog(importsView, "File Excel không có dữ liệu!");
+                return;
+            }
+
+            // Lấy map từ View
+            Map<String, Integer> supplierMap = importsView.getSupplierMap();
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            Map<String, Integer> employeeMap = importsView.getEmployeeMap();
+
+            int successCount = 0; // Đếm số dòng nhập thành công
+            
+            // Bỏ dòng tiêu đề
+            for (int i = 1; i < dataList.size(); i++) {
+                String[] row = dataList.get(i);
+                if (row.length < 8) {
+                    continue; // Thiếu cột
+                }
+                String tenSP = row[0].trim();
+                int soLuong = Integer.parseInt(row[1].trim());
+                int giaNhap = Integer.parseInt(row[2].trim());
+                String donVi = row[3].trim();
+
+                java.util.Date utilDate = new SimpleDateFormat("yyyy-MM-dd").parse(row[4].trim());
+                java.sql.Date ngayNhap = new java.sql.Date(utilDate.getTime());
+
+                String supplierName = row[5].trim();
+                String categoryName = row[6].trim();
+                String employeeName = row[7].trim();
+
+                Integer supplierId = supplierMap.get(supplierName);
+                Integer categoryId = categoryMap.get(categoryName);
+                Integer employeeId = employeeMap.get(employeeName);
+
+                if (supplierId == null || categoryId == null || employeeId == null) {
+                    System.err.println("Không tìm thấy ID tương ứng cho dòng " + (i + 1));
+                    continue;
+                }
+
+                boolean success = importsDAO.insertOrUpdateImport(
+                        tenSP, categoryId, donVi, soLuong, giaNhap,
+                        ngayNhap, supplierId, employeeId
+                );
+
+                if (success) {
+                    successCount++; //Nhập thành công
+                } else {
+                    System.err.println("Không thể thêm dòng Excel số " + (i + 1));
+                }
+            }
+
+            JOptionPane.showMessageDialog(importsView,
+                "Nhập từ Excel hoàn tất!\nĐã nhập thành công: " + successCount + " sản phẩm.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi nhập Excel: " + e.getMessage());
         }
     }
 
