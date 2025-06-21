@@ -1,0 +1,653 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package view;
+
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import dao.CustomerDAO;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JComboBox;
+import dao.EmployeeDAO;
+import dao.ExpenseDAO;
+import dao.OrderDAO;
+import dao.ProductDAO;
+import dao.PromotionDAO;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Date;
+import model.Employees;
+import java.util.List;
+import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import model.ButtonEditor;
+import model.ButtonRenderer;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+/**
+ *
+ * @author RAVEN
+ */
+public class Expense extends javax.swing.JPanel {
+    private boolean isEditing = false;
+private int editingOrderId = -1; // lưu id đơn hàng đang sửa (nếu cần)
+private int editingPromotionId = -1;
+
+    private JComboBox<String> cboEmployeeName;
+private Map<String, Integer> employeeNameIdMap = new HashMap<>();
+    /**
+     * Creates new form Form_2
+     */
+    public Expense() {
+        initComponents();
+        
+        loadTablePromotions();
+        disableFields();
+        btnXoa.setEnabled(false);
+        btnBoQua.setEnabled(false);
+        btnLuu.setEnabled(false);
+        btnSua.setEnabled(false);
+    }
+    
+    private void disableFields() {
+    txtNuoc.setEnabled(false);
+    dtpNgayTao.setEnabled(false);
+    txtMatBang.setEditable(false);
+    txtDien.setEditable(false);
+    txtSuaChua.setEditable(false);
+}
+    
+    private void clearFields() {
+    txtNuoc.setText("");
+    dtpNgayTao.setDate(new Date());
+    txtMatBang.setText("");
+    txtDien.setText("");
+    txtSuaChua.setText("");
+}
+
+private void enableButtons() {
+    btnThem.setEnabled(true);
+    btnSua.setEnabled(true);
+    btnXoa.setEnabled(true);
+    btnLuu.setEnabled(true);
+    btnBoQua.setEnabled(true);
+    btnTimKiem.setEnabled(true);
+}
+
+    
+    private void enableFields() {
+    txtNuoc.setEnabled(true);
+    dtpNgayTao.setEnabled(true);
+    txtSuaChua.setEditable(true);
+    txtMatBang.setEditable(true);
+    txtDien.setEditable(true);
+}
+
+    public void exportPromotionsToExcel() {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+    int userSelection = fileChooser.showSaveDialog(this);
+
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = fileChooser.getSelectedFile();
+        String filePath = fileToSave.getAbsolutePath();
+        if (!filePath.endsWith(".xlsx")) {
+            filePath += ".xlsx";
+        }
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Chi phí hàng tháng");
+
+            TableModel model = jTable1.getModel();
+
+            // Style cho tiêu đề
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            // Tạo dòng tiêu đề
+            Row headerRow = sheet.createRow(0);
+            for (int col = 0; col < model.getColumnCount(); col++) {
+                Cell cell = headerRow.createCell(col);
+                cell.setCellValue(model.getColumnName(col));
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Ghi dữ liệu
+            for (int row = 0; row < model.getRowCount(); row++) {
+                Row excelRow = sheet.createRow(row + 1);
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Cell cell = excelRow.createCell(col);
+                    Object value = model.getValueAt(row, col);
+                    cell.setCellValue(value != null ? value.toString() : "");
+                }
+            }
+
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(new File(filePath));
+            }
+
+            JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
+        }
+    }
+}
+
+    
+
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        btnTimKiem = new javax.swing.JButton();
+        txtMatBang = new javax.swing.JTextField();
+        btnBoQua = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        txtTK1 = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        dtpNgayTao = new com.toedter.calendar.JDateChooser();
+        btnLuu = new javax.swing.JButton();
+        btnSua = new javax.swing.JButton();
+        btnThem = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        btnXuat = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        txtNuoc = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        txtDien = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        txtSuaChua = new javax.swing.JTextField();
+        jMonthChooser1 = new com.toedter.calendar.JMonthChooser();
+
+        setBackground(new java.awt.Color(255, 255, 255));
+        setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "ID", "Thời gian", "Tiền điện", "Tiên thuê mặt bằng", "Tiền nước", "Tiền sửa chữa"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jTable1);
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        btnTimKiem.setText("Tìm kiếm");
+        btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTimKiemActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnTimKiem, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 80, 100, -1));
+
+        txtMatBang.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtMatBangActionPerformed(evt);
+            }
+        });
+        jPanel1.add(txtMatBang, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 220, 179, -1));
+
+        btnBoQua.setText("Bỏ qua");
+        btnBoQua.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBoQuaActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnBoQua, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 270, -1, -1));
+
+        btnXoa.setText("Xóa");
+        btnXoa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXoaActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnXoa, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 270, -1, -1));
+
+        txtTK1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtTK1ActionPerformed(evt);
+            }
+        });
+        jPanel1.add(txtTK1, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 80, 140, -1));
+
+        jLabel6.setText("Tìm kiếm");
+        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 80, -1, -1));
+
+        jLabel4.setText("Tiên thuê mặt bằng: ");
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 220, 112, 19));
+
+        jLabel2.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(51, 153, 0));
+        jLabel2.setText("Quản lý chi phí hàng tháng");
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 20, -1, -1));
+        jPanel1.add(dtpNgayTao, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 120, 172, -1));
+
+        btnLuu.setText("Lưu");
+        btnLuu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLuuActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnLuu, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 270, -1, -1));
+
+        btnSua.setText("Sửa");
+        btnSua.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSuaActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnSua, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 270, -1, -1));
+
+        btnThem.setText("Thêm");
+        btnThem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThemActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnThem, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 270, -1, -1));
+
+        jLabel3.setText("Ngày tạo đơn: ");
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 120, -1, -1));
+
+        btnXuat.setText("Xuất Excel");
+        btnXuat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXuatActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnXuat, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 30, -1, -1));
+
+        jLabel8.setText("Tiền nước:");
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 120, -1, -1));
+
+        txtNuoc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNuocActionPerformed(evt);
+            }
+        });
+        jPanel1.add(txtNuoc, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 120, 180, -1));
+
+        jLabel1.setText("Tiền điện:");
+        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 170, -1, -1));
+        jPanel1.add(txtDien, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 170, 180, -1));
+
+        jLabel5.setText("Tiền sửa chữa:");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 170, -1, -1));
+        jPanel1.add(txtSuaChua, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 170, 180, -1));
+        jPanel1.add(jMonthChooser1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 80, -1, -1));
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(55, 55, 55)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addComponent(jScrollPane1)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+    }// </editor-fold>//GEN-END:initComponents
+    private int getOrderIdFromTable(int row) {
+    // Lấy giá trị cột 0 (order_id) ở dòng row, ép kiểu về int
+    return (int) jTable1.getModel().getValueAt(row, 0);
+}
+
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+        // TODO add your handling code here:int selectedRow = jTable1.getSelectedRow();
+        int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow >= 0) {
+        // Lấy dữ liệu từ bảng
+        int editingExpenseId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
+        editingOrderId = editingExpenseId;
+        String monthYearStr = jTable1.getValueAt(selectedRow, 1).toString();
+        String electricity = jTable1.getValueAt(selectedRow, 2).toString();
+        String rent = jTable1.getValueAt(selectedRow, 3).toString();
+        String water = jTable1.getValueAt(selectedRow, 4).toString();
+        String repair = jTable1.getValueAt(selectedRow, 5).toString();
+
+        // Gán dữ liệu lên form
+        dtpNgayTao.setDate(java.sql.Date.valueOf(monthYearStr));
+        txtDien.setText(electricity);
+        txtMatBang.setText(rent);
+        txtNuoc.setText(water);
+        txtSuaChua.setText(repair);
+        
+        isEditing = true;
+
+        enableFields(); // Nếu có hàm bật lại các trường nhập liệu
+        btnThem.setEnabled(false);
+        btnSua.setEnabled(true);
+        btnXoa.setEnabled(true);
+        btnLuu.setEnabled(false);
+        btnBoQua.setEnabled(true);
+    }
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
+        // TODO add your handling code here:
+        enableFields();
+        clearFields(); 
+        btnThem.setEnabled(false);
+        btnXoa.setEnabled(false);
+        btnSua.setEnabled(false);
+        btnLuu.setEnabled(true);
+        btnBoQua.setEnabled(true);
+        isEditing = false; // đang thêm mới
+    editingOrderId = -1;
+    }//GEN-LAST:event_btnThemActionPerformed
+
+    private void txtMatBangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMatBangActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtMatBangActionPerformed
+
+    private void txtTK1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTK1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtTK1ActionPerformed
+
+    private void btnLuuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLuuActionPerformed
+        // TODO add your handling code here:
+          if (txtDien.getText().trim().isEmpty() || 
+        txtMatBang.getText().trim().isEmpty() || 
+        txtNuoc.getText().trim().isEmpty() || 
+        txtSuaChua.getText().trim().isEmpty()) {
+        
+        JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ thông tin!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+
+    try {
+        // Parse dữ liệu
+        Date monthYear = new java.sql.Date(dtpNgayTao.getDate().getTime());
+        int electricity = Integer.parseInt(txtDien.getText().trim());
+        int rent = Integer.parseInt(txtMatBang.getText().trim());
+        int water = Integer.parseInt(txtNuoc.getText().trim());
+        int repair = Integer.parseInt(txtSuaChua.getText().trim());
+
+        model.Expense expense = new model.Expense();
+        expense.setMonthYear(monthYear);
+        expense.setElectricityCost(electricity);
+        expense.setRentCost(rent);
+        expense.setWaterCost(water);
+        expense.setRepairCost(repair);
+
+        ExpenseDAO dao = new ExpenseDAO();
+        boolean success;
+
+        if (isEditing) {
+            expense.setExpenseId(editingOrderId); // Đặt ID để update
+            success = dao.update(expense);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Cập nhật chi phí thành công!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật chi phí thất bại!");
+            }
+        } else {
+            success = dao.insert(expense);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Thêm chi phí thành công!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Thêm chi phí thất bại!");
+            }
+        }
+
+        if (success) {
+            loadTablePromotions();
+            disableFields();
+            clearFields();
+            enableButtons();
+            isEditing = false;
+            editingOrderId = -1;
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+    }
+    }//GEN-LAST:event_btnLuuActionPerformed
+
+    private void btnTimKiemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimKiemActionPerformed
+        // TODO add your handling code here:
+        String keyword = txtTK1.getText().trim();
+
+    try {
+        ExpenseDAO dao = new ExpenseDAO();
+        List<Object[]> list;
+
+        if (keyword.isEmpty()) {
+            // Nếu không nhập gì, load lại toàn bộ dữ liệu
+            list = dao.getAllExpenses();
+        } else {
+            // Tìm kiếm theo chuỗi định dạng yyyy-mm hoặc yyyy
+            list = dao.searchByMonthOrYear(keyword);
+        }
+
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        model.setColumnIdentifiers(new String[] {
+            "ID", "Tháng/Năm", "Chi phí điện", "Chi phí mặt bằng", "Chi phí nước", "Chi phí sửa chữa"
+        });
+
+        for (Object[] row : list) {
+            model.addRow(row);
+        }
+
+        jTable1.setModel(model);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Lỗi tìm kiếm: " + e.getMessage());
+    }
+    }//GEN-LAST:event_btnTimKiemActionPerformed
+
+    private void btnSuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSuaActionPerformed
+        // TODO add your handling code here:
+        btnThem.setEnabled(false);
+        btnSua.setEnabled(false);
+        btnXoa.setEnabled(false);
+        btnBoQua.setEnabled(true);
+        btnLuu.setEnabled(true);
+        enableFields();
+        isEditing = true; // đang sửa
+    // Lưu lại ID đơn hàng đang sửa nếu có (ví dụ lấy từ dòng chọn)
+    int selectedRow = jTable1.getSelectedRow();
+    if (selectedRow != -1) {
+        // Giả sử bạn có hàm lấy ID đơn hàng từ bảng
+        editingOrderId = getOrderIdFromTable(selectedRow); 
+    }
+    }//GEN-LAST:event_btnSuaActionPerformed
+
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
+        // TODO add your handling code here:
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa bản ghi này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+    if (confirm == JOptionPane.YES_OPTION) {
+        try {
+            ExpenseDAO dao = new ExpenseDAO();
+            boolean success = dao.delete(editingOrderId);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Xóa chi phí thành công!");
+                loadTablePromotions();
+                clearFields();
+                disableFields();
+                enableButtons();
+                isEditing = false;
+                editingOrderId = -1;
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa chi phí thất bại!");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+        }
+    }
+
+    }//GEN-LAST:event_btnXoaActionPerformed
+
+    private void btnBoQuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBoQuaActionPerformed
+        // TODO add your handling code here:
+        clearFields();
+        loadTablePromotions();
+        disableFields();
+        btnThem.setEnabled(true);
+        btnXoa.setEnabled(true);
+        btnSua.setEnabled(true);
+        btnLuu.setEnabled(true);
+        btnBoQua.setEnabled(true);
+    }//GEN-LAST:event_btnBoQuaActionPerformed
+
+    private void btnXuatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXuatActionPerformed
+        // TODO add your handling code here:
+        exportPromotionsToExcel();
+    }//GEN-LAST:event_btnXuatActionPerformed
+
+    private void txtNuocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNuocActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNuocActionPerformed
+    private void loadTablePromotions() {
+    try {
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Không cho sửa dữ liệu trong bảng
+            }
+        };
+
+        model.setColumnIdentifiers(new String[] {
+            "Mã chi phí", "Tháng", "Tiền điện", "Tiền thuê", "Tiền nước", "Chi phí sửa chữa"
+        });
+
+        ExpenseDAO dao = new ExpenseDAO(); // bạn cần tạo class này
+        List<Object[]> list = dao.getAllExpenses(); // trả về List<Object[]>
+
+        for (Object[] row : list) {
+            model.addRow(row);
+        }
+
+        jTable1.setModel(model);
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách chi phí!");
+    }
+}
+
+
+
+
+
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnBoQua;
+    private javax.swing.JButton btnLuu;
+    private javax.swing.JButton btnSua;
+    private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnTimKiem;
+    private javax.swing.JButton btnXoa;
+    private javax.swing.JButton btnXuat;
+    private com.toedter.calendar.JDateChooser dtpNgayTao;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
+    private com.toedter.calendar.JMonthChooser jMonthChooser1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField txtDien;
+    private javax.swing.JTextField txtMatBang;
+    private javax.swing.JTextField txtNuoc;
+    private javax.swing.JTextField txtSuaChua;
+    private javax.swing.JTextField txtTK1;
+    // End of variables declaration//GEN-END:variables
+}

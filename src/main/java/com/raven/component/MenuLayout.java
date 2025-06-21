@@ -34,7 +34,7 @@ public class MenuLayout extends javax.swing.JPanel {
         menu1.addMouseListener(new MouseAdapter() {
         });
     }
-
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -54,7 +54,7 @@ public class MenuLayout extends javax.swing.JPanel {
             .addComponent(menu1, javax.swing.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
-
+    
     @Override
     protected void paintComponent(Graphics grphcs) {
         Graphics2D g2 = (Graphics2D) grphcs;
@@ -68,8 +68,10 @@ public class MenuLayout extends javax.swing.JPanel {
     public Menu getMenu() {
         return menu1;
     }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.raven.component.Menu menu1;
     // End of variables declaration//GEN-END:variables
 }
+

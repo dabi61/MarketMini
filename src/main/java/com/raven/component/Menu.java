@@ -89,22 +89,7 @@ public class Menu extends javax.swing.JPanel {
     private int x;
     private int y;
 
-    public void initMoving(JFrame fram) {
-        profile1.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent me) {
-                x = me.getX();
-                y = me.getY();
-            }
-
-        });
-        profile1.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent me) {
-                fram.setLocation(me.getXOnScreen() - x, me.getYOnScreen() - y);
-            }
-        });
-    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.raven.swing.ListMenu<String> listMenu1;

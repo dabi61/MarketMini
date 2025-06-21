@@ -49,7 +49,7 @@ public class MainForm extends javax.swing.JPanel {
     }
 
     public void initMoving(JFrame fram) {
-        header1.initMoving(fram);
+        
     }
 
     public void show(Component com) {

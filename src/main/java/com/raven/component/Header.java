@@ -26,6 +26,11 @@ public class Header extends javax.swing.JPanel {
 
         cmdMenu.setBackground(new java.awt.Color(250, 250, 250));
         cmdMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/menu.png"))); // NOI18N
+        cmdMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdMenuActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -44,6 +49,10 @@ public class Header extends javax.swing.JPanel {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cmdMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdMenuActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmdMenuActionPerformed
 
     @Override
     protected void paintComponent(Graphics grphcs) {

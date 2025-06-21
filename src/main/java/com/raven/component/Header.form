@@ -43,6 +43,9 @@
           <Image iconType="3" name="/com/raven/icon/menu.png"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmdMenuActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -4,6 +4,8 @@ import com.raven.component.MenuLayout;
 import com.raven.event.EventMenuSelected;
 import view.ThongKeView;
 import view.Form_2;
+import view.Expense;
+import view.Order;
 import view.MainForm;
 import com.raven.swing.WindowSnapshots;
 import java.awt.BorderLayout;
@@ -18,6 +20,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
+import view.Promotion;
 
 public class Main extends javax.swing.JFrame {
 
@@ -33,7 +36,7 @@ public class Main extends javax.swing.JFrame {
         main = new MainForm();
         menu = new MenuLayout();
         windowSnapshots = new WindowSnapshots(Main.this);
-        menu.getMenu().initMoving(Main.this);
+        
         main.initMoving(Main.this);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(main);
@@ -114,6 +117,16 @@ public class Main extends javax.swing.JFrame {
                 } else if (index == 1) {
                     main.show(new Form_2());
                 }
+                else if (index == 3) {
+                    main.show(new Order());
+                }
+                else if (index == 4) {
+                    main.show(new Promotion());
+                }
+                else if (index == 5) {
+                    main.show(new Expense());
+                }
+                
             }
         });
     }
