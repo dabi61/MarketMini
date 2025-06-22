@@ -52,8 +52,8 @@ public class StoreForm extends javax.swing.JPanel {
             if (con == null) {
                 throw new SQLDataException("Failed to establish database connection");
             }
-            ImportsDAO importsDAO = new ImportsDAO(con); // Khởi tạo ImportsDAO
-            importsController = new ImportsController(importsDAO, this); // Khởi tạo ImportsController
+            ImportsDAO importsDAO = new ImportsDAO(con); 
+            importsController = new ImportsController(importsDAO, this); 
         } catch (SQLDataException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khởi tạo controller: " + e.getMessage());

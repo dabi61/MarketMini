@@ -1,15 +1,18 @@
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\main\Main.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\StoreForm.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\DisplayDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableCell_Status.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\WindowSnapshots.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\EmployeeDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\model\ModelStaff.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\DisplayController.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\mycompany\marketmini\MarketMini.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\component\Header.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\ListMenu.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\shadow\GraphicsUtilities.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\SalesController.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\DBConnection.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\DisplayForm.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\LabelStatus.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ItemChartLine.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\component\Profile.java
@@ -49,6 +52,7 @@ C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\LoginFor
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\model\Model_Menu.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableCell.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ItemChartPie.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\ProductDisplay.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\MenuItem.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ModelChartPie.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableHeader.java
