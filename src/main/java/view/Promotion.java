@@ -5,6 +5,7 @@
  */
 package view;
 
+import controller.PromotionController;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -21,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComboBox;
 import dao.EmployeeDAO;
-import dao.OrderDAO;
 import dao.ProductDAO;
 import dao.PromotionDAO;
 import java.awt.Desktop;
@@ -33,13 +33,13 @@ import java.util.Arrays;
 import java.util.Date;
 import model.Employees;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import model.ButtonEditor;
-import model.ButtonRenderer;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -108,74 +108,31 @@ private void enableButtons() {
     public void exportPromotionsToExcel() {
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+
     int userSelection = fileChooser.showSaveDialog(this);
+    if (userSelection != JFileChooser.APPROVE_OPTION) return;
 
-    if (userSelection == JFileChooser.APPROVE_OPTION) {
-        File fileToSave = fileChooser.getSelectedFile();
-        String filePath = fileToSave.getAbsolutePath();
-        if (!filePath.endsWith(".xlsx")) {
-            filePath += ".xlsx";
-        }
-
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Danh sách khuyến mãi");
-            TableModel model = jTable1.getModel();
-
-            // Tạo kiểu cho header
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerFont.setFontHeightInPoints((short) 12);
-            headerFont.setColor(IndexedColors.WHITE.getIndex());
-            headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.BLUE.getIndex());
-            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setAlignment(HorizontalAlignment.CENTER);
-            headerStyle.setBorderTop(BorderStyle.THIN);
-            headerStyle.setBorderBottom(BorderStyle.THIN);
-            headerStyle.setBorderLeft(BorderStyle.THIN);
-            headerStyle.setBorderRight(BorderStyle.THIN);
-
-            // Ghi header
-            Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < model.getColumnCount(); col++) {
-                Cell cell = headerRow.createCell(col);
-                cell.setCellValue(model.getColumnName(col));
-                cell.setCellStyle(headerStyle);
-            }
-
-            // Ghi dữ liệu
-            for (int row = 0; row < model.getRowCount(); row++) {
-                Row excelRow = sheet.createRow(row + 1);
-                for (int col = 0; col < model.getColumnCount(); col++) {
-                    Cell cell = excelRow.createCell(col);
-                    Object value = model.getValueAt(row, col);
-                    cell.setCellValue(value != null ? value.toString() : "");
-                }
-            }
-
-            // Tự động điều chỉnh độ rộng cột
-            for (int col = 0; col < model.getColumnCount(); col++) {
-                sheet.autoSizeColumn(col);
-            }
-
-            // Ghi ra file
-            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-                workbook.write(fileOut);
-            }
-
-            // Mở file nếu có thể
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(new File(filePath));
-            }
-
-            JOptionPane.showMessageDialog(this, "Xuất file Excel thành công:\n" + filePath);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
-        }
+    File fileToSave = fileChooser.getSelectedFile();
+    String filePath = fileToSave.getAbsolutePath();
+    if (!filePath.endsWith(".xlsx")) {
+        filePath += ".xlsx";
     }
+
+    try {
+        PromotionController controller = new PromotionController();
+        controller.exportToExcel(jTable1.getModel(), new File(filePath));
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(new File(filePath));
+        }
+
+        JOptionPane.showMessageDialog(this, "Xuất file Excel thành công:\n" + filePath);
+    } catch (IOException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
+    }   catch (SQLException ex) {
+            Logger.getLogger(Promotion.class.getName()).log(Level.SEVERE, null, ex);
+        }
 }
 
     
@@ -440,7 +397,6 @@ private void enableButtons() {
         return;
     }
 
-    // Kiểm tra discount là số nguyên
     String discountStr = txtGiamGia.getText().trim();
     if (!discountStr.matches("\\d+")) {
         JOptionPane.showMessageDialog(this, "Phần trăm giảm giá phải là số nguyên!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
@@ -451,40 +407,25 @@ private void enableButtons() {
         String promotionName = txtTenKM.getText().trim();
         Date startDate = new java.sql.Date(dtpNgayTao.getDate().getTime());
         Date endDate = new java.sql.Date(dtpNgayHH.getDate().getTime());
+        String productName = txtTenSP.getText().trim();
         int discount = Integer.parseInt(discountStr);
 
-        String productName = txtTenSP.getText().trim();
-        ProductDAO productDAO = new ProductDAO();
-        int productId = productDAO.getProductIdByName(productName);
-        int originalPrice = productDAO.getPriceByProductId(productId);
+        PromotionController controller = new PromotionController();
+        boolean success = controller.savePromotion(
+            isEditing,
+            editingPromotionId,
+            promotionName,
+            startDate,
+            endDate,
+            productName,
+            discount
+        );
 
-        // Tính giá sau giảm
-        int discountedPrice = originalPrice * (100 - discount) / 100;
-
-        // Tạo đối tượng Promotion
-        model.Promotion promotion = new model.Promotion();
-
-        promotion.setPromotionName(promotionName);
-        promotion.setStartDate(startDate);
-        promotion.setEndDate(endDate);
-        promotion.setProductId(productId);
-        promotion.setDiscount(discount);
-        promotion.setOriginalPrice(originalPrice);
-        promotion.setDiscountedPrice(discountedPrice);
-
-        PromotionDAO promotionDAO = new PromotionDAO();
-        boolean success;
-
-        if (isEditing) {
-            promotion.setPromotionId(editingPromotionId);
-            success = promotionDAO.update(promotion);
-            JOptionPane.showMessageDialog(this,
-                success ? "Cập nhật khuyến mãi thành công!" : "Cập nhật khuyến mãi thất bại!");
-        } else {
-            success = promotionDAO.insert(promotion);
-            JOptionPane.showMessageDialog(this,
-                success ? "Thêm khuyến mãi thành công!" : "Thêm khuyến mãi thất bại!");
-        }
+        JOptionPane.showMessageDialog(this,
+            success
+                ? (isEditing ? "Cập nhật khuyến mãi thành công!" : "Thêm khuyến mãi thành công!")
+                : (isEditing ? "Cập nhật khuyến mãi thất bại!" : "Thêm khuyến mãi thất bại!")
+        );
 
         if (success) {
             loadTablePromotions();
@@ -506,35 +447,11 @@ private void enableButtons() {
         String keyword = txtTK1.getText().trim();
 
     try {
-        PromotionDAO dao = new PromotionDAO();
-        List<Object[]> results;
+        PromotionController controller = new PromotionController();
+        DefaultTableModel model = controller.searchPromotions(keyword);
 
-        if (keyword.isEmpty()) {
-            // Nếu không nhập gì → hiển thị lại toàn bộ danh sách
-            results = dao.getAllPromotionsWithProductNames();
-        } else {
-            // Tìm theo tên khuyến mãi
-            results = dao.searchByPromotionName(keyword);
-
-            if (results.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy khuyến mãi phù hợp!");
-            }
-        }
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        model.setColumnIdentifiers(new String[]{
-            "promotion_id", "Tên khuyến mãi", "Ngày bắt đầu", "Ngày kết thúc",
-            "Tên sản phẩm", "Giảm giá (%)", "Giá sau giảm", "Giá gốc"
-        });
-
-        for (Object[] row : results) {
-            model.addRow(row);
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy khuyến mãi phù hợp!");
         }
 
         jTable1.setModel(model);
@@ -575,8 +492,8 @@ private void enableButtons() {
     }
 
     try {
-        PromotionDAO dao = new PromotionDAO();
-        boolean success = dao.delete(editingPromotionId);
+        PromotionController controller = new PromotionController();
+        boolean success = controller.deletePromotion(editingPromotionId);
 
         if (success) {
             JOptionPane.showMessageDialog(this, "Xóa khuyến mãi thành công!");
@@ -617,27 +534,9 @@ private void enableButtons() {
     }//GEN-LAST:event_txtTenKMActionPerformed
     private void loadTablePromotions() {
     try {
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Không cho sửa dữ liệu trong bảng
-            }
-        };
-
-        model.setColumnIdentifiers(new String[] {
-            "Promotion ID", "Tên khuyến mãi", "Ngày tạo mã", "Ngày hết hạn",
-            "Tên sản phẩm", "Giảm (%)", "Giá gốc", "Giá sau giảm"
-        });
-
-        PromotionDAO dao = new PromotionDAO();
-        List<Object[]> list = dao.getAllPromotionsWithProductNames();
-
-        for (Object[] row : list) {
-            model.addRow(row);
-        }
-
+        PromotionController controller = new PromotionController();
+        DefaultTableModel model = controller.getPromotionTableModel();
         jTable1.setModel(model);
-
     } catch (SQLException e) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách khuyến mãi!");

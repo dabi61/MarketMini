@@ -5,6 +5,7 @@
  */
 package view;
 
+import controller.ExpenseController;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -22,7 +23,6 @@ import java.util.Map;
 import javax.swing.JComboBox;
 import dao.EmployeeDAO;
 import dao.ExpenseDAO;
-import dao.OrderDAO;
 import dao.ProductDAO;
 import dao.PromotionDAO;
 import java.awt.Desktop;
@@ -39,8 +39,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import model.ButtonEditor;
-import model.ButtonRenderer;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -118,60 +116,9 @@ private void enableButtons() {
             filePath += ".xlsx";
         }
 
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Chi phí hàng tháng");
-
-            TableModel model = jTable1.getModel();
-
-            // Style cho tiêu đề
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerFont.setColor(IndexedColors.WHITE.getIndex());
-            headerStyle.setFont(headerFont);
-            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
-            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setAlignment(HorizontalAlignment.CENTER);
-            headerStyle.setBorderTop(BorderStyle.THIN);
-            headerStyle.setBorderBottom(BorderStyle.THIN);
-            headerStyle.setBorderLeft(BorderStyle.THIN);
-            headerStyle.setBorderRight(BorderStyle.THIN);
-
-            // Tạo dòng tiêu đề
-            Row headerRow = sheet.createRow(0);
-            for (int col = 0; col < model.getColumnCount(); col++) {
-                Cell cell = headerRow.createCell(col);
-                cell.setCellValue(model.getColumnName(col));
-                cell.setCellStyle(headerStyle);
-            }
-
-            // Ghi dữ liệu
-            for (int row = 0; row < model.getRowCount(); row++) {
-                Row excelRow = sheet.createRow(row + 1);
-                for (int col = 0; col < model.getColumnCount(); col++) {
-                    Cell cell = excelRow.createCell(col);
-                    Object value = model.getValueAt(row, col);
-                    cell.setCellValue(value != null ? value.toString() : "");
-                }
-            }
-
-            for (int i = 0; i < model.getColumnCount(); i++) {
-                sheet.autoSizeColumn(i);
-            }
-
-            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
-                workbook.write(fileOut);
-            }
-
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(new File(filePath));
-            }
-
-            JOptionPane.showMessageDialog(this, "Xuất Excel thành công:\n" + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
-        }
+        TableModel model = jTable1.getModel();
+        ExpenseController controller = new ExpenseController();
+        controller.exportToExcel(model, filePath);
     }
 }
 
@@ -427,7 +374,7 @@ private void enableButtons() {
 
     private void btnLuuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLuuActionPerformed
         // TODO add your handling code here:
-          if (txtDien.getText().trim().isEmpty() || 
+        if (txtDien.getText().trim().isEmpty() || 
         txtMatBang.getText().trim().isEmpty() || 
         txtNuoc.getText().trim().isEmpty() || 
         txtSuaChua.getText().trim().isEmpty()) {
@@ -437,47 +384,33 @@ private void enableButtons() {
     }
 
     try {
-        // Parse dữ liệu
         Date monthYear = new java.sql.Date(dtpNgayTao.getDate().getTime());
         int electricity = Integer.parseInt(txtDien.getText().trim());
         int rent = Integer.parseInt(txtMatBang.getText().trim());
         int water = Integer.parseInt(txtNuoc.getText().trim());
         int repair = Integer.parseInt(txtSuaChua.getText().trim());
 
-        model.Expense expense = new model.Expense();
-        expense.setMonthYear(monthYear);
-        expense.setElectricityCost(electricity);
-        expense.setRentCost(rent);
-        expense.setWaterCost(water);
-        expense.setRepairCost(repair);
-
-        ExpenseDAO dao = new ExpenseDAO();
-        boolean success;
-
-        if (isEditing) {
-            expense.setExpenseId(editingOrderId); // Đặt ID để update
-            success = dao.update(expense);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Cập nhật chi phí thành công!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật chi phí thất bại!");
-            }
-        } else {
-            success = dao.insert(expense);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Thêm chi phí thành công!");
-            } else {
-                JOptionPane.showMessageDialog(this, "Thêm chi phí thất bại!");
-            }
-        }
+        ExpenseController controller = new ExpenseController();
+        boolean success = controller.saveExpense(
+            isEditing,
+            editingOrderId,  // ID dùng để update
+            monthYear,
+            electricity,
+            rent,
+            water,
+            repair
+        );
 
         if (success) {
-            loadTablePromotions();
+            JOptionPane.showMessageDialog(this, isEditing ? "Cập nhật chi phí thành công!" : "Thêm chi phí thành công!");
+            loadTablePromotions(); // vẫn giữ tên hàm này như bạn yêu cầu
             disableFields();
             clearFields();
             enableButtons();
             isEditing = false;
             editingOrderId = -1;
+        } else {
+            JOptionPane.showMessageDialog(this, isEditing ? "Cập nhật chi phí thất bại!" : "Thêm chi phí thất bại!");
         }
 
     } catch (Exception e) {
@@ -491,34 +424,9 @@ private void enableButtons() {
         String keyword = txtTK1.getText().trim();
 
     try {
-        ExpenseDAO dao = new ExpenseDAO();
-        List<Object[]> list;
-
-        if (keyword.isEmpty()) {
-            // Nếu không nhập gì, load lại toàn bộ dữ liệu
-            list = dao.getAllExpenses();
-        } else {
-            // Tìm kiếm theo chuỗi định dạng yyyy-mm hoặc yyyy
-            list = dao.searchByMonthOrYear(keyword);
-        }
-
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        model.setColumnIdentifiers(new String[] {
-            "ID", "Tháng/Năm", "Chi phí điện", "Chi phí mặt bằng", "Chi phí nước", "Chi phí sửa chữa"
-        });
-
-        for (Object[] row : list) {
-            model.addRow(row);
-        }
-
+        ExpenseController controller = new ExpenseController();
+        DefaultTableModel model = controller.searchExpenses(keyword);
         jTable1.setModel(model);
-
     } catch (Exception e) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(this, "Lỗi tìm kiếm: " + e.getMessage());
@@ -547,8 +455,8 @@ private void enableButtons() {
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa bản ghi này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
     if (confirm == JOptionPane.YES_OPTION) {
         try {
-            ExpenseDAO dao = new ExpenseDAO();
-            boolean success = dao.delete(editingOrderId);
+            ExpenseController controller = new ExpenseController();
+            boolean success = controller.deleteExpense(editingOrderId);
 
             if (success) {
                 JOptionPane.showMessageDialog(this, "Xóa chi phí thành công!");
@@ -591,31 +499,9 @@ private void enableButtons() {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtNuocActionPerformed
     private void loadTablePromotions() {
-    try {
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Không cho sửa dữ liệu trong bảng
-            }
-        };
-
-        model.setColumnIdentifiers(new String[] {
-            "Mã chi phí", "Tháng", "Tiền điện", "Tiền thuê", "Tiền nước", "Chi phí sửa chữa"
-        });
-
-        ExpenseDAO dao = new ExpenseDAO(); // bạn cần tạo class này
-        List<Object[]> list = dao.getAllExpenses(); // trả về List<Object[]>
-
-        for (Object[] row : list) {
-            model.addRow(row);
-        }
-
-        jTable1.setModel(model);
-
-    } catch (SQLException e) {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách chi phí!");
-    }
+    ExpenseController controller = new ExpenseController();
+    DefaultTableModel model = controller.getExpenseTableModel();
+    jTable1.setModel(model);
 }
 
 

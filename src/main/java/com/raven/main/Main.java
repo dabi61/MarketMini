@@ -5,7 +5,6 @@ import com.raven.event.EventMenuSelected;
 import view.ThongKeView;
 import view.Form_2;
 import view.Expense;
-import view.Order;
 import view.MainForm;
 import com.raven.swing.WindowSnapshots;
 import java.awt.BorderLayout;
@@ -116,9 +115,6 @@ public class Main extends javax.swing.JFrame {
                     main.show(new ThongKeView());
                 } else if (index == 1) {
                     main.show(new Form_2());
-                }
-                else if (index == 3) {
-                    main.show(new Order());
                 }
                 else if (index == 4) {
                     main.show(new Promotion());
