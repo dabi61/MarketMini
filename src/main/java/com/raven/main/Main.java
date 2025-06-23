@@ -22,7 +22,9 @@ import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
 import view.DisplayForm;
+import view.Expense;
 import view.LoginForm;
+import view.Promotion;
 import view.SalesForm;
 import view.StoreForm;
 
@@ -121,6 +123,10 @@ public class Main extends javax.swing.JFrame {
                     main.show(new ThongKeView());
                 } else if (index == 1) {
                     main.show(new Form_2());
+                } else if (index == 3) {
+                    main.show(new Promotion());
+                } else if (index == 4) {
+                    main.show(new Expense());
                 } else if (index == 5) {
                     main.show(new DisplayForm());
                 } else if (index == 6) {

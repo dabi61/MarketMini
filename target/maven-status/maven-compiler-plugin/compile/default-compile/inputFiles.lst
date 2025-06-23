@@ -1,6 +1,7 @@
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\main\Main.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\StoreForm.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\DisplayDAO.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\Promotion.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableCell_Status.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\WindowSnapshots.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\EmployeeDAO.java
@@ -19,14 +20,17 @@ C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\com
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\ImportsController.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\ImportsDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\ImageAvatar.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\CustomerDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ChartLine.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableCell_Image.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\event\EventMenuSelected.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Session.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\shadow\ShadowRenderer.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\ExpenseDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Products.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\Button.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Customers.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\ExpenseController.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\ThongKeController.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\ModernScrollBarUI.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\component\MenuLayout.java
@@ -40,6 +44,7 @@ C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swi
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\Form_2.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ChartPie.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\Table.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\PromotionDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Category.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\ExcelImporter.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\SalesForm.java
@@ -47,6 +52,9 @@ C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\SalesDAO.
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Suppliers.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\component\Menu.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ModelChartLine.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Expense.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\PromotionController.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\dao\ProductDAO.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Employees.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\LoginForm.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\model\Model_Menu.java
@@ -54,6 +62,8 @@ C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swi
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ItemChartPie.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\ProductDisplay.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\MenuItem.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\view\Expense.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\chart\ModelChartPie.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\com\raven\swing\TableHeader.java
 C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\controller\LoginController.java
+C:\Users\Admin\Documents\NetBeansProjects\MarketMini\src\main\java\model\Promotion.java
