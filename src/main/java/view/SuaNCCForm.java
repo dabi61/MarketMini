@@ -4,20 +4,79 @@
  */
 package view;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JTextPane;
+import model.Suppliers;
+
 /**
  *
  * @author Admin
  */
 public class SuaNCCForm extends javax.swing.JDialog {
 
+    public List<String> errors = new ArrayList();
+    public JButton getBtnHuy() {
+        return btnHuy;
+    }
+
+    public JButton getBtnLuu() {
+        return btnLuu;
+    }
+
     /**
      * Creates new form SuaNCCForm
      */
     public SuaNCCForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
-        initComponents();
+        initComponents();        
+        txtMa.setEnabled(false);
     }
+    
+    public void setValue(Suppliers sp){      
+        txtMa.setText(String.valueOf(sp.getSupplier_id()));
+        txtPhone.setText(sp.getPhone());
+        txtEmail.setText(sp.getEmail());
+        txtTen.setText(sp.getSupplier_name());
+        txtAddress.setText(sp.getAddress());                                 
+    }
+    public Suppliers getModel() throws Exception{
+        errors = new ArrayList();
+        String manccVal = txtMa.getText();
+        String sdt = txtPhone.getText();
+        String email = txtEmail.getText();
+        String tenncc = txtTen.getText();
+        String diachi = txtAddress.getText();
+        String emailRegex = "^[a-zA-Z][\\w.-]*@[\\w]+(\\.[\\w]{2,})+$";
+        String phoneRegex ="^(84|0[3|5|7|8|9])[0-9]{8}$";
 
+        if(manccVal == null || manccVal.isEmpty()){
+            errors.add("Mã nhà cung cấp không được để trống");
+        }
+        if(sdt == null || sdt.isEmpty()){
+            errors.add("Số điện thoại không được để trống");
+        }else if(!sdt.matches(phoneRegex)){
+            errors.add("Số điện thoại không hợp lệ");
+        }
+        if(email == null || email.isEmpty()){
+            errors.add("Email không được để trống");
+        }else if(!email.matches(emailRegex)){
+            errors.add("Email không hợp lệ");
+        }
+        if(tenncc == null || tenncc.isEmpty()){
+            errors.add("Tên nhà cung cấp không được để trống");
+        }
+        if(diachi == null || diachi.isEmpty()){
+            errors.add("Địa chỉ nhà cung cấp không được để trống");
+        }
+               
+        if(!errors.isEmpty()){
+            throw new Exception(errors.toString());
+        }
+        var sup = new Suppliers(Integer.parseInt(manccVal), tenncc, sdt, diachi, email);
+        return sup;
+    };
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -31,21 +90,21 @@ public class SuaNCCForm extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        txtMa = new javax.swing.JTextPane();
         jLabel3 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextPane2 = new javax.swing.JTextPane();
+        txtTen = new javax.swing.JTextPane();
         jLabel5 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTextPane3 = new javax.swing.JTextPane();
+        txtPhone = new javax.swing.JTextPane();
         jLabel4 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jTextPane4 = new javax.swing.JTextPane();
+        txtAddress = new javax.swing.JTextPane();
         jLabel6 = new javax.swing.JLabel();
         jScrollPane5 = new javax.swing.JScrollPane();
-        jTextPane5 = new javax.swing.JTextPane();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        txtEmail = new javax.swing.JTextPane();
+        btnLuu = new javax.swing.JButton();
+        btnHuy = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Sửa nhà cung cấp\n");
@@ -75,31 +134,31 @@ public class SuaNCCForm extends javax.swing.JDialog {
 
         jLabel2.setText("Mã NCC");
 
-        jScrollPane1.setViewportView(jTextPane1);
+        jScrollPane1.setViewportView(txtMa);
 
         jLabel3.setText("Tên NCC");
 
-        jScrollPane2.setViewportView(jTextPane2);
+        jScrollPane2.setViewportView(txtTen);
 
         jLabel5.setText("Điện Thoại");
 
-        jScrollPane3.setViewportView(jTextPane3);
+        jScrollPane3.setViewportView(txtPhone);
 
         jLabel4.setText("Địa chỉ");
 
-        jScrollPane4.setViewportView(jTextPane4);
+        jScrollPane4.setViewportView(txtAddress);
 
         jLabel6.setText("Email");
 
-        jScrollPane5.setViewportView(jTextPane5);
+        jScrollPane5.setViewportView(txtEmail);
 
-        jButton1.setBackground(new java.awt.Color(0, 204, 51));
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("Lưu thay đổi");
+        btnLuu.setBackground(new java.awt.Color(0, 204, 51));
+        btnLuu.setForeground(new java.awt.Color(255, 255, 255));
+        btnLuu.setText("Lưu thay đổi");
 
-        jButton2.setBackground(new java.awt.Color(255, 51, 51));
-        jButton2.setForeground(new java.awt.Color(255, 255, 255));
-        jButton2.setText("Hủy bỏ");
+        btnHuy.setBackground(new java.awt.Color(255, 51, 51));
+        btnHuy.setForeground(new java.awt.Color(255, 255, 255));
+        btnHuy.setText("Hủy bỏ");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -114,7 +173,7 @@ public class SuaNCCForm extends javax.swing.JDialog {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(130, 130, 130)
-                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -135,9 +194,9 @@ public class SuaNCCForm extends javax.swing.JDialog {
                                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(178, 178, 178)
-                        .addComponent(jButton1)
+                        .addComponent(btnLuu)
                         .addGap(63, 63, 63)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(45, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -164,8 +223,8 @@ public class SuaNCCForm extends javax.swing.JDialog {
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(53, 53, 53)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnLuu, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(53, Short.MAX_VALUE))
         );
 
@@ -175,48 +234,10 @@ public class SuaNCCForm extends javax.swing.JDialog {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SuaNCCForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SuaNCCForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SuaNCCForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SuaNCCForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                SuaNCCForm dialog = new SuaNCCForm(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton btnHuy;
+    private javax.swing.JButton btnLuu;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -229,10 +250,10 @@ public class SuaNCCForm extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JTextPane jTextPane2;
-    private javax.swing.JTextPane jTextPane3;
-    private javax.swing.JTextPane jTextPane4;
-    private javax.swing.JTextPane jTextPane5;
+    private javax.swing.JTextPane txtAddress;
+    private javax.swing.JTextPane txtEmail;
+    private javax.swing.JTextPane txtMa;
+    private javax.swing.JTextPane txtPhone;
+    private javax.swing.JTextPane txtTen;
     // End of variables declaration//GEN-END:variables
 }

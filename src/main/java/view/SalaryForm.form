@@ -26,13 +26,18 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="jPanel3" alignment="1" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="cboThang" alignment="0" min="-2" pref="142" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="0" pref="1" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jPanel3" alignment="1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -46,8 +51,10 @@
                   <Component id="jPanel2" max="32767" attributes="0"/>
                   <Component id="jPanel1" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jPanel3" min="-2" pref="429" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <Component id="cboThang" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -73,9 +80,9 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jButton1" pref="61" max="32767" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jButton3" min="-2" pref="52" max="-2" attributes="0"/>
+                  <Component id="btnSua" min="-2" pref="52" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
-                  <Component id="jButton2" min="-2" pref="49" max="-2" attributes="0"/>
+                  <Component id="btnXoa" min="-2" pref="49" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="35" max="-2" attributes="0"/>
                   <Component id="jButton4" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
@@ -93,9 +100,9 @@
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jButton2" alignment="1" min="-2" pref="54" max="-2" attributes="0"/>
+                              <Component id="btnXoa" alignment="1" min="-2" pref="54" max="-2" attributes="0"/>
                               <Component id="jButton1" alignment="1" min="-2" pref="54" max="-2" attributes="0"/>
-                              <Component id="jButton3" alignment="1" min="-2" pref="54" max="-2" attributes="0"/>
+                              <Component id="btnSua" alignment="1" min="-2" pref="54" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -118,12 +125,12 @@
             <Property name="verticalTextPosition" type="int" value="3"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton2">
+        <Component class="javax.swing.JButton" name="btnXoa">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="2" name="D:\iconJV\trash (1).png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="X&#xf3;a&#xa;"/>
+            <Property name="text" type="java.lang.String" value="X&#xf3;a"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
@@ -131,15 +138,15 @@
             <Property name="verticalTextPosition" type="int" value="3"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnXoaActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="jButton3">
+        <Component class="javax.swing.JButton" name="btnSua">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="2" name="D:\iconJV\edit (1).png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="X&#xf3;a"/>
+            <Property name="text" type="java.lang.String" value="S&#x1eed;a"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
               <Insets value="[0, 0, 0, 0]"/>
@@ -265,15 +272,19 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="jScrollPane2" alignment="1" max="32767" attributes="0"/>
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane2" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace max="32767" attributes="0"/>
-                  <Component id="jScrollPane2" min="-2" pref="393" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jScrollPane2" pref="367" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -286,7 +297,7 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTable" name="jTable1">
+            <Component class="javax.swing.JTable" name="tblDanhsach">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                   <Table columnCount="4" rowCount="4">
@@ -302,5 +313,15 @@
         </Container>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JComboBox" name="cboThang">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
+    </Component>
   </SubComponents>
 </Form>

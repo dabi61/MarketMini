@@ -4,6 +4,10 @@
  */
 package model;
 
+import java.util.Date;
+
+
+
 /**
  *
  * @author macbook
@@ -14,23 +18,26 @@ public class Employees {
     private String employee_name;
     private String password;
     private String full_name;
+    private String sex;
     private int role;
     private String phone;
     private String email;
+    private Date date;
 
     public Employees() {
     }
-
-    public Employees(int employee_id, String employee_name, String password, String full_name, int role, String phone, String email) {
+    public Employees(int employee_id, String employee_name, String password, String full_name, String sex, int role, String phone, String email, Date date) {
         this.employee_id = employee_id;
         this.employee_name = employee_name;
         this.password = password;
         this.full_name = full_name;
+        this.sex = sex;
         this.role = role;
         this.phone = phone;
         this.email = email;
+        this.date = date;
     }
-
+    
     public int getEmployee_id() {
         return employee_id;
     }
@@ -85,6 +92,22 @@ public class Employees {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
     }
     
     

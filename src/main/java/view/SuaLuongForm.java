@@ -4,20 +4,63 @@
  */
 package view;
 
+import dao.EmployeeDAO;
+import java.math.BigDecimal;
+import java.sql.SQLDataException;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
+import model.Salary;
+
 /**
  *
  * @author Admin
  */
-public class salary1Form extends javax.swing.JDialog {
+public class SuaLuongForm extends javax.swing.JDialog {
 
+    public EmployeeDAO dao;
     /**
      * Creates new form salary1Form
      */
-    public salary1Form(java.awt.Frame parent, boolean modal) {
+    public SuaLuongForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        try {
+            dao = new EmployeeDAO();
+        } catch (SQLDataException ex) {
+            Logger.getLogger(SuaLuongForm.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
+    public JButton getBtnHuy() {
+        return btnHuy;
+    }
+
+    public JButton getBtnSua() {
+        return btnSua;
+    }
+
+    public void setValue(Salary sl, String name){
+        txtMa.setText(String.valueOf(sl.getSalary_id()));
+        txtName.setText(name);
+        txtTotalHour.setText(sl.getTotal_hours().toString());
+        txtLuongH.setText(sl.getHourly_wage().toString());
+        txtBonus.setText(sl.getBonus().toString());   
+        dateThanhtoan.setDate(sl.getPayment_date());
+    }
+    
+    public Salary getModel(){
+        String maLuong = txtMa.getText();
+        String name= txtName.getText();
+        String tongH = txtTotalHour.getText();
+        String bonus = txtBonus.getText();
+        String luongH = txtLuongH.getText();
+        Date ngayTh = dateThanhtoan.getDate();
+        Salary sl = new Salary(Integer.parseInt(maLuong), 0, new BigDecimal(tongH), new BigDecimal(luongH),
+        new BigDecimal(bonus), ngayTh, null);
+        return sl;
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -57,22 +100,23 @@ public class salary1Form extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jScrollPane8 = new javax.swing.JScrollPane();
-        jTextPane8 = new javax.swing.JTextPane();
+        txtMa = new javax.swing.JTextPane();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         jScrollPane10 = new javax.swing.JScrollPane();
-        jTextPane10 = new javax.swing.JTextPane();
+        txtTotalHour = new javax.swing.JTextPane();
         jLabel13 = new javax.swing.JLabel();
         jScrollPane11 = new javax.swing.JScrollPane();
-        jTextPane11 = new javax.swing.JTextPane();
+        txtLuongH = new javax.swing.JTextPane();
         jLabel14 = new javax.swing.JLabel();
         jScrollPane12 = new javax.swing.JScrollPane();
-        jTextPane12 = new javax.swing.JTextPane();
+        txtBonus = new javax.swing.JTextPane();
         jLabel15 = new javax.swing.JLabel();
-        jDateChooser1 = new com.toedter.calendar.JDateChooser();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        dateThanhtoan = new com.toedter.calendar.JDateChooser();
+        btnSua = new javax.swing.JButton();
+        btnHuy = new javax.swing.JButton();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        txtName = new javax.swing.JTextPane();
 
         jDialog1.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jDialog1.setTitle("Thêm nhà cung cấp mới\n");
@@ -230,33 +274,33 @@ public class salary1Form extends javax.swing.JDialog {
 
         jLabel10.setText("Mã Lương");
 
-        jScrollPane8.setViewportView(jTextPane8);
+        jScrollPane8.setViewportView(txtMa);
 
         jLabel11.setText("Tên nhân viên");
 
         jLabel12.setText("Tổng giờ làm");
 
-        jScrollPane10.setViewportView(jTextPane10);
+        jScrollPane10.setViewportView(txtTotalHour);
 
         jLabel13.setText("Lương theo h");
 
-        jScrollPane11.setViewportView(jTextPane11);
+        jScrollPane11.setViewportView(txtLuongH);
 
         jLabel14.setText("Thưởng thêm");
 
-        jScrollPane12.setViewportView(jTextPane12);
+        jScrollPane12.setViewportView(txtBonus);
 
         jLabel15.setText("Ngày thanh toán");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        btnSua.setBackground(new java.awt.Color(0, 204, 51));
+        btnSua.setForeground(new java.awt.Color(255, 255, 255));
+        btnSua.setText("Cập nhật");
 
-        jButton3.setBackground(new java.awt.Color(0, 204, 51));
-        jButton3.setForeground(new java.awt.Color(255, 255, 255));
-        jButton3.setText("Thêm");
+        btnHuy.setBackground(new java.awt.Color(255, 51, 51));
+        btnHuy.setForeground(new java.awt.Color(255, 255, 255));
+        btnHuy.setText("Hủy bỏ");
 
-        jButton4.setBackground(new java.awt.Color(255, 51, 51));
-        jButton4.setForeground(new java.awt.Color(255, 255, 255));
-        jButton4.setText("Hủy bỏ");
+        jScrollPane9.setViewportView(txtName);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -269,7 +313,7 @@ public class salary1Form extends javax.swing.JDialog {
                     .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
                     .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jScrollPane9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 99, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
@@ -289,13 +333,13 @@ public class salary1Form extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(90, 90, 90)
-                        .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(64, 64, 64))
             .addGroup(layout.createSequentialGroup()
                 .addGap(227, 227, 227)
-                .addComponent(jButton3)
+                .addComponent(btnSua)
                 .addGap(75, 75, 75)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -317,19 +361,15 @@ public class salary1Form extends javax.swing.JDialog {
                     .addComponent(jLabel11)
                     .addComponent(jLabel13)
                     .addComponent(jLabel15))
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jDateChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(32, 32, 32))
         );
 
@@ -339,52 +379,14 @@ public class salary1Form extends javax.swing.JDialog {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(salary1Form.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(salary1Form.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(salary1Form.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(salary1Form.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                salary1Form dialog = new salary1Form(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
+  
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnHuy;
+    private javax.swing.JButton btnSua;
+    private com.toedter.calendar.JDateChooser dateThanhtoan;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
     private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -414,16 +416,18 @@ public class salary1Form extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JTextPane jTextPane10;
-    private javax.swing.JTextPane jTextPane11;
-    private javax.swing.JTextPane jTextPane12;
     private javax.swing.JTextPane jTextPane2;
     private javax.swing.JTextPane jTextPane3;
     private javax.swing.JTextPane jTextPane4;
     private javax.swing.JTextPane jTextPane5;
     private javax.swing.JTextPane jTextPane6;
     private javax.swing.JTextPane jTextPane7;
-    private javax.swing.JTextPane jTextPane8;
+    private javax.swing.JTextPane txtBonus;
+    private javax.swing.JTextPane txtLuongH;
+    private javax.swing.JTextPane txtMa;
+    private javax.swing.JTextPane txtName;
+    private javax.swing.JTextPane txtTotalHour;
     // End of variables declaration//GEN-END:variables
 }

@@ -4,17 +4,72 @@
  */
 package view;
 
+import controller.EmployeeController;
+import controller.SupplierController;
+import dao.EmployeeDAO;
+import dao.SupplierDAO;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.JOptionPane;
+import model.Employees;
+import model.Suppliers;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 /**
  *
  * @author Admin
  */
 public class EmployeeForm extends javax.swing.JFrame {
+    private ThemNVForm themNVForm;  
+    private SuaNVForm suaNVForm;
+    EmployeeController spController;
+    EmployeeDAO employeeDao;
+    Employees employee;
+    private Map<String, String> mapChucVu;
 
     /**
      * Creates new form EmployeeForm
      */
-    public EmployeeForm() {
+    public EmployeeForm() throws SQLException {
         initComponents();
+        mapChucVu = new HashMap();
+        mapChucVu.put("Admin", "1");
+        mapChucVu.put("Nhân viên", "2");
+        spController = new EmployeeController(this);
+        employeeDao = new EmployeeDAO();
+        themNVForm = new ThemNVForm(this, true);
+        btnThem.addActionListener(spController);
+        btnSua.addActionListener(spController);
+        btnXoa.addActionListener(spController);      
+        btnXuat.addActionListener(spController);  
+        themNVForm.getBtnThemNV().addActionListener(spController);
+        themNVForm.getBtnHuy().addActionListener(spController);
+        
+        suaNVForm = new SuaNVForm(this, true);
+        suaNVForm.getBtnLuu().addActionListener(spController);
+        suaNVForm.getBtnHuy().addActionListener(spController);
+        loadEmployee();
     }
 
     /**
@@ -27,59 +82,54 @@ public class EmployeeForm extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        btnThem = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        btnSua = new javax.swing.JButton();
+        btnNhap = new javax.swing.JButton();
+        btnXuat = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
+        txtTimKiem = new javax.swing.JTextPane();
         jButton6 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblDanhSach = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chức năng\n"));
 
-        jButton1.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
-        jButton1.setText(" Thêm");
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnThem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
+        btnThem.setText("Thêm");
+        btnThem.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnThem.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton2.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
-        jButton2.setText("Xóa\n");
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
+        btnXoa.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
+        btnXoa.setText("Xóa");
+        btnXoa.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnXoa.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton3.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
-        jButton3.setText("Xóa");
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnSua.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
+        btnSua.setText("Sửa");
+        btnSua.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSua.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton4.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
-        jButton4.setText("Nhập Excel");
-        jButton4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnNhap.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
+        btnNhap.setText("Nhập Excel");
+        btnNhap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnNhap.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnNhap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton5.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
-        jButton5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton5.setLabel("Xuất Execl");
-        jButton5.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton5.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnXuat.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
+        btnXuat.setText("Xuất Excel");
+        btnXuat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnXuat.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnXuat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -87,29 +137,29 @@ public class EmployeeForm extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
+                .addComponent(btnThem, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(35, 35, 35)
-                .addComponent(jButton4)
+                .addComponent(btnNhap)
                 .addGap(18, 18, 18)
-                .addComponent(jButton5)
+                .addComponent(btnXuat)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnXuat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnNhap, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(btnXoa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnThem, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSua, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -118,7 +168,7 @@ public class EmployeeForm extends javax.swing.JFrame {
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tên" }));
 
-        jScrollPane1.setViewportView(jTextPane1);
+        jScrollPane1.setViewportView(txtTimKiem);
 
         jButton6.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\reorder.png")); // NOI18N
         jButton6.setText("Làm mới");
@@ -149,7 +199,7 @@ public class EmployeeForm extends javax.swing.JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Danh sách nhân viên\n\n"));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblDanhSach.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -160,7 +210,7 @@ public class EmployeeForm extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(tblDanhSach);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -204,51 +254,16 @@ public class EmployeeForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(EmployeeForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(EmployeeForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(EmployeeForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(EmployeeForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new EmployeeForm().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
+    private javax.swing.JButton btnNhap;
+    private javax.swing.JButton btnSua;
+    private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnXoa;
+    private javax.swing.JButton btnXuat;
     private javax.swing.JButton jButton6;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JPanel jPanel1;
@@ -256,7 +271,287 @@ public class EmployeeForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTable tblDanhSach;
+    private javax.swing.JTextPane txtTimKiem;
     // End of variables declaration//GEN-END:variables
+
+    public void HienthiForm(String action) {
+        if("Thêm".equals(action)){
+            themNVForm.setLocationRelativeTo(this);
+            themNVForm.setVisible(true);
+        }else if("Sửa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >= 0){
+                String maNV = tblDanhSach.getValueAt(selectedRow, 0).toString();
+               String tenNV = tblDanhSach.getValueAt(selectedRow, 1).toString();
+               String pass = tblDanhSach.getValueAt(selectedRow, 2).toString();
+               String fullname = tblDanhSach.getValueAt(selectedRow, 3).toString();
+               String gt = tblDanhSach.getValueAt(selectedRow, 4).toString();
+               String role = tblDanhSach.getValueAt(selectedRow, 5).toString();
+               String sdt = tblDanhSach.getValueAt(selectedRow, 6).toString();
+               String email = tblDanhSach.getValueAt(selectedRow, 7).toString();
+               Date ngayThem = (Date) tblDanhSach.getValueAt(selectedRow, 8);
+               Employees sp = new Employees(Integer.parseInt(maNV), tenNV,pass,fullname,gt,Integer.parseInt(mapChucVu.get(role)),sdt, email, ngayThem);
+               suaNVForm.setValue(sp);
+               suaNVForm.setLocationRelativeTo(this);
+               suaNVForm.setVisible(true);
+               }           
+        }else if("Xóa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >=0){
+               String maNV = tblDanhSach.getValueAt(selectedRow, 0).toString();
+               String tenNV = tblDanhSach.getValueAt(selectedRow, 1).toString();
+               String pass = tblDanhSach.getValueAt(selectedRow, 2).toString();
+               String fullname = tblDanhSach.getValueAt(selectedRow, 3).toString();
+               String gt = tblDanhSach.getValueAt(selectedRow, 4).toString();
+               String role = tblDanhSach.getValueAt(selectedRow, 5).toString();
+               String sdt = tblDanhSach.getValueAt(selectedRow, 6).toString();
+               String email = tblDanhSach.getValueAt(selectedRow, 7).toString();
+               Date ngayThem = (Date) tblDanhSach.getValueAt(selectedRow, 8);
+               Employees sp = new Employees(Integer.parseInt(maNV), tenNV,pass,fullname,gt,Integer.parseInt(mapChucVu.get(role)),sdt, email, ngayThem);
+                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?", 
+                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if(choise == JOptionPane.YES_OPTION){
+                    employeeDao.employee_delete(sp);
+                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                    loadEmployee();
+                }              
+                        
+            }
+        }
+    }
+
+    public void AddEmployee() {
+        try{
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var employee = themNVForm.getModel();
+            // gọi hàm dao   
+            employeeDao.employee_insert(employee);
+            JOptionPane.showMessageDialog(this, "Thêm thành công");
+            loadEmployee();            
+        }catch(Exception ex){
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+
+    public void Huy() {
+        themNVForm.setVisible(false);
+        suaNVForm.setVisible(false);
+    }
+
+    public void UpdateEmployee() {
+        try{
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var employee = suaNVForm.getModel();
+            // gọi hàm dao   
+            employeeDao.employee_update(employee);
+            loadEmployee();    
+            JOptionPane.showMessageDialog(this, "Sửa thành công");
+                   
+        }catch(Exception ex){
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+
+    private void loadEmployee() {
+        employee = new Employees();
+        employee.setEmployee_name("");
+        employeeDao.employeefind(tblDanhSach,employee); 
+       
+    }
+
+     private List<String> convertToStringList(String suppliersString) {
+        // Remove square brackets and split by ", "
+        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
+        if (cleanedString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
+    }
+    private static CellStyle DinhdangHeader(XSSFSheet sheet) {
+           // Create font
+           Font font = sheet.getWorkbook().createFont();
+           font.setFontName("Times New Roman");
+           font.setBold(true);
+           font.setFontHeightInPoints((short) 12); // font size
+           font.setColor(IndexedColors.WHITE.getIndex()); // text color
+
+           // Create CellStyle
+           CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+           cellStyle.setFont(font);
+           cellStyle.setAlignment(HorizontalAlignment.CENTER);
+           cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+           cellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+           cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+           cellStyle.setBorderBottom(BorderStyle.THIN);
+           cellStyle.setWrapText(true);
+           return cellStyle;
+       }
+    private String mapRoleToName(int roleId) {
+    return switch (roleId) {
+        case 1 -> "Admin";
+        case 2 -> "Nhân viên";
+        default -> "Không rõ";
+    };
+}
+
+public void Xuatbaocao() {
+    try {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Danh sách nhân viên");
+
+        // Style tiêu đề
+        CellStyle styleTitle = workbook.createCellStyle();
+        Font fontTitle = workbook.createFont();
+        fontTitle.setFontHeightInPoints((short) 14);
+        fontTitle.setBold(true);
+        styleTitle.setFont(fontTitle);
+        styleTitle.setAlignment(HorizontalAlignment.CENTER);
+
+        // Style tiêu đề cột
+        CellStyle styleHeader = workbook.createCellStyle();
+        Font fontHeader = workbook.createFont();
+        fontHeader.setBold(true);
+        fontHeader.setColor(IndexedColors.WHITE.getIndex());
+        styleHeader.setFont(fontHeader);
+        styleHeader.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleHeader.setBorderTop(BorderStyle.THIN);
+        styleHeader.setBorderBottom(BorderStyle.THIN);
+        styleHeader.setBorderLeft(BorderStyle.THIN);
+        styleHeader.setBorderRight(BorderStyle.THIN);
+        styleHeader.setAlignment(HorizontalAlignment.CENTER);
+
+        // Style cho dữ liệu
+        CellStyle styleCell = workbook.createCellStyle();
+        styleCell.setBorderTop(BorderStyle.THIN);
+        styleCell.setBorderBottom(BorderStyle.THIN);
+        styleCell.setBorderLeft(BorderStyle.THIN);
+        styleCell.setBorderRight(BorderStyle.THIN);
+        styleCell.setVerticalAlignment(VerticalAlignment.CENTER);
+        styleCell.setWrapText(true);
+
+        // Dòng tiêu đề chính
+        Row titleRow = sheet.createRow(1);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("DANH SÁCH NHÂN VIÊN");
+        titleCell.setCellStyle(styleTitle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 9)); // Merge A2:J2
+
+        // Dòng tiêu đề bảng
+        Row headerRow = sheet.createRow(3);
+        String[] headers = { "STT", "Mã NV", "Tên Đăng Nhập", "Mật Khẩu", "Họ Tên", "Giới Tính", "Chức vụ", "SĐT", "Email", "Ngày" };
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(styleHeader);
+        }
+
+          // Lấy dữ liệu
+        String tenNV = txtTimKiem.getText().trim();
+        employee.setEmployee_name(tenNV);
+        ResultSet rs = employeeDao.load_execel(employee);
+
+        if (rs == null) {
+            JOptionPane.showMessageDialog(null, "Không có dữ liệu để xuất");
+            return;
+        }
+
+        int rowIdx = 4;
+        int stt = 1;
+        while (rs.next()) {
+            Row row = sheet.createRow(rowIdx++);
+
+            int col = 0;
+
+            // STT
+            Cell cell = row.createCell(col++);
+            cell.setCellValue(stt++);
+            cell.setCellStyle(styleCell);
+
+            // Mã NV
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getInt("employee_id"));
+            cell.setCellStyle(styleCell);
+
+            // Tên đăng nhập
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("employee_name"));
+            cell.setCellStyle(styleCell);
+
+            // Mật khẩu
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("password"));
+            cell.setCellStyle(styleCell);
+
+            // Họ tên
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("full_name"));
+            cell.setCellStyle(styleCell);
+
+            // Giới tính
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("sex"));
+            cell.setCellStyle(styleCell);
+
+            // Vai trò (chuyển từ số sang chuỗi)
+            int roleId = rs.getInt("role");
+            String roleName = mapRoleToName(roleId);
+            cell = row.createCell(col++);
+            cell.setCellValue(roleName);
+            cell.setCellStyle(styleCell);
+
+            // SĐT
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("phone"));
+            cell.setCellStyle(styleCell);
+
+            // Email
+            cell = row.createCell(col++);
+            cell.setCellValue(rs.getString("email"));
+            cell.setCellStyle(styleCell);
+
+            // Ngày
+            String dateStr = rs.getDate("date") != null ? rs.getDate("date").toString() : "";
+            cell = row.createCell(col++);
+            cell.setCellValue(dateStr);
+            cell.setCellStyle(styleCell);
+        }
+
+        // Tự động giãn cột
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Lưu file
+        File f = new File("D:\\caheo\\Danhsachnhanvien.xlsx");
+        try (FileOutputStream out = new FileOutputStream(f)) {
+            workbook.write(out);
+        }
+        workbook.close();
+
+        JOptionPane.showMessageDialog(null, "Xuất báo cáo thành công!");
+
+        // Mở file
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(f);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Lỗi khi xuất báo cáo: " + e.getMessage());
+    }
+}
 }

@@ -33,7 +33,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel3" min="-2" pref="64" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="130" max="-2" attributes="0"/>
-                              <Component id="jLabel4" min="-2" pref="37" max="-2" attributes="0"/>
+                              <Component id="jLabel4" min="-2" pref="57" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -64,9 +64,9 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="178" max="-2" attributes="0"/>
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnLuu" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="63" max="-2" attributes="0"/>
-                      <Component id="jButton2" min="-2" pref="72" max="-2" attributes="0"/>
+                      <Component id="btnHuy" min="-2" pref="99" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace pref="45" max="32767" attributes="0"/>
@@ -101,8 +101,8 @@
               </Group>
               <EmptySpace min="-2" pref="53" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton1" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
-                  <Component id="jButton2" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
+                  <Component id="btnLuu" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
+                  <Component id="btnHuy" alignment="3" min="-2" pref="35" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="53" max="32767" attributes="0"/>
           </Group>
@@ -163,7 +163,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="jTextPane1">
+        <Component class="javax.swing.JTextPane" name="txtMa">
         </Component>
       </SubComponents>
     </Container>
@@ -179,7 +179,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="jTextPane2">
+        <Component class="javax.swing.JTextPane" name="txtTen">
         </Component>
       </SubComponents>
     </Container>
@@ -195,7 +195,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="jTextPane3">
+        <Component class="javax.swing.JTextPane" name="txtPhone">
         </Component>
       </SubComponents>
     </Container>
@@ -211,7 +211,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="jTextPane4">
+        <Component class="javax.swing.JTextPane" name="txtAddress">
         </Component>
       </SubComponents>
     </Container>
@@ -227,11 +227,11 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextPane" name="jTextPane5">
+        <Component class="javax.swing.JTextPane" name="txtEmail">
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="btnLuu">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="33" green="cc" red="0" type="rgb"/>
@@ -242,7 +242,7 @@
         <Property name="text" type="java.lang.String" value="L&#x1b0;u thay &#x111;&#x1ed5;i"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton2">
+    <Component class="javax.swing.JButton" name="btnHuy">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="33" green="33" red="ff" type="rgb"/>

@@ -30,6 +30,7 @@ public class ImportsController {
         this.importsView = importsView;
         this.connection = DBConnection.getConnection(); // Kết nối database
         importsDAO = new ImportsDAO(connection); // Khởi tạo DAO với connection
+        
     }
     
 

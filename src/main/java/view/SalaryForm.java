@@ -4,19 +4,136 @@
  */
 package view;
 
+import controller.SalaryController;
+import dao.SalaryDAO;
+import java.awt.event.ItemEvent;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import model.Salary;
+
 /**
  *
  * @author Admin
  */
 public class SalaryForm extends javax.swing.JFrame {
 
+    private SalaryController salaryController;
+    private SalaryDAO salaryDao;
+    private Salary salary;
+    private SuaLuongForm suaLuongForm;
     /**
      * Creates new form SalaryForm
      */
     public SalaryForm() {
         initComponents();
+        salaryController = new SalaryController(this);
+        salaryDao = new SalaryDAO();
+        btnSua.addActionListener(salaryController);
+        btnXoa.addActionListener(salaryController);
+        suaLuongForm = new SuaLuongForm(this, true);
+        suaLuongForm.getBtnSua().addActionListener(salaryController);
+        suaLuongForm.getBtnHuy().addActionListener(salaryController);
+        LoadCbo();
+        LoadDS();
+        cboThang.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                LoadDS(); // Gọi lại để load danh sách (có thể thay bằng hàm khác)
+            }
+        });
     }
 
+    public void LoadDS(){
+        String selectedMonth = (String) cboThang.getSelectedItem();
+        int monthNumber = Integer.parseInt(selectedMonth.replace("Tháng ", ""));
+        salaryDao.getTotalWorkingHoursByEmployee(monthNumber);
+        salaryDao.salaryfind(tblDanhsach, monthNumber);
+       
+    }
+    public void HienthiForm(String action) {
+       if("Sửa".equals(action)){
+            int selectedRow = tblDanhsach.getSelectedRow();
+            if(selectedRow >= 0){
+               String maLuong = tblDanhsach.getValueAt(selectedRow, 0).toString();
+               String name = tblDanhsach.getValueAt(selectedRow, 1).toString();
+               String tongGioLam = tblDanhsach.getValueAt(selectedRow, 2).toString();
+               String luongTheoH = tblDanhsach.getValueAt(selectedRow, 3).toString();
+               String bonus = tblDanhsach.getValueAt(selectedRow, 4).toString();              
+               Date ngayTra = (Date) tblDanhsach.getValueAt(selectedRow, 6);
+               Salary sl = new Salary(Integer.parseInt(maLuong), 0 , new BigDecimal(tongGioLam), new BigDecimal(luongTheoH),
+               new BigDecimal(bonus), ngayTra, null);
+               suaLuongForm.setValue(sl, name);
+               suaLuongForm.setLocationRelativeTo(this);
+               suaLuongForm.setVisible(true);
+               }           
+        }else if("Xóa".equals(action)){
+            int selectedRow = tblDanhsach.getSelectedRow();
+            if(selectedRow >= 0){
+               String maLuong = tblDanhsach.getValueAt(selectedRow, 0).toString();
+               String name = tblDanhsach.getValueAt(selectedRow, 1).toString();
+               String tongGioLam = tblDanhsach.getValueAt(selectedRow, 2).toString();
+               String luongTheoH = tblDanhsach.getValueAt(selectedRow, 3).toString();
+               String bonus = tblDanhsach.getValueAt(selectedRow, 4).toString();              
+               Date ngayTra = (Date) tblDanhsach.getValueAt(selectedRow, 6);
+               Salary sl = new Salary(Integer.parseInt(maLuong), 0 , new BigDecimal(tongGioLam), new BigDecimal(luongTheoH),
+               new BigDecimal(bonus), ngayTra, null);
+                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?", 
+                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if(choise == JOptionPane.YES_OPTION){
+                    salaryDao.salary_delete(sl);
+                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                    LoadDS();
+                }              
+                        
+            }
+        }
+    }
+    
+    public void Huy(){
+        suaLuongForm.setVisible(false);
+    }
+    public void SuaTTLuong(){
+         try{
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var salary = suaLuongForm.getModel();
+            // gọi hàm dao   
+            salaryDao.salary_update(salary);
+            LoadDS();    
+            JOptionPane.showMessageDialog(this, "Sửa thành công");
+                   
+        }catch(Exception ex){
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }   
+    }
+    public void LoadCbo(){
+        String[] months = new String[12];
+            for (int i = 0; i < 12; i++) {
+                months[i] = "Tháng " + (i + 1);
+            }            
+        cboThang.setModel(new DefaultComboBoxModel<>(months));
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        cboThang.setSelectedItem("Tháng " + currentMonth);
+    }
+     private List<String> convertToStringList(String suppliersString) {
+        // Remove square brackets and split by ", "
+        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
+        if (cleanedString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -28,8 +145,8 @@ public class SalaryForm extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        btnSua = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -39,7 +156,8 @@ public class SalaryForm extends javax.swing.JFrame {
         jButton6 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblDanhsach = new javax.swing.JTable();
+        cboThang = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -52,22 +170,22 @@ public class SalaryForm extends javax.swing.JFrame {
         jButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        jButton2.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
-        jButton2.setText("Xóa\n");
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnXoa.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
+        btnXoa.setText("Xóa");
+        btnXoa.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnXoa.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnXoa.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnXoaActionPerformed(evt);
             }
         });
 
-        jButton3.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
-        jButton3.setText("Xóa");
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnSua.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
+        btnSua.setText("Sửa");
+        btnSua.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSua.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         jButton4.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
         jButton4.setText("Nhập Excel");
@@ -89,9 +207,9 @@ public class SalaryForm extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(35, 35, 35)
                 .addComponent(jButton4)
                 .addGap(18, 18, 18)
@@ -107,9 +225,9 @@ public class SalaryForm extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnXoa, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(btnSua, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -149,7 +267,7 @@ public class SalaryForm extends javax.swing.JFrame {
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Danh sách lương của nhân viên\n\n"));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblDanhsach.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -160,20 +278,23 @@ public class SalaryForm extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(tblDanhsach);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 393, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40))
+                .addContainerGap()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -183,12 +304,15 @@ public class SalaryForm extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 1, Short.MAX_VALUE))
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(cboThang, javax.swing.GroupLayout.PREFERRED_SIZE, 142, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 1, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -198,8 +322,10 @@ public class SalaryForm extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 429, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(11, 11, 11)
+                .addComponent(cboThang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(22, 22, 22))
         );
 
@@ -208,49 +334,15 @@ public class SalaryForm extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnXoaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SalaryForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SalaryForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SalaryForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SalaryForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new SalaryForm().setVisible(true);
-            }
-        });
-    }
+    }//GEN-LAST:event_btnXoaActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnSua;
+    private javax.swing.JButton btnXoa;
+    private javax.swing.JComboBox<String> cboThang;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
@@ -260,7 +352,7 @@ public class SalaryForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTable tblDanhsach;
     // End of variables declaration//GEN-END:variables
 }

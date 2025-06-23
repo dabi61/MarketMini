@@ -4,17 +4,83 @@
  */
 package view;
 
+import controller.SupplierController;
+import dao.SupplierDAO;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import model.Suppliers;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+
 /**
  *
  * @author Admin
  */
 public class SupplierForm extends javax.swing.JFrame {
-
+    
+    private ThemNCCForm themNCCForm;  
+    private SuaNCCForm suaNccForm;
+    private NhapExcel nhapExcel;
+    SupplierController spController;
+    SupplierDAO supplierDao;
+    Suppliers supplier;
     /**
      * Creates new form SupplierForm
      */
     public SupplierForm() {
         initComponents();
+        spController = new SupplierController(this);
+        supplierDao = new SupplierDAO();
+        themNCCForm = new ThemNCCForm(this, true);
+        btnThem.addActionListener(spController);
+        btnSua.addActionListener(spController);
+        btnXoa.addActionListener(spController);  
+        btnXuat.addActionListener(spController);   
+        btnNhap.addActionListener(spController); 
+        btnTimKiem.addActionListener(spController);
+        nhapExcel = new NhapExcel(this, true);
+        nhapExcel.getBtnUpload().addActionListener(spController);
+        nhapExcel.getBtnSave().addActionListener(spController);
+        themNCCForm.getBtnThemNcc().addActionListener(spController);
+        themNCCForm.getBtnHuy().addActionListener(spController);
+        
+        suaNccForm = new SuaNCCForm(this, true);
+        suaNccForm.getBtnLuu().addActionListener(spController);
+        suaNccForm.getBtnHuy().addActionListener(spController);
+        
+        loadSupplier();
     }
 
     /**
@@ -26,131 +92,31 @@ public class SupplierForm extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextPane1 = new javax.swing.JTextPane();
-        jButton6 = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblDanhSach = new javax.swing.JTable();
+        jPanel2 = new javax.swing.JPanel();
+        cboTieuChi = new javax.swing.JComboBox<>();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtTimKiem = new javax.swing.JTextPane();
+        btnTimKiem = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        btnThem = new javax.swing.JButton();
+        btnXoa = new javax.swing.JButton();
+        btnSua = new javax.swing.JButton();
+        btnNhap = new javax.swing.JButton();
+        btnXuat = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chức năng\n"));
+        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
-        jButton1.setText(" Thêm");
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-
-        jButton2.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
-        jButton2.setText("Xóa\n");
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jButton3.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
-        jButton3.setText("Xóa");
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-
-        jButton4.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
-        jButton4.setText("Nhập Excel");
-        jButton4.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-
-        jButton5.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
-        jButton5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton5.setLabel("Xuất Execl");
-        jButton5.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jButton5.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(35, 35, 35)
-                .addComponent(jButton4)
-                .addGap(18, 18, 18)
-                .addComponent(jButton5)
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
-        );
-
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tìm kiếm\n"));
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tên" }));
-
-        jScrollPane1.setViewportView(jTextPane1);
-
-        jButton6.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\reorder.png")); // NOI18N
-        jButton6.setText("Làm mới");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(19, 19, 19)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton6)
-                .addContainerGap())
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
+        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Danh sách nhà cung cấp\n\n"));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblDanhSach.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -161,104 +127,551 @@ public class SupplierForm extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane2.setViewportView(jTable1);
+        jScrollPane2.setViewportView(tblDanhSach);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane2))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addContainerGap())
+        );
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tìm kiếm\n"));
+
+        cboTieuChi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tên", "Số điện thoại", "Địa Chỉ" }));
+
+        jScrollPane1.setViewportView(txtTimKiem);
+
+        btnTimKiem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\reorder.png")); // NOI18N
+        btnTimKiem.setText("Tìm kiếm");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cboTieuChi, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addGap(31, 31, 31)
+                .addComponent(btnTimKiem)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(15, 15, 15)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(cboTieuChi, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
+        );
+
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Chức năng\n"));
+
+        btnThem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
+        btnThem.setText("Thêm");
+        btnThem.setBorderPainted(false);
+        btnThem.setFocusPainted(false);
+        btnThem.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnThem.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        btnXoa.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
+        btnXoa.setText("Xóa");
+        btnXoa.setBorderPainted(false);
+        btnXoa.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnXoa.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        btnSua.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
+        btnSua.setText("Sửa");
+        btnSua.setBorderPainted(false);
+        btnSua.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnSua.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        btnNhap.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
+        btnNhap.setText("Nhập Excel");
+        btnNhap.setBorderPainted(false);
+        btnNhap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnNhap.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnNhap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        btnXuat.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
+        btnXuat.setText("Xuất Excel");
+        btnXuat.setBorderPainted(false);
+        btnXuat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnXuat.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        btnXuat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addComponent(btnNhap)
+                .addGap(18, 18, 18)
+                .addComponent(btnXuat)
+                .addGap(15, 15, 15))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(btnNhap, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(btnXuat, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton2ActionPerformed
-
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SupplierForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SupplierForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SupplierForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SupplierForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    public void HienthiForm(String action)  {
+        if("Thêm".equals(action)){
+            themNCCForm.setLocationRelativeTo(this);
+            themNCCForm.setVisible(true);
+          
+        }else if("Sửa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >= 0){
+               String maNcc = tblDanhSach.getValueAt(selectedRow, 0).toString();
+               String tenNcc = tblDanhSach.getValueAt(selectedRow, 1).toString();
+               String sdt = tblDanhSach.getValueAt(selectedRow, 2).toString();
+               String diachi = tblDanhSach.getValueAt(selectedRow, 3).toString();
+               String email = tblDanhSach.getValueAt(selectedRow, 4).toString();
+               Suppliers sp = new Suppliers(Integer.parseInt(maNcc), tenNcc, sdt, diachi, email);
+               suaNccForm.setValue(sp);
+               suaNccForm.setLocationRelativeTo(this);
+               suaNccForm.setVisible(true);
+               
+               }           
+        }else if("Xóa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >=0){
+               String maNcc = tblDanhSach.getValueAt(selectedRow, 0).toString();
+               String tenNcc = tblDanhSach.getValueAt(selectedRow, 1).toString();
+               String sdt = tblDanhSach.getValueAt(selectedRow, 2).toString();
+               String diachi = tblDanhSach.getValueAt(selectedRow, 3).toString();
+               String email = tblDanhSach.getValueAt(selectedRow, 4).toString();
+               Suppliers sp = new Suppliers(Integer.parseInt(maNcc), tenNcc, sdt, diachi, email);
+                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?", 
+                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if(choise == JOptionPane.YES_OPTION){
+                    supplierDao.supplier_delete(sp);
+                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                    loadSupplier();
+                }                            
+            } 
+        }else if("Nhập Excel".equals(action)){
+            nhapExcel.setLocationRelativeTo(this);
+            nhapExcel.setVisible(true);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new SupplierForm().setVisible(true);
-            }
-        });
+        
     }
-
+    public void AddSupplier(){        
+        try{
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var supplier = themNCCForm.getModel();
+            // gọi hàm dao   
+            supplierDao.supplier_insert(supplier);
+            JOptionPane.showMessageDialog(this, "Thêm thành công");
+            loadSupplier();            
+        }catch(Exception ex){
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }        
+    }
+    public void UpdateSupplier(){
+        
+        try {            
+             var supplier = suaNccForm.getModel();
+            // gọi hàm dao   
+            supplierDao.supplier_update(supplier);
+            JOptionPane.showMessageDialog(this, "Sửa thành công");
+            loadSupplier();   
+        } catch (Exception e) {
+            String messages = e.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    public void Huy(){
+        themNCCForm.setVisible(false);
+        suaNccForm.setVisible(false);
+    }
+    private void loadSupplier() {
+        supplier = new Suppliers();
+        supplier.setSupplier_name("");
+        supplierDao.supplierfind(tblDanhSach,supplier);        
+    }
+    public void timKiem() {
+        String tieuChi = cboTieuChi.getSelectedItem().toString();
+        String tuKhoa = txtTimKiem.getText().trim();
+        DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
+        model.setRowCount(0);
+        ResultSet rs = supplierDao.timKiem(tieuChi, tuKhoa);
+        try {
+            while (rs != null && rs.next()) {
+                model.addRow(new Object[]{
+                        rs.getInt("supplier_id"),
+                        rs.getString("supplier_name"),
+                        rs.getString("phone"),
+                        rs.getString("address"),
+                        rs.getString("email")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    private List<String> convertToStringList(String suppliersString) {
+        // Remove square brackets and split by ", "
+        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
+        if (cleanedString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton btnNhap;
+    private javax.swing.JButton btnSua;
+    private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnTimKiem;
+    private javax.swing.JButton btnXoa;
+    private javax.swing.JButton btnXuat;
+    private javax.swing.JComboBox<String> cboTieuChi;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JTable tblDanhSach;
+    private javax.swing.JTextPane txtTimKiem;
     // End of variables declaration//GEN-END:variables
+
+    private static CellStyle DinhdangHeader(XSSFSheet sheet) {
+           // Create font
+           Font font = sheet.getWorkbook().createFont();
+           font.setFontName("Times New Roman");
+           font.setBold(true);
+           font.setFontHeightInPoints((short) 12); // font size
+           font.setColor(IndexedColors.WHITE.getIndex()); // text color
+
+           // Create CellStyle
+           CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+           cellStyle.setFont(font);
+           cellStyle.setAlignment(HorizontalAlignment.CENTER);
+           cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+           cellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+           cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+           cellStyle.setBorderBottom(BorderStyle.THIN);
+           cellStyle.setWrapText(true);
+           return cellStyle;
+       }
+    public void Xuatbaocao() {
+        try {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet("Nhà Cung Cấp");
+
+        // Tạo styles
+        CellStyle styleTitle = workbook.createCellStyle();
+        Font fontTitle = workbook.createFont();
+        fontTitle.setFontHeightInPoints((short) 14);
+        fontTitle.setBold(true);
+        styleTitle.setFont(fontTitle);
+        styleTitle.setAlignment(HorizontalAlignment.CENTER);
+
+        CellStyle styleHeader = workbook.createCellStyle();
+        Font fontHeader = workbook.createFont();
+        fontHeader.setBold(true);
+        fontHeader.setColor(IndexedColors.WHITE.getIndex());
+        styleHeader.setFont(fontHeader);
+        styleHeader.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+        styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleHeader.setBorderTop(BorderStyle.THIN);
+        styleHeader.setBorderBottom(BorderStyle.THIN);
+        styleHeader.setBorderLeft(BorderStyle.THIN);
+        styleHeader.setBorderRight(BorderStyle.THIN);
+        styleHeader.setAlignment(HorizontalAlignment.CENTER);
+
+        CellStyle styleCell = workbook.createCellStyle();
+        styleCell.setBorderTop(BorderStyle.THIN);
+        styleCell.setBorderBottom(BorderStyle.THIN);
+        styleCell.setBorderLeft(BorderStyle.THIN);
+        styleCell.setBorderRight(BorderStyle.THIN);
+        styleCell.setVerticalAlignment(VerticalAlignment.CENTER);
+        styleCell.setWrapText(true);
+
+        // Tạo tiêu đề
+        Row titleRow = sheet.createRow(1); // Dòng 2 (index 1)
+        Cell titleCell = titleRow.createCell(0); // Cột A (index 0)
+        titleCell.setCellValue("DANH SÁCH NHÀ CUNG CẤP");
+        titleCell.setCellStyle(styleTitle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5)); // Merge A2:F2
+
+        // Tạo dòng tiêu đề bảng
+        Row headerRow = sheet.createRow(3);
+        String[] headers = { "STT", "Mã NCC", "Tên NCC", "Điện Thoại", "Địa Chỉ", "Email" };
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(styleHeader);
+        }
+
+        // Lấy dữ liệu
+        String tenNCC = txtTimKiem.getText().trim();
+        supplier.setSupplier_name(tenNCC);
+        ResultSet rs = supplierDao.load_execel(supplier);
+
+        if (rs == null) {
+            JOptionPane.showMessageDialog(null, "Không có dữ liệu để xuất");
+            return;
+        }
+
+        int rowIdx = 4;
+        int stt = 1;
+        while (rs.next()) {
+            Row row = sheet.createRow(rowIdx++);
+
+            // STT
+            Cell cell0 = row.createCell(0);
+            cell0.setCellValue(stt++);
+            cell0.setCellStyle(styleCell);
+
+            // Mã NCC
+            row.createCell(1).setCellValue(rs.getInt("supplier_id"));
+            row.getCell(1).setCellStyle(styleCell);
+
+            // Tên NCC
+            row.createCell(2).setCellValue(rs.getString("supplier_name"));
+            row.getCell(2).setCellStyle(styleCell);
+
+            // Điện thoại
+            row.createCell(3).setCellValue(rs.getString("phone"));
+            row.getCell(3).setCellStyle(styleCell);
+
+            // Địa chỉ
+            row.createCell(4).setCellValue(rs.getString("address"));
+            row.getCell(4).setCellStyle(styleCell);
+
+            // Email
+            row.createCell(5).setCellValue(rs.getString("email"));
+            row.getCell(5).setCellStyle(styleCell);
+        }
+
+        // Auto resize cột
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // Ghi ra file
+        File f = new File("D:\\caheo\\Danhsachnhacungcap.xlsx");
+        FileOutputStream out = new FileOutputStream(f);
+        workbook.write(out);
+        out.close();
+        workbook.close();
+
+        JOptionPane.showMessageDialog(null, "Xuất báo cáo thành công!");
+        
+        //  Mở file Excel sau khi nhấn OK
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().open(f);
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Lỗi khi xuất báo cáo: " + e.getMessage());
+    }
+    }
+    
+    
+    
+    // nhập excel
+    private void ReadExcel(String filePath, JTable tbBang) {
+    try (FileInputStream fis = new FileInputStream(filePath)) {
+        Workbook wb = new XSSFWorkbook(fis);
+        Sheet sheet = wb.getSheetAt(0);
+
+        Iterator<Row> itr = sheet.iterator();
+        if (itr.hasNext()) itr.next(); // Bỏ qua dòng tiêu đề
+        tbBang.removeAll();
+        String[] head= {"STT","Tên NCC","Phone","Address","Email"};
+        DefaultTableModel tb = new DefaultTableModel(head,0);
+        while (itr.hasNext()) {
+            Row row = itr.next();
+            try {
+                // Đọc và ép kiểu dữ liệu an toàn
+                int stt = (int) row.getCell(0).getNumericCellValue();
+                String name = getCellStringValue(row.getCell(1));
+                String phone = getCellStringValue(row.getCell(2));
+                String address = getCellStringValue(row.getCell(3));
+                String email = getCellStringValue(row.getCell(4));
+
+                // Gọi DAO hoặc Controller để thêm vào CSDL
+                Suppliers supplier = new Suppliers();
+                supplier.setSupplier_id(stt);
+                supplier.setSupplier_name(name);
+                supplier.setPhone(phone);
+                supplier.setAddress(address);
+                supplier.setEmail(email);
+
+                 // <-- đảm bảo bạn đã viết hàm này
+             
+                Vector vt = new Vector();
+                    vt.add(stt);
+                    vt.add(name);
+                    vt.add(phone);
+                    vt.add(address);
+                    vt.add(email);
+                tb.addRow(vt);
+                tbBang.setModel(tb);
+            } catch (Exception e) {
+                System.err.println("Lỗi dòng " + row.getRowNum() + ": " + e.getMessage());
+                // tiếp tục đọc các dòng sau
+            }
+        }
+
+        wb.close();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Lỗi khi đọc file Excel: " + e.getMessage());
+    }
+}
+    public void SaveDataFromExcel(){
+        DefaultTableModel model = (DefaultTableModel) nhapExcel.getTblNCC().getModel();
+        int rowCount = model.getRowCount();
+        int countInserted = 0, countSkipped = 0;
+
+        for (int i = 0; i < rowCount; i++) {
+            Suppliers supplier = new Suppliers();
+            try {
+                supplier.setSupplier_id(Integer.parseInt(model.getValueAt(i, 0).toString()));
+                supplier.setSupplier_name(model.getValueAt(i, 1).toString());
+                supplier.setPhone(model.getValueAt(i, 2).toString());
+                supplier.setAddress(model.getValueAt(i, 3).toString());
+                supplier.setEmail(model.getValueAt(i, 4).toString());
+                // ❗ Kiểm tra trùng TÊN hoặc SỐ ĐIỆN THOẠI
+                if (supplierDao.isSupplierExists(supplier.getSupplier_name(), supplier.getPhone())) {
+                    countSkipped++;
+                    continue;
+                }
+                // Insert vào DB
+                supplierDao.supplier_insert(supplier);
+                countInserted++;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi tại dòng " + (i + 1) + ": " + ex.getMessage());
+            }
+        }
+        JOptionPane.showMessageDialog(this,
+        "✔️ Đã thêm " + countInserted + " NCC mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng tên hoặc số điện thoại");
+        loadSupplier();
+        }
+        private String getCellStringValue(Cell cell) {
+            if (cell == null) return "";
+            switch (cell.getCellType()) {
+                case STRING:
+                    return cell.getStringCellValue();
+                case NUMERIC:
+                    return String.valueOf((long) cell.getNumericCellValue());
+                case BOOLEAN:
+                    return String.valueOf(cell.getBooleanCellValue());
+                default:
+                    return "";
+            }
+        }
+        public void Upload() {
+            JFileChooser fc = new JFileChooser();
+            int result = fc.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+
+                nhapExcel.getTxtFile().setText(file.getPath());
+
+                if (file.getName().toLowerCase().endsWith(".xlsx")) {
+                    ReadExcel(file.getPath(), nhapExcel.getTblNCC());
+                    JOptionPane.showMessageDialog(this, "Import thành công!");
+                    loadSupplier(); // Gọi lại để load dữ liệu lên bảng
+                } else {
+                    JOptionPane.showMessageDialog(this, "Vui lòng chọn file Excel (.xlsx)");
+                }
+            }
+        }
+
 }
