@@ -67,7 +67,6 @@ public class SuaNVForm extends javax.swing.JDialog {
     }
 
     public void clear() {
-        txtMa.setText("");
         txtHoTen.setText("");
         txtEmail.setText("");
         txtPass.setText("");

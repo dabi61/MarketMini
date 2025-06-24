@@ -174,10 +174,10 @@ public class EmployeeDAO {
             String sql = "SELECT *FROM employees";
 
             if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                switch (tieuChi) {                    
+                switch (tieuChi) {
                     case "Tên":
                         sql += " WHERE employee_name LIKE ?";
-                        break;                   
+                        break;
                     case "Chức vụ":
                         sql += " WHERE role LIKE ?";
                         break;
@@ -191,19 +191,20 @@ public class EmployeeDAO {
             }
             PreparedStatement st = con.prepareStatement(sql);
             if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                if(tieuChi.equals("Chức vụ")){
-                  st.setString(1, "%" + MapToRole(txtTimKiem) + "%");
-                }else if(tieuChi.equals("Ngày thêm")){
+                if (tieuChi.equals("Chức vụ")) {
+                    st.setString(1, "%" + MapToRole(txtTimKiem) + "%");
+                } else if (tieuChi.equals("Ngày thêm")) {
                     st.setString(1, txtTimKiem);
-                }else
+                } else {
                     st.setString(1, "%" + txtTimKiem + "%");
+                }
             }
             return st.executeQuery();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        }
+    }
         
     public int employeeIdMax(){
             try {

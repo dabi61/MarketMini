@@ -33,8 +33,7 @@ public class SuaNCCForm extends javax.swing.JDialog {
         initComponents();        
         txtMa.setEnabled(false);
     }
-    public void clear(){
-        txtMa.setText("");
+    public void clear(){      
         txtPhone.setText("");
         txtEmail.setText("");
         txtTen.setText("");
@@ -46,7 +45,8 @@ public class SuaNCCForm extends javax.swing.JDialog {
         txtPhone.setText(sp.getPhone());
         txtEmail.setText(sp.getEmail());
         txtTen.setText(sp.getSupplier_name());
-        txtAddress.setText(sp.getAddress());                                 
+        txtAddress.setText(sp.getAddress());  
+        txtMa.setEditable(false);      
     }
     public Suppliers getModel() throws Exception{
         errors = new ArrayList();
