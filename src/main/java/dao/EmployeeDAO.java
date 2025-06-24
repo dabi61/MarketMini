@@ -68,7 +68,7 @@ public class EmployeeDAO {
                 // tạo đối tượng pre để thực hiện câu lệnh truy vấn
                 String sql = "Insert into employees Values(?,?,?,?,?,?,?,?,?)";
                 PreparedStatement ps = conn.prepareStatement(sql);
-                ps.setInt(1,employee.getEmployee_id());
+                ps.setNull(1, java.sql.Types.INTEGER);
                 ps.setString(2,employee.getEmployee_name());
                 ps.setString(3,employee.getPassword());
                 ps.setString(4,employee.getFull_name());
@@ -120,9 +120,12 @@ public class EmployeeDAO {
             // kết nối db
             conn = DBConnection.getConnection();
             // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "select * from employees where employee_name like ?";
+            String sql = "select * from employees where employee_name like ? or full_name like ? or phone like ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1,'%'+employee.getEmployee_name()+'%');
+            ps.setString(2,'%'+employee.getFull_name()+'%');
+            ps.setString(3,'%'+employee.getPhone()+'%');
+           
             ResultSet rs = ps.executeQuery();
             tbBang.removeAll();
             String[] head= {"Mã nhân viên","Tên nhân viên","Password","Họ và Tên","Giới Tính","Chức vụ","Phone","Email","Ngày thêm"};
@@ -144,6 +147,43 @@ public class EmployeeDAO {
             conn.close();
         } catch (SQLException ex) {}
     }
+     public ResultSet timKiem(String tieuChi, String txtTimKiem) {
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "SELECT *FROM employees";
+
+            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
+                switch (tieuChi) {                    
+                    case "Tên":
+                        sql += " WHERE employee_name LIKE ?";
+                        break;                   
+                    case "Chức vụ":
+                        sql += " WHERE role LIKE ?";
+                        break;
+                    case "Ngày thêm":
+                        sql += " WHERE date =  ? ";
+                        break;
+                    case "Số điện thoại":
+                        sql += " WHERE phone LIKE ?";
+                        break;
+                }
+            }
+            PreparedStatement st = con.prepareStatement(sql);
+            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
+                if(tieuChi.equals("Chức vụ")){
+                  st.setString(1, "%" + MapToRole(txtTimKiem) + "%");
+                }else if(tieuChi.equals("Ngày thêm")){
+                    st.setString(1, txtTimKiem);
+                }else
+                    st.setString(1, "%" + txtTimKiem + "%");
+            }
+            return st.executeQuery();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        }
+        
     public int employeeIdMax(){
             try {
                 // kết nối db
@@ -195,4 +235,19 @@ public class EmployeeDAO {
             }
             return rs;
         }
+     public boolean isEmployeeExists(String phone) {
+        boolean exists = false;
+        try (Connection con = DBConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM employees WHERE phone = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, phone);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                exists = rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return exists;
+    }
 }

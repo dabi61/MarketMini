@@ -37,6 +37,15 @@ public class EmployeeController implements ActionListener{
         if("Xuất Excel".equals(button)){
             employeeForm.Xuatbaocao();
         }
+        if("Upload".equals(button)){
+            employeeForm.Upload();
+        }
+        if("Save".equals(button)){
+            employeeForm.SaveDataFromExcel();
+        }
+        if("Tìm Kiếm".equals(button)){
+            employeeForm.timKiem();
+        }
     }
     
 }

@@ -9,7 +9,10 @@ import controller.SupplierController;
 import dao.EmployeeDAO;
 import dao.SupplierDAO;
 import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -17,21 +20,31 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
+import javax.swing.JFileChooser;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import model.Employees;
 import model.Suppliers;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import static org.apache.poi.ss.usermodel.CellType.BOOLEAN;
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
+import static org.apache.poi.ss.usermodel.CellType.STRING;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -43,6 +56,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class EmployeeForm extends javax.swing.JFrame {
     private ThemNVForm themNVForm;  
     private SuaNVForm suaNVForm;
+    private NhapExcel nhapExcel;
     EmployeeController spController;
     EmployeeDAO employeeDao;
     Employees employee;
@@ -63,6 +77,11 @@ public class EmployeeForm extends javax.swing.JFrame {
         btnSua.addActionListener(spController);
         btnXoa.addActionListener(spController);      
         btnXuat.addActionListener(spController);  
+        btnNhap.addActionListener(spController); 
+        btnTimKiem.addActionListener(spController);
+        nhapExcel = new NhapExcel(this, true);
+        nhapExcel.getBtnUpload().addActionListener(spController);
+        nhapExcel.getBtnSave().addActionListener(spController);
         themNVForm.getBtnThemNV().addActionListener(spController);
         themNVForm.getBtnHuy().addActionListener(spController);
         
@@ -70,6 +89,18 @@ public class EmployeeForm extends javax.swing.JFrame {
         suaNVForm.getBtnLuu().addActionListener(spController);
         suaNVForm.getBtnHuy().addActionListener(spController);
         loadEmployee();
+        cboTieuChi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selected = cboTieuChi.getSelectedItem().toString();
+
+                if (selected.equals("Ngày thêm")) {
+                    txtTimKiem.setText("yyyy-MM-dd"); // gợi ý định dạng
+                } else {
+                    txtTimKiem.setText("");
+                }
+            }
+        });
     }
 
     /**
@@ -88,10 +119,10 @@ public class EmployeeForm extends javax.swing.JFrame {
         btnNhap = new javax.swing.JButton();
         btnXuat = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        btnTimKiem = new javax.swing.JButton();
+        cboTieuChi = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtTimKiem = new javax.swing.JTextPane();
-        jButton6 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblDanhSach = new javax.swing.JTable();
@@ -137,16 +168,16 @@ public class EmployeeForm extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnThem, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(34, 34, 34)
                 .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(35, 35, 35)
+                .addGap(28, 28, 28)
                 .addComponent(btnNhap)
-                .addGap(18, 18, 18)
+                .addGap(28, 28, 28)
                 .addComponent(btnXuat)
-                .addContainerGap())
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -166,12 +197,12 @@ public class EmployeeForm extends javax.swing.JFrame {
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Tìm kiếm\n"));
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tất cả", "Tên" }));
+        btnTimKiem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\reorder.png")); // NOI18N
+        btnTimKiem.setText("Tìm Kiếm");
+
+        cboTieuChi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Chọn tìm kiếm--", "Tên", "Chức vụ", "Số điện thoại", "Ngày thêm" }));
 
         jScrollPane1.setViewportView(txtTimKiem);
-
-        jButton6.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\reorder.png")); // NOI18N
-        jButton6.setText("Làm mới");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -179,22 +210,24 @@ public class EmployeeForm extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(19, 19, 19)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton6)
+                .addComponent(cboTieuChi, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 173, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addGap(15, 15, 15)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cboTieuChi, javax.swing.GroupLayout.Alignment.LEADING))
+                .addGap(28, 28, 28))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Danh sách nhân viên\n\n"));
@@ -230,14 +263,15 @@ public class EmployeeForm extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -262,10 +296,10 @@ public class EmployeeForm extends javax.swing.JFrame {
     private javax.swing.JButton btnNhap;
     private javax.swing.JButton btnSua;
     private javax.swing.JButton btnThem;
+    private javax.swing.JButton btnTimKiem;
     private javax.swing.JButton btnXoa;
     private javax.swing.JButton btnXuat;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> cboTieuChi;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -318,6 +352,9 @@ public class EmployeeForm extends javax.swing.JFrame {
                 }              
                         
             }
+        }else if("Nhập Excel".equals(action)){
+            nhapExcel.setLocationRelativeTo(this);
+            nhapExcel.setVisible(true);
         }
     }
 
@@ -405,7 +442,7 @@ public class EmployeeForm extends javax.swing.JFrame {
         case 2 -> "Nhân viên";
         default -> "Không rõ";
     };
-}
+    }
 
 public void Xuatbaocao() {
     try {
@@ -554,4 +591,152 @@ public void Xuatbaocao() {
         JOptionPane.showMessageDialog(null, "Lỗi khi xuất báo cáo: " + e.getMessage());
     }
 }
+
+    private void ReadExcel(String filePath, JTable tbBang) {
+    try (FileInputStream fis = new FileInputStream(filePath)) {
+        Workbook wb = new XSSFWorkbook(fis);
+        Sheet sheet = wb.getSheetAt(0);
+
+        Iterator<Row> itr = sheet.iterator();
+        if (itr.hasNext()) itr.next(); // Bỏ qua dòng tiêu đề
+        tbBang.removeAll();
+
+        String[] head = {"STT", "Tên đăng nhập", "Mật khẩu", "Họ tên", "Giới tính", "Chức vụ", "SĐT", "Email", "Ngày"};
+        DefaultTableModel tb = new DefaultTableModel(head, 0);
+
+        while (itr.hasNext()) {
+            Row row = itr.next();
+            try {
+                int stt = (int) row.getCell(0).getNumericCellValue();
+                String username = getCellStringValue(row.getCell(1));
+                String password = getCellStringValue(row.getCell(2));
+                String fullName = getCellStringValue(row.getCell(3));
+                String sex = getCellStringValue(row.getCell(4));
+                String roleStr = getCellStringValue(row.getCell(5));
+                int role = roleStr.equalsIgnoreCase("admin") ? 1 : 2; // 1: admin, 2: nhân viên
+                String phone = getCellStringValue(row.getCell(6));
+                String email = getCellStringValue(row.getCell(7));
+                String date = getCellStringValue(row.getCell(8)); // chuỗi ngày yyyy-MM-dd
+
+                Vector<Object> vt = new Vector<>();
+                vt.add(stt);
+                vt.add(username);
+                vt.add(password);
+                vt.add(fullName);
+                vt.add(sex);
+                vt.add(role == 1 ? "Admin" : "Nhân viên");
+                vt.add(phone);
+                vt.add(email);
+                vt.add(date);
+                tb.addRow(vt);
+            } catch (Exception e) {
+                System.err.println("Lỗi dòng " + row.getRowNum() + ": " + e.getMessage());
+            }
+        }
+
+        tbBang.setModel(tb);
+        wb.close();
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Lỗi khi đọc file Excel: " + e.getMessage());
+    }
+    }
+    private String getCellStringValue(Cell cell) {
+            if (cell == null) return "";
+            switch (cell.getCellType()) {
+                case STRING:
+                    return cell.getStringCellValue();
+                case NUMERIC:
+                    return String.valueOf((long) cell.getNumericCellValue());
+                case BOOLEAN:
+                    return String.valueOf(cell.getBooleanCellValue());
+                default:
+                    return "";
+            }
+        }
+    public void Upload() {
+        JFileChooser fc = new JFileChooser();
+            int result = fc.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+
+                nhapExcel.getTxtFile().setText(file.getPath());
+
+                if (file.getName().toLowerCase().endsWith(".xlsx")) {
+                    ReadExcel(file.getPath(), nhapExcel.getTblNCC());
+                    JOptionPane.showMessageDialog(this, "Import thành công!");
+                    loadEmployee(); // Gọi lại để load dữ liệu lên bảng
+                } else {
+                    JOptionPane.showMessageDialog(this, "Vui lòng chọn file Excel (.xlsx)");
+                }
+            }
+        
+    }
+
+    public void SaveDataFromExcel() {
+        DefaultTableModel model = (DefaultTableModel) nhapExcel.getTblNCC().getModel();
+        int rowCount = model.getRowCount();
+        int countInserted = 0, countSkipped = 0;
+
+        for (int i = 0; i < rowCount; i++) {
+        Employees emp = new Employees();
+        try {
+            emp.setEmployee_id(Integer.parseInt(model.getValueAt(i, 0).toString()));
+            emp.setEmployee_name(model.getValueAt(i, 1).toString());
+            emp.setPassword(model.getValueAt(i, 2).toString());
+            emp.setFull_name(model.getValueAt(i, 3).toString());
+            emp.setSex(model.getValueAt(i, 4).toString());
+
+            String roleText = model.getValueAt(i, 5).toString().toLowerCase();
+            emp.setRole(roleText.contains("admin") ? 1 : 2);
+
+            emp.setPhone(model.getValueAt(i, 6).toString());
+            emp.setEmail(model.getValueAt(i, 7).toString());
+            emp.setDate(Date.valueOf(model.getValueAt(i, 8).toString())); // cần chuỗi yyyy-MM-dd
+
+            // Kiểm tra trùng tên đăng nhập hoặc số điện thoại
+            if (employeeDao.isEmployeeExists(emp.getPhone())) {
+                countSkipped++;
+                continue;
+            }
+
+            employeeDao.employee_insert(emp);
+            countInserted++;
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi tại dòng " + (i + 1) + ": " + ex.getMessage());
+        }
+    }
+
+    JOptionPane.showMessageDialog(this,
+        "✔️ Đã thêm " + countInserted + " nhân viên mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng SĐT");
+
+        loadEmployee(); // Gọi lại bảng
+        
+    }
+
+    public void timKiem() {
+        String tieuChi = cboTieuChi.getSelectedItem().toString();
+        String tuKhoa = txtTimKiem.getText().trim();
+        DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
+        model.setRowCount(0);
+        ResultSet rs = employeeDao.timKiem(tieuChi, tuKhoa);
+        try {
+            while (rs != null && rs.next()) {             
+                model.addRow(new Object[]{
+                        rs.getInt("employee_id"),
+                       rs.getString("employee_name"),
+                        rs.getString("password"),
+                        rs.getString("full_name"),
+                       rs.getString("full_name"),
+                       employeeDao.MapRole(rs.getInt("role")),
+                       rs.getString("phone"),
+                       rs.getString("email"),
+                       rs.getDate("date")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
 }

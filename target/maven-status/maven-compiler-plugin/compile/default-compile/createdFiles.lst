@@ -43,6 +43,7 @@ view\StoreForm.class
 view\Supplies.class
 view\NhapExcel.class
 model\Employees.class
+view\EmployeeForm$2.class
 com\raven\chart\ItemChartPie.class
 model\Suppliers.class
 com\raven\swing\TableCell.class
@@ -75,6 +76,7 @@ com\raven\swing\ScrollBar.class
 model\Category.class
 com\raven\chart\ChartLine.class
 controller\SalaryController.class
+view\EmployeeForm$1.class
 com\raven\swing\ModernScrollBarUI$InvisibleScrollBarButton.class
 dao\SalaryDAO.class
 com\raven\chart\ChartPie.class
