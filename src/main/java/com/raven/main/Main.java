@@ -119,6 +119,7 @@ public class Main extends javax.swing.JFrame {
         menu.getMenu().addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
+                int role = Session.getInstance().getRole();
                 if (index == 0) {
                     main.show(new ThongKeView());
                 } else if (index == 1) {
@@ -128,7 +129,11 @@ public class Main extends javax.swing.JFrame {
                 } else if (index == 4) {
                     main.show(new Expense());
                 } else if (index == 5) {
-                    main.show(new DisplayForm());
+                    if (role == 1) {
+                        main.show(new DisplayForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
                 } else if (index == 6) {
                     main.show(new StoreForm());
                 } else if (index == 7) {

@@ -321,6 +321,7 @@ public class DisplayForm extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         txtTenSP = new javax.swing.JTextField();
 
+        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
                 jPanel1ComponentShown(evt);
