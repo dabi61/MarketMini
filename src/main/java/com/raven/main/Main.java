@@ -122,27 +122,64 @@ public class Main extends javax.swing.JFrame {
         menu.getMenu().addEventMenuSelected(new EventMenuSelected() {
             @Override
             public void selected(int index) {
-                if (index == 0) {
+                // Lấy role
+                int role = Session.getInstance().getRole();
+                
+                if (index == 0) { // Thống kê
                     main.show(new ThongKeView());
-                } else if (index == 1) {
-                    main.show(new Form_2());
-                } else if (index == 3) {
-                    main.show(new Promotion());
-                } else if (index == 4) {
-                    main.show(new Expense());
-                } else if (index == 5) {
-                    main.show(new DisplayForm());
-                } else if (index == 6) {
-                    main.show(new StoreForm());
-                } else if (index == 7) {
+                } else if (index == 1) { // bán hàng
                     main.show(new SalesForm());
-                } else if (index == 8) {
-                    main.show(new SupplierForm());
-                }  else if (index == 9) {
-                    main.show(new EmployeeForm());                    
-                }  else if (index == 10) {
-                    main.show(new SalaryForm());
-                } else if (index == 11) {
+                } else if (index == 2) { // Kho, nhập hàng
+                        main.show(new StoreForm());
+                } else if (index == 3) { // Nhà cung cấp
+                    if (role == 1) {
+                        main.show(new SupplierForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 4) { // Danh mục sản phẩm
+                    if (role == 1) {
+//                        main.show(new DisplayForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 5) { // trưng bày sản phẩm
+                    if (role == 1) {
+                        main.show(new DisplayForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 6) { // Khuyến mãi
+                    if (role == 1) {
+                        main.show(new Promotion());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 7) { // Nhân viên
+                    if (role == 1) {
+                        main.show(new EmployeeForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 8) { // Lương
+                    if (role == 1) {
+                        main.show(new SalaryForm());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 9) { // Ca Làm
+                    if (role == 1) {
+//                        main.show(new Expense());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 10) { // Chi phí Tháng
+                    if (role == 1) {
+                        main.show(new Expense());
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                    }
+                } else if (index == 11) { // Đăng xuất
                     int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn đăng xuất?", "Xác nhận", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         Session.getInstance().logout(); // Xoá nhân viên đang đăng nhập

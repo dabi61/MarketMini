@@ -100,9 +100,11 @@ public class LoginForm extends javax.swing.JFrame {
             }
         });
 
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/GreenBuyLogo2.png"))); // NOI18N
         jLabel6.setText("jLabel6");
 
         btnToggle.setForeground(new java.awt.Color(255, 255, 255));
+        btnToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/icons8-eye-20.png"))); // NOI18N
         btnToggle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnToggleActionPerformed(evt);
