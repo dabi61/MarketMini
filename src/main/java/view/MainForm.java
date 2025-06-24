@@ -58,7 +58,7 @@ public class MainForm extends javax.swing.JPanel {
         body.repaint();
         body.revalidate();
     }
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel body;
     private com.raven.component.Header header1;

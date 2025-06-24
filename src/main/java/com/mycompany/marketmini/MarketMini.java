@@ -6,18 +6,21 @@ package com.mycompany.marketmini;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.raven.main.Main;
+import controller.LoginController;
 import java.net.URL;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import view.LoginForm;
 
 /**
  *
  * @author macbook
  */
 public class MarketMini {
+    private LoginController loginController;
 
     public static void main(String[] args) {
-        Main view = new Main();
+        LoginForm view = new LoginForm();
 //        new CRUDController(view);
         System.setProperty("flatlaf.uiScale", "1.0");
         try {
