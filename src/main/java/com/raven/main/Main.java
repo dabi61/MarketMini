@@ -22,11 +22,14 @@ import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
 import view.DisplayForm;
+import view.Employee.EmployeeForm;
 import view.Expense;
 import view.LoginForm;
 import view.Promotion;
+import view.Salary.SalaryForm;
 import view.SalesForm;
 import view.StoreForm;
+import view.Supplier.SupplierForm;
 
 public class Main extends javax.swing.JFrame {
 
@@ -133,7 +136,13 @@ public class Main extends javax.swing.JFrame {
                     main.show(new StoreForm());
                 } else if (index == 7) {
                     main.show(new SalesForm());
-                } else if (index == 9) {
+                } else if (index == 8) {
+                    main.show(new SupplierForm());
+                }  else if (index == 9) {
+                    main.show(new EmployeeForm());                    
+                }  else if (index == 10) {
+                    main.show(new SalaryForm());
+                } else if (index == 11) {
                     int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn đăng xuất?", "Xác nhận", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         Session.getInstance().logout(); // Xoá nhân viên đang đăng nhập
