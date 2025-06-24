@@ -191,8 +191,7 @@ public class ThemNCCForm extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void clear() {
-        txtMa.setText("");
+    public void clear() {        
         txtPhone.setText("");
         txtEmail.setText("");
         txtTen.setText("");
