@@ -21,6 +21,7 @@ import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
+import view.CategoryForm;
 import view.DisplayForm;
 import view.Employee.EmployeeForm;
 import view.Expense;
@@ -30,6 +31,7 @@ import view.Salary.SalaryForm;
 import view.SalesForm;
 import view.StoreForm;
 import view.Supplier.SupplierForm;
+import view.WorkShiftForm;
 
 public class Main extends javax.swing.JFrame {
 
@@ -139,7 +141,7 @@ public class Main extends javax.swing.JFrame {
                     }
                 } else if (index == 4) { // Danh mục sản phẩm
                     if (role == 1) {
-//                        main.show(new DisplayForm());
+                        main.show(new CategoryForm());
                     } else {
                         JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                     }
@@ -169,7 +171,7 @@ public class Main extends javax.swing.JFrame {
                     }
                 } else if (index == 9) { // Ca Làm
                     if (role == 1) {
-//                        main.show(new Expense());
+                        main.show(new WorkShiftForm());
                     } else {
                         JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                     }
