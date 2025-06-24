@@ -567,6 +567,7 @@ public void HienthiForm(String action) {
 
             // Lấy dữ liệu
             String tenNV = txtTimKiem.getText().trim();
+            employee = new Employees();
             employee.setEmployee_name(tenNV);
             ResultSet rs = employeeDao.load_execel(employee);
 

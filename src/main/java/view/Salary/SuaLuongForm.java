@@ -32,6 +32,7 @@ public class SuaLuongForm extends javax.swing.JDialog {
         } catch (SQLException ex) {
             Logger.getLogger(SuaLuongForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+      
     }
 
     public JButton getBtnHuy() {
@@ -49,6 +50,10 @@ public class SuaLuongForm extends javax.swing.JDialog {
         txtLuongH.setText(sl.getHourly_wage().toString());
         txtBonus.setText(sl.getBonus().toString());   
         dateThanhtoan.setDate(sl.getPayment_date());
+        txtMa.setEnabled(false);
+        txtName.setEnabled(false);
+        txtLuongH.setEnabled(false);
+        txtTotalHour.setEnabled(false);
     }
     
     public Salary getModel(){
