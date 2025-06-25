@@ -190,7 +190,6 @@ private void enableButtons() {
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnTimKiem.setText("Tìm kiếm");
         btnTimKiem.addActionListener(new java.awt.event.ActionListener() {
@@ -198,14 +197,12 @@ private void enableButtons() {
                 btnTimKiemActionPerformed(evt);
             }
         });
-        jPanel1.add(btnTimKiem, new org.netbeans.lib.awtextra.AbsoluteConstraints(780, 80, 100, -1));
 
         txtMatBang.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtMatBangActionPerformed(evt);
             }
         });
-        jPanel1.add(txtMatBang, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 220, 179, -1));
 
         btnBoQua.setText("Bỏ qua");
         btnBoQua.addActionListener(new java.awt.event.ActionListener() {
@@ -213,7 +210,6 @@ private void enableButtons() {
                 btnBoQuaActionPerformed(evt);
             }
         });
-        jPanel1.add(btnBoQua, new org.netbeans.lib.awtextra.AbsoluteConstraints(670, 270, -1, -1));
 
         btnXoa.setText("Xóa");
         btnXoa.addActionListener(new java.awt.event.ActionListener() {
@@ -221,26 +217,20 @@ private void enableButtons() {
                 btnXoaActionPerformed(evt);
             }
         });
-        jPanel1.add(btnXoa, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 270, -1, -1));
 
         txtTK1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtTK1ActionPerformed(evt);
             }
         });
-        jPanel1.add(txtTK1, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 80, 140, -1));
 
         jLabel6.setText("Tìm kiếm");
-        jPanel1.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 80, -1, -1));
 
         jLabel4.setText("Tiên thuê mặt bằng: ");
-        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 220, 112, 19));
 
         jLabel2.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(51, 153, 0));
         jLabel2.setText("Quản lý chi phí hàng tháng");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 20, -1, -1));
-        jPanel1.add(dtpNgayTao, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 120, 172, -1));
 
         btnLuu.setText("Lưu");
         btnLuu.addActionListener(new java.awt.event.ActionListener() {
@@ -248,7 +238,6 @@ private void enableButtons() {
                 btnLuuActionPerformed(evt);
             }
         });
-        jPanel1.add(btnLuu, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 270, -1, -1));
 
         btnSua.setText("Sửa");
         btnSua.addActionListener(new java.awt.event.ActionListener() {
@@ -256,7 +245,6 @@ private void enableButtons() {
                 btnSuaActionPerformed(evt);
             }
         });
-        jPanel1.add(btnSua, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 270, -1, -1));
 
         btnThem.setText("Thêm");
         btnThem.addActionListener(new java.awt.event.ActionListener() {
@@ -264,10 +252,8 @@ private void enableButtons() {
                 btnThemActionPerformed(evt);
             }
         });
-        jPanel1.add(btnThem, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 270, -1, -1));
 
         jLabel3.setText("Ngày tạo đơn: ");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 120, -1, -1));
 
         btnXuat.setText("Xuất Excel");
         btnXuat.addActionListener(new java.awt.event.ActionListener() {
@@ -275,26 +261,111 @@ private void enableButtons() {
                 btnXuatActionPerformed(evt);
             }
         });
-        jPanel1.add(btnXuat, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 30, -1, -1));
 
         jLabel8.setText("Tiền nước:");
-        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 120, -1, -1));
 
         txtNuoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtNuocActionPerformed(evt);
             }
         });
-        jPanel1.add(txtNuoc, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 120, 180, -1));
 
         jLabel1.setText("Tiền điện:");
-        jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 170, -1, -1));
-        jPanel1.add(txtDien, new org.netbeans.lib.awtextra.AbsoluteConstraints(190, 170, 180, -1));
 
         jLabel5.setText("Tiền sửa chữa:");
-        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 170, -1, -1));
-        jPanel1.add(txtSuaChua, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 170, 180, -1));
-        jPanel1.add(jMonthChooser1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 80, -1, -1));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(260, 260, 260)
+                .addComponent(jLabel2)
+                .addGap(21, 21, 21)
+                .addComponent(btnXuat))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(210, 210, 210)
+                .addComponent(jMonthChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(253, 253, 253)
+                .addComponent(jLabel6)
+                .addGap(11, 11, 11)
+                .addComponent(txtTK1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(10, 10, 10)
+                .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(60, 60, 60)
+                .addComponent(jLabel3)
+                .addGap(52, 52, 52)
+                .addComponent(dtpNgayTao, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(78, 78, 78)
+                .addComponent(jLabel8)
+                .addGap(66, 66, 66)
+                .addComponent(txtNuoc, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(60, 60, 60)
+                .addComponent(jLabel1)
+                .addGap(79, 79, 79)
+                .addComponent(txtDien, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(70, 70, 70)
+                .addComponent(jLabel5)
+                .addGap(45, 45, 45)
+                .addComponent(txtSuaChua, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(60, 60, 60)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(txtMatBang, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(130, 130, 130)
+                .addComponent(btnThem)
+                .addGap(97, 97, 97)
+                .addComponent(btnSua)
+                .addGap(87, 87, 87)
+                .addComponent(btnLuu)
+                .addGap(79, 79, 79)
+                .addComponent(btnXoa)
+                .addGap(57, 57, 57)
+                .addComponent(btnBoQua))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(btnXuat)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jMonthChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addComponent(txtTK1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTimKiem))
+                .addGap(15, 15, 15)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(dtpNgayTao, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8)
+                    .addComponent(txtNuoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(txtDien, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(txtSuaChua, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtMatBang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnThem)
+                    .addComponent(btnSua)
+                    .addComponent(btnLuu)
+                    .addComponent(btnXoa)
+                    .addComponent(btnBoQua)))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -309,7 +380,7 @@ private void enableButtons() {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
