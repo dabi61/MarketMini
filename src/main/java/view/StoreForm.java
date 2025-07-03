@@ -3,6 +3,8 @@ package view;
 import com.toedter.calendar.JDateChooser;
 import controller.ImportsController;
 import dao.ImportsDAO;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
@@ -23,6 +25,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 import model.DBConnection;
 import model.Imports;
 import model.Products;
@@ -52,8 +56,8 @@ public class StoreForm extends javax.swing.JPanel {
             if (con == null) {
                 throw new SQLDataException("Failed to establish database connection");
             }
-            ImportsDAO importsDAO = new ImportsDAO(con); 
-            importsController = new ImportsController(importsDAO, this); 
+            ImportsDAO importsDAO = new ImportsDAO(con);
+            importsController = new ImportsController(importsDAO, this);
         } catch (SQLDataException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi khởi tạo controller: " + e.getMessage());
@@ -248,6 +252,14 @@ public class StoreForm extends javax.swing.JPanel {
             }
             tblViewNhapHang.setModel(tb);
             con.close();
+
+            JTableHeader header = tblViewNhapHang.getTableHeader();
+            header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            header.setForeground(Color.WHITE);
+            header.setBackground(new Color(46, 125, 50)); // Màu xanh lá
+
+            TableColumnModel columnModel = tblViewNhapHang.getColumnModel();
+            columnModel.getColumn(1).setPreferredWidth(200); // Tên sản phẩm
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -278,6 +290,14 @@ public class StoreForm extends javax.swing.JPanel {
 
             // Gán model vào bảng
             tblViewNhapHang.setModel(tableModel);
+            
+            JTableHeader header = tblViewNhapHang.getTableHeader();
+            header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            header.setForeground(Color.WHITE);
+            header.setBackground(new Color(46, 125, 50)); // Màu xanh lá
+
+            TableColumnModel columnModel = tblViewNhapHang.getColumnModel();
+            columnModel.getColumn(1).setPreferredWidth(200);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -308,6 +328,14 @@ public class StoreForm extends javax.swing.JPanel {
             }
             tblViewKhoHang.setModel(tb);
             con.close();
+            
+            JTableHeader header = tblViewKhoHang.getTableHeader();
+            header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            header.setForeground(Color.WHITE);
+            header.setBackground(new Color(46, 125, 50)); // Màu xanh lá
+
+            TableColumnModel columnModel = tblViewKhoHang.getColumnModel();
+            columnModel.getColumn(1).setPreferredWidth(200);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -336,6 +364,14 @@ public class StoreForm extends javax.swing.JPanel {
 
             // Gán model vào bảng
             tblViewKhoHang.setModel(tableModel);
+            
+            JTableHeader header = tblViewKhoHang.getTableHeader();
+            header.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            header.setForeground(Color.WHITE);
+            header.setBackground(new Color(46, 125, 50)); // Màu xanh lá
+
+            TableColumnModel columnModel = tblViewKhoHang.getColumnModel();
+            columnModel.getColumn(1).setPreferredWidth(200);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -630,7 +666,10 @@ public class StoreForm extends javax.swing.JPanel {
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
 
-        jTabbedPane1.setBackground(new java.awt.Color(204, 255, 204));
+        jTabbedPane1.setBackground(new java.awt.Color(46, 125, 50));
+        jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
+        jTabbedPane1.setFocusable(false);
+        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -1176,7 +1215,7 @@ public class StoreForm extends javax.swing.JPanel {
             if (status == "them") {
                 importsController.addImport();
                 loadDuLieuNhap();
-                
+
             } else if (status == "sua") {
                 importsController.updateImport();
                 enty();
