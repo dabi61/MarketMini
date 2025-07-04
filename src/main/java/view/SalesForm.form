@@ -84,7 +84,7 @@
                       <Group type="102" attributes="0">
                           <Component id="txtTimSP" min="-2" pref="151" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="btnTimSP" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnTimSP" min="-2" pref="130" max="-2" attributes="0"/>
                       </Group>
                       <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                   </Group>
