@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import model.Customers;
 import model.Products;
+import model.Promotion;
 import view.SalesForm;
 
 public class SalesController {
@@ -103,8 +104,6 @@ public class SalesController {
         }
     }
 
-    // Phần add point khi mua hàng của khách chưa hoàn thiện
-    // gợi ý: bảng order thêm 1 trường là tiền khách phải trả để lưu, tránh gây xung đột giữa tổng tiền hàng và tiền thực nhận
     public void insertOrder() {
         try {
             // Lấy dữ liệu từ form
@@ -116,6 +115,10 @@ public class SalesController {
             String totalAmountStr = salesView.getTxtTongTienHang().getText().trim();
             int totalAmount = Integer.parseInt(totalAmountStr);
             String customerName = salesView.getTxtTimKiemKhachHang().getText().trim();
+            if (customerName.isEmpty()) {
+                JOptionPane.showMessageDialog(salesView, "Vui lòng chọn khách hàng trước khi thanh toán.");
+                return;
+            }
             int customerId = salesDAO.getCustomerIdByName(customerName);
             String pointStr = salesView.getTxtPoint().getText().trim();
             int point = Integer.parseInt(pointStr);
@@ -158,7 +161,7 @@ public class SalesController {
                     return;
                 }
                 // Cập nhật tồn kho - trigger đã trừ
-                
+
 //                boolean stockUpdated = salesDAO.updateProductStock(productId, quantity);
 //                if (!stockUpdated) {
 //                    JOptionPane.showMessageDialog(salesView, "Lỗi cập nhật tồn kho. Sản phẩm có thể không đủ số lượng.");
@@ -182,5 +185,65 @@ public class SalesController {
             JOptionPane.showMessageDialog(salesView, "Lỗi tạo đơn hàng: " + e.getMessage());
         }
 
+    }
+
+    public void themSanPhamVaoDonHang(int selectedRow, int soLuongThem) {
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(salesView, "Vui lòng chọn sản phẩm để thêm!");
+            return;
+        }
+
+        if (soLuongThem <= 0) {
+            JOptionPane.showMessageDialog(salesView, "Số lượng phải lớn hơn 0!");
+            return;
+        }
+
+        DefaultTableModel modelSanPham = (DefaultTableModel) salesView.getTblViewProduct().getModel();
+        DefaultTableModel modelDonHang = (DefaultTableModel) salesView.getTblDonHangView().getModel();
+
+        int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0);
+        String tenSanPham = (String) modelSanPham.getValueAt(selectedRow, 1);
+        int giaNhap = (int) modelSanPham.getValueAt(selectedRow, 3);
+
+        // Giá bán tăng 20%
+        int giaBan = (int) (giaNhap * 1.2);
+
+        // Lấy khuyến mãi
+        int discount = 0;
+        int giaKhuyenMai = giaBan;
+        Promotion promo = salesDAO.getActivePromotionByProductId(maSanPham);
+        if (promo != null) {
+            discount = promo.getDiscount(); // %
+            giaKhuyenMai = giaBan * (100 - discount) / 100;
+        }
+
+        // Kiểm tra nếu đã có thì cộng số lượng
+        boolean daCo = false;
+        for (int i = 0; i < modelDonHang.getRowCount(); i++) {
+            int idTrongDon = (int) modelDonHang.getValueAt(i, 0);
+            if (idTrongDon == maSanPham) {
+                int soLuongCu = (int) modelDonHang.getValueAt(i, 4);
+                modelDonHang.setValueAt(soLuongCu + soLuongThem, i, 4);
+                daCo = true;
+                break;
+            }
+        }
+
+        // Nếu chưa có thì thêm mới
+        if (!daCo) {
+            modelDonHang.addRow(new Object[]{
+                maSanPham,
+                tenSanPham,
+                giaBan,
+                giaKhuyenMai,
+                soLuongThem,
+                discount
+            });
+        }
+
+        salesView.getSpnSoLuong().setValue(0);
+        salesView.tinhTongTienHang();
+        salesView.tinhGiamGia();
+        salesView.tinhKhachCanTra();
     }
 }

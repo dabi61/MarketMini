@@ -16,6 +16,7 @@ import model.Customers;
 import model.DBConnection;
 import model.Orders;
 import model.Products;
+import model.Promotion;
 
 /**
  *
@@ -76,6 +77,7 @@ public class SalesDAO {
                 + "FROM products p "
                 + "JOIN imports i ON p.product_id = i.product_id "
                 + "JOIN category c ON p.category_id = c.category_id "
+                + "JOIN productdisplay pd ON p.product_id = pd.product_id "
                 + "WHERE 1=1");
 
         // Thêm điều kiện lọc nếu có
@@ -204,4 +206,34 @@ public class SalesDAO {
             return false;
         }
     }
+
+    public Promotion getActivePromotionByProductId(int maSanPham) {
+        Promotion promotion = null;
+        String sql = "SELECT * FROM promotion "
+                + "WHERE product_id = ? "
+                + "AND CURDATE() BETWEEN start_date AND end_date "
+                + "ORDER BY discount DESC "
+                + "LIMIT 1";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, maSanPham);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                promotion = new Promotion();
+                promotion.setPromotionId(rs.getInt("promotion_id"));
+                promotion.setPromotionName(rs.getString("promotion_name"));
+                promotion.setStartDate(rs.getDate("start_date"));
+                promotion.setEndDate(rs.getDate("end_date"));
+                promotion.setProductId(rs.getInt("product_id"));
+                promotion.setDiscount(rs.getInt("discount"));
+                promotion.setDiscountedPrice(rs.getInt("discounted_price"));
+                promotion.setOriginalPrice(rs.getInt("original_price"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return promotion;
+    }
+
 }

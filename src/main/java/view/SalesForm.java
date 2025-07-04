@@ -20,6 +20,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -169,7 +170,7 @@ public class SalesForm extends javax.swing.JPanel {
 
     private void initTableDonHang() {
         DefaultTableModel modelDonHang = new DefaultTableModel(
-                new Object[]{"Mã sản phẩm", "Tên sản phẩm", "Giá bán", "Số lượng"}, 0
+                new Object[]{"Mã sản phẩm", "Tên sản phẩm", "Giá bán", "Giá khuyến mãi", "Số lượng", "Giảm giá (%)"}, 0
         );
         tblDonHangView.setModel(modelDonHang);
 
@@ -209,7 +210,8 @@ public class SalesForm extends javax.swing.JPanel {
             con = DBConnection.getConnection();
             String sql = "SELECT p.product_id, p.product_name, c.category_name, p.price, p.stock_quantity, p.unit "
                     + "FROM products p "
-                    + "LEFT JOIN category c ON p.category_id = c.category_id ";
+                    + "LEFT JOIN category c ON p.category_id = c.category_id "
+                    + "INNER JOIN productdisplay pd ON p.product_id = pd.product_id";
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 
@@ -268,7 +270,7 @@ public class SalesForm extends javax.swing.JPanel {
             header.setFont(new Font("Segoe UI", Font.BOLD, 12));
             header.setForeground(Color.WHITE);
             header.setBackground(new Color(46, 125, 50));
-            
+
             TableColumnModel columnModel = tblViewProduct.getColumnModel();
             columnModel.getColumn(1).setPreferredWidth(200);
         } catch (Exception e) {
@@ -277,36 +279,49 @@ public class SalesForm extends javax.swing.JPanel {
     }
 
     //Phần hóa đơn
-    private int tinhTongTienHang() {
+    public int tinhTongTienHang() {
         DefaultTableModel modelDonHang = (DefaultTableModel) tblDonHangView.getModel();
         int tongTien = 0;
         for (int i = 0; i < modelDonHang.getRowCount(); i++) {
-            int gia = Integer.parseInt(modelDonHang.getValueAt(i, 2).toString());
-            int soLuong = Integer.parseInt(modelDonHang.getValueAt(i, 3).toString());
+            int gia = Integer.parseInt(modelDonHang.getValueAt(i, 3).toString());
+            int soLuong = Integer.parseInt(modelDonHang.getValueAt(i, 4).toString());
             tongTien += gia * soLuong;
         }
         txtTongTienHang.setText(String.valueOf(tongTien));
         return tongTien;
     }
 
-    // chưa xong
-    private int tinhGiamGia() {
+    public int tinhGiamGia() {
+        int giamGiaTuPoint = 0;
+        int giamGiaKhuyenMai = 0;
+
+        // 1. Tính giảm giá từ point nếu được chọn
         if (chkDungPoint.isSelected()) {
             try {
-                int diemPoint = Integer.parseInt(txtPoint.getText());
-                txtGiamGia.setText(String.valueOf(diemPoint)); // hiển thị giảm giá = point
-                return diemPoint;
+                giamGiaTuPoint = Integer.parseInt(txtPoint.getText());
             } catch (NumberFormatException e) {
-                txtGiamGia.setText("0"); // nếu nhập sai thì hiện 0
-                return 0;
+                giamGiaTuPoint = 0;
             }
-        } else {
-            txtGiamGia.setText("0"); // nếu không chọn dùng point
-            return 0;
         }
+
+        // 2. Tính giảm giá từ từng sản phẩm trong đơn hàng (giá bán - giá khuyến mãi) * số lượng
+        DefaultTableModel model = (DefaultTableModel) tblDonHangView.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            int giaBan = (int) model.getValueAt(i, 2);         // Cột 2: Giá bán
+            int giaKM = (int) model.getValueAt(i, 3);          // Cột 3: Giá khuyến mãi
+            int soLuong = (int) model.getValueAt(i, 4);        // Cột 4: Số lượng
+
+            int giamTungSP = (giaBan - giaKM) * soLuong;
+            giamGiaKhuyenMai += giamTungSP;
+        }
+
+        int tongGiamGia = giamGiaTuPoint + giamGiaKhuyenMai;
+
+        txtGiamGia.setText(String.valueOf(tongGiamGia)); // Hiển thị lên giao diện
+        return tongGiamGia;
     }
 
-    private void tinhKhachCanTra() {
+    public void tinhKhachCanTra() {
         int tongTien = tinhTongTienHang();
         int giamGia = tinhGiamGia();
         int khachCanTra = tongTien - giamGia;
@@ -376,6 +391,14 @@ public class SalesForm extends javax.swing.JPanel {
 
     public JTable getTblDonHangView() {
         return tblDonHangView;
+    }
+
+    public JTable getTblViewProduct() {
+        return tblViewProduct;
+    }
+
+    public JSpinner getSpnSoLuong() {
+        return spnSoLuong;
     }
 
     public JTextField getTxtPoint() {
@@ -762,21 +785,21 @@ public class SalesForm extends javax.swing.JPanel {
                         .addGap(37, 37, 37)
                         .addComponent(txtTongTienHang))
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(46, 46, 46)
-                        .addComponent(txtKhachCanTra, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(71, 71, 71)
-                        .addComponent(txtGiamGia, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel3)
                             .addComponent(btnTienThuaTraKhach, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtTienThua)
-                            .addComponent(txtKhachTra, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))))
+                            .addComponent(txtKhachTra, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(46, 46, 46)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtKhachCanTra, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE)
+                            .addComponent(txtGiamGia, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))))
                 .addContainerGap())
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addGap(40, 40, 40)
@@ -922,52 +945,10 @@ public class SalesForm extends javax.swing.JPanel {
 
     private void btnThemSPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemSPActionPerformed
         int selectedRow = tblViewProduct.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sản phẩm để thêm!");
-            return;
-        }
-
         int soLuongThem = (int) spnSoLuong.getValue();
-        if (soLuongThem <= 0) {
-            JOptionPane.showMessageDialog(this, "Số lượng phải lớn hơn 0!");
-            return;
-        }
 
-        DefaultTableModel modelSanPham = (DefaultTableModel) tblViewProduct.getModel();
-        DefaultTableModel modelDonHang = (DefaultTableModel) tblDonHangView.getModel();
-
-        int maSanPham = (int) modelSanPham.getValueAt(selectedRow, 0); // cột 0: mã sản phẩm
-        String tenSanPham = (String) modelSanPham.getValueAt(selectedRow, 1); // cột 1: tên sản phẩm
-        int giaBanStr = (int) modelSanPham.getValueAt(selectedRow, 3); // cột 3: giá bán
-        // Tăng thành giá bán
-        int giaBanTang = (int) (giaBanStr * 1.2); // tăng 20%
-
-        // Kiểm tra nếu sản phẩm đã có trong đơn hàng thì cộng dồn số lượng
-        boolean daCo = false;
-        for (int i = 0; i < modelDonHang.getRowCount(); i++) {
-            String tenTrongDonHang = (String) modelDonHang.getValueAt(i, 1);
-            if (tenSanPham.equals(tenTrongDonHang)) {
-                int soLuongCu = (int) modelDonHang.getValueAt(i, 3);
-                modelDonHang.setValueAt(soLuongCu + soLuongThem, i, 3);
-                daCo = true;
-                break;
-            }
-        }
-        // Nếu chưa có thì thêm dòng mới
-        if (!daCo) {
-            modelDonHang.addRow(new Object[]{
-                maSanPham,
-                tenSanPham,
-                giaBanTang,
-                soLuongThem
-            });
-        }
-
-        // Reset spinner về 0
-        spnSoLuong.setValue(0);
-        tinhTongTienHang();
-        tinhGiamGia();
-        tinhKhachCanTra();
+        // Gọi controller xử lý
+        salesController.themSanPhamVaoDonHang(selectedRow, soLuongThem);
     }//GEN-LAST:event_btnThemSPActionPerformed
 
     private void btnXoaSPActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXoaSPActionPerformed
