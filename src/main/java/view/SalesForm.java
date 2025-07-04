@@ -289,6 +289,7 @@ public class SalesForm extends javax.swing.JPanel {
         return tongTien;
     }
 
+    // chưa xong
     private int tinhGiamGia() {
         if (chkDungPoint.isSelected()) {
             try {

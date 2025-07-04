@@ -157,12 +157,13 @@ public class SalesController {
                     JOptionPane.showMessageDialog(salesView, "Lỗi khi lưu chi tiết sản phẩm.");
                     return;
                 }
-                // Cập nhật tồn kho
-                boolean stockUpdated = salesDAO.updateProductStock(productId, quantity);
-                if (!stockUpdated) {
-                    JOptionPane.showMessageDialog(salesView, "Lỗi cập nhật tồn kho. Sản phẩm có thể không đủ số lượng.");
-                    return;
-                }
+                // Cập nhật tồn kho - trigger đã trừ
+                
+//                boolean stockUpdated = salesDAO.updateProductStock(productId, quantity);
+//                if (!stockUpdated) {
+//                    JOptionPane.showMessageDialog(salesView, "Lỗi cập nhật tồn kho. Sản phẩm có thể không đủ số lượng.");
+//                    return;
+//                }
             }
 
             // 4. Tích điểm point cho khách hàng
