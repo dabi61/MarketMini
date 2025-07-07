@@ -114,6 +114,8 @@ public class ThemNVForm extends javax.swing.JDialog {
     }
 
     public void clear() {
+        txtMa.setText(String.valueOf(dao.employeeIdMax()));
+        txtMa.setEnabled(false);
         txtHoTen.setText("");
         txtEmail.setText("");
         txtPass.setText("");

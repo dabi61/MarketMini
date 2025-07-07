@@ -685,7 +685,7 @@ public void HienthiForm(String action) {
                     String fullName = getCellStringValue(row.getCell(3));
                     String sex = getCellStringValue(row.getCell(4));
                     String roleStr = getCellStringValue(row.getCell(5));
-                    int role = roleStr.equalsIgnoreCase("admin") ? 1 : 2; // 1: admin, 2: nhân viên
+                    int role = roleStr.equalsIgnoreCase("Admin") ? 1 : 2; // 1: admin, 2: nhân viên
                     String phone = getCellStringValue(row.getCell(6));
                     String email = getCellStringValue(row.getCell(7));
                     String date = getCellStringValue(row.getCell(8)); // chuỗi ngày yyyy-MM-dd
