@@ -764,6 +764,11 @@ public class SalesForm extends javax.swing.JPanel {
         btnInHoaDon.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnInHoaDon.setForeground(new java.awt.Color(255, 255, 255));
         btnInHoaDon.setText("In");
+        btnInHoaDon.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnInHoaDonActionPerformed(evt);
+            }
+        });
 
         btnTienThuaTraKhach.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnTienThuaTraKhach.setText("Tiền thừa");
@@ -988,6 +993,15 @@ public class SalesForm extends javax.swing.JPanel {
         model.setRowCount(0);
         enty();
     }//GEN-LAST:event_btnDonHangMoiActionPerformed
+
+    private void btnInHoaDonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnInHoaDonActionPerformed
+        int orderId = salesController.getLastOrderId();
+        if (orderId == -1) {
+            JOptionPane.showMessageDialog(this, "Chưa có hóa đơn nào để in!");
+            return;
+        }
+        salesController.exportInvoiceToExcel(orderId);
+    }//GEN-LAST:event_btnInHoaDonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -236,4 +236,52 @@ public class SalesDAO {
         return promotion;
     }
 
+    public Orders getOrderById(int orderId) {
+        String sql = "SELECT o.*, c.full_name, c.phone_number "
+                + "FROM orders o JOIN customers c ON o.customer_id = c.customer_id "
+                + "WHERE o.order_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Orders order = new Orders();
+                order.setOrder_id(rs.getInt("order_id"));
+                order.setOrder_date(rs.getDate("order_date").toLocalDate());
+                order.setTotal_amount(rs.getInt("total_amount"));
+                order.setFinalAmount(rs.getInt("final_amount"));
+                order.setCustomerName(rs.getString("full_name"));
+                order.setPhoneNumber(rs.getString("phone_number"));
+                return order;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Products> getOrderDetailsByOrderId(int orderId) {
+        List<Products> productList = new ArrayList<>();
+        String sql = "SELECT p.product_name, od.quantity, od.unit_price, "
+                + "       (od.quantity * od.unit_price) AS total_price "
+                + "FROM orderdetails od "
+                + "JOIN products p ON od.product_id = p.product_id "
+                + "WHERE od.order_id = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Products p = new Products();
+                p.setProduct_name(rs.getString("product_name"));
+                p.setQuantity(rs.getInt("quantity"));        // số lượng mua
+                p.setPrice(rs.getInt("unit_price"));         // đơn giá
+                p.setTotalPrice(rs.getInt("total_price"));   // thành tiền
+                productList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
+    }
+
 }
