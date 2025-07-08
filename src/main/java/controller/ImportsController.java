@@ -567,25 +567,26 @@ public class ImportsController {
 
     public void exportStoreExcel(File file) {
         try {
-            // --- Lấy giá trị lọc từ giao diện ---
-            String categoryName = importsView.getCategorySearchComboBox(); // view.get selected loại hàng
-            String supplierName = importsView.getSupplierSearchComboBox(); // view.get selected nhà cung cấp
+            // Lấy tên loại hàng và nhà cung cấp từ combobox
+            String categoryName = importsView.getCategorySearchComboBox();
+            String supplierName = importsView.getSupplierSearchComboBox();
 
+            // Nếu là "--Chọn..." thì coi như không chọn
+            if (categoryName != null && categoryName.equals("--Chọn loại hàng")) {
+                categoryName = "";
+            }
+            if (supplierName != null && supplierName.equals("--Chọn nhà cung cấp")) {
+                supplierName = "";
+            }
+
+            // Lấy map ánh xạ sang ID
             Map<String, Integer> categoryMap = importsView.getCategoryMap();
             Map<String, Integer> supplierMap = importsView.getSupplierMap();
 
-            Integer categoryId = null;
-            Integer supplierId = null;
+            Integer categoryId = (categoryName != null && !categoryName.isEmpty()) ? categoryMap.get(categoryName) : null;
+            Integer supplierId = (supplierName != null && !supplierName.isEmpty()) ? supplierMap.get(supplierName) : null;
 
-            if (categoryName != null && !categoryName.equals("--Chọn loại hàng")) {
-                categoryId = categoryMap.get(categoryName);
-            }
-
-            if (supplierName != null && !supplierName.equals("--Chọn nhà cung cấp")) {
-                supplierId = supplierMap.get(supplierName);
-            }
-
-            // --- Gọi DAO đúng cách ---
+            // Lấy dữ liệu từ DAO theo điều kiện lọc
             List<Products> productList = importsDAO.getAllProductsFromTable(categoryId, supplierId);
 
             if (productList.isEmpty()) {
@@ -624,14 +625,14 @@ public class ImportsController {
             // --- Hàng 1: Tiêu đề ---
             Row titleRow = sheet.createRow(rowIdx++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("DANH SÁCH SẢN PHẨM TỒN KHO");
+            titleCell.setCellValue("DANH SÁCH SẢN PHẨM TỒN KHO - GREENBUY");
             titleCell.setCellStyle(titleStyle);
             sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
 
-            // --- Hàng 2: Thông tin lọc ---
+            // --- Hàng 2: thông tin lọc ---
             Row filterRow = sheet.createRow(rowIdx++);
-            filterRow.createCell(0).setCellValue("Loại hàng: " + (categoryName != null ? categoryName : ""));
-            filterRow.createCell(3).setCellValue("Nhà cung cấp: " + (supplierName != null ? supplierName : ""));
+            filterRow.createCell(0).setCellValue("Loại hàng: " + (!categoryName.isEmpty() ? categoryName : ""));
+            filterRow.createCell(3).setCellValue("Nhà cung cấp: " + (!supplierName.isEmpty() ? supplierName : ""));
 
             // --- Hàng 3: Dòng trống ---
             rowIdx++;
@@ -645,7 +646,7 @@ public class ImportsController {
                 cell.setCellStyle(headerStyle);
             }
 
-            // --- Dữ liệu từ hàng 5 ---
+            // --- Dữ liệu ---
             for (Products p : productList) {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(p.getProduct_id());
@@ -661,14 +662,14 @@ public class ImportsController {
             }
 
             // --- Auto size ---
-            sheet.setColumnWidth(1, 10000); // Tên sản phẩm
+            sheet.setColumnWidth(1, 10000); // Tên sản phẩm dài
             for (int i = 0; i < columns.length; i++) {
                 if (i != 1) {
                     sheet.autoSizeColumn(i);
                 }
             }
 
-            // --- Ghi ra file và mở ---
+            // --- Ghi ra file ---
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 workbook.write(fos);
             }
