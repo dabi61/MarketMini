@@ -290,7 +290,7 @@ public class StoreForm extends javax.swing.JPanel {
 
             // Gán model vào bảng
             tblViewNhapHang.setModel(tableModel);
-            
+
             JTableHeader header = tblViewNhapHang.getTableHeader();
             header.setFont(new Font("Segoe UI", Font.BOLD, 12));
             header.setForeground(Color.WHITE);
@@ -328,7 +328,7 @@ public class StoreForm extends javax.swing.JPanel {
             }
             tblViewKhoHang.setModel(tb);
             con.close();
-            
+
             JTableHeader header = tblViewKhoHang.getTableHeader();
             header.setFont(new Font("Segoe UI", Font.BOLD, 12));
             header.setForeground(Color.WHITE);
@@ -364,7 +364,7 @@ public class StoreForm extends javax.swing.JPanel {
 
             // Gán model vào bảng
             tblViewKhoHang.setModel(tableModel);
-            
+
             JTableHeader header = tblViewKhoHang.getTableHeader();
             header.setFont(new Font("Segoe UI", Font.BOLD, 12));
             header.setForeground(Color.WHITE);
@@ -791,6 +791,11 @@ public class StoreForm extends javax.swing.JPanel {
         btnXuatExcel.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnXuatExcel.setForeground(new java.awt.Color(255, 255, 255));
         btnXuatExcel.setText("Xuất excel");
+        btnXuatExcel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXuatExcelActionPerformed(evt);
+            }
+        });
 
         jLabel16.setText("Tìm kiếm");
 
@@ -880,13 +885,14 @@ public class StoreForm extends javax.swing.JPanel {
                     .addComponent(jLabel15)
                     .addComponent(txtDonViKho, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnSuaKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnXoaKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(btnBoQuaKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnXuatExcel, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnLuuKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnLuuKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnSuaKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnXoaKho, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(15, Short.MAX_VALUE))
@@ -1024,6 +1030,11 @@ public class StoreForm extends javax.swing.JPanel {
         btnXuatExcelNhap.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnXuatExcelNhap.setForeground(new java.awt.Color(255, 255, 255));
         btnXuatExcelNhap.setText("Xuất excel");
+        btnXuatExcelNhap.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnXuatExcelNhapActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -1454,6 +1465,54 @@ public class StoreForm extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_btnNhapExcelActionPerformed
+
+    private void btnXuatExcelNhapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXuatExcelNhapActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+
+        int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            // Thêm phần mở rộng .xlsx nếu chưa có
+            if (!selectedFile.getName().toLowerCase().endsWith(".xlsx")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
+            }
+
+            try {
+                // Gọi hàm export từ controller
+                importsController.exportImportProductExcelByDateRange(selectedFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_btnXuatExcelNhapActionPerformed
+
+    private void btnXuatExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnXuatExcelActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+
+        // Gợi ý tên file
+        fileChooser.setSelectedFile(new File("ton_kho.xlsx"));
+
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            // Đảm bảo có đuôi .xlsx
+            if (!selectedFile.getName().toLowerCase().endsWith(".xlsx")) {
+                selectedFile = new File(selectedFile.getAbsolutePath() + ".xlsx");
+            }
+
+            try {
+                importsController.exportStoreExcel(selectedFile);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + e.getMessage());
+            }
+        }
+    }//GEN-LAST:event_btnXuatExcelActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

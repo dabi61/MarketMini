@@ -208,13 +208,15 @@
                               <Component id="txtDonViKho" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="btnSuaKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
-                              <Component id="btnXoaKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
-                              <Group type="103" alignment="3" groupAlignment="3" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                                   <Component id="btnBoQuaKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
                                   <Component id="btnXuatExcel" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
                                   <Component id="btnLuuKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="btnSuaKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
+                                  <Component id="btnXoaKho" alignment="3" min="-2" pref="33" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -433,6 +435,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Xu&#x1ea5;t excel"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnXuatExcelActionPerformed"/>
+                  </Events>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel16">
                   <Properties>
@@ -962,6 +967,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Xu&#x1ea5;t excel"/>
                   </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnXuatExcelNhapActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>

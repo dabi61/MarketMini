@@ -6,7 +6,9 @@ package controller;
 
 import com.toedter.calendar.JDateChooser;
 import dao.ImportsDAO;
+import java.awt.Desktop;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -20,6 +22,18 @@ import model.DBConnection;
 import model.ExcelImporter;
 import model.Imports;
 import model.Products;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import view.StoreForm;
 
 /**
@@ -410,4 +424,263 @@ public class ImportsController {
             JOptionPane.showMessageDialog(importsView, "Lỗi khi tìm kiếm: " + e.getMessage());
         }
     }
+
+    public void exportImportProductExcelByDateRange(File file) {
+        try {
+            java.util.Date fromDate = importsView.getjDateTimTu().getDate();
+            java.util.Date toDate = importsView.getjDateTimDen().getDate();
+
+            java.sql.Date sqlFromDate = (fromDate != null) ? new java.sql.Date(fromDate.getTime()) : null;
+            java.sql.Date sqlToDate = (toDate != null) ? new java.sql.Date(toDate.getTime()) : null;
+
+            List<Imports> data;
+            if (sqlFromDate != null && sqlToDate != null) {
+                data = importsDAO.getImportsByDateRange(sqlFromDate, sqlToDate);
+            } else {
+                data = importsDAO.searchImport(null, null, null, null);
+            }
+
+            if (data.isEmpty()) {
+                JOptionPane.showMessageDialog(importsView, "Không có dữ liệu để xuất.");
+                return;
+            }
+
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Lịch sử nhập hàng - Green Buy");
+
+            int rowIdx = 0;
+
+            // --- STYLE ---
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setFontHeightInPoints((short) 16);
+            titleFont.setBold(true);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle dateStyle = workbook.createCellStyle();
+            Font dateFont = workbook.createFont();
+            dateFont.setItalic(true);
+            dateStyle.setFont(dateFont);
+            dateStyle.setAlignment(HorizontalAlignment.LEFT);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            // --- Hàng 1: Tiêu đề ---
+            Row titleRow = sheet.createRow(rowIdx++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("LỊCH SỬ NHẬP HÀNG");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 8));
+
+            // --- Hàng 2: Dòng trống ---
+            rowIdx++;
+
+            // --- Hàng 3: "Từ ngày đến ngày" ---
+            Row dateRangeRow = sheet.createRow(rowIdx++);
+            Cell dateCell = dateRangeRow.createCell(0);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            String fromStr = (fromDate != null) ? sdf.format(fromDate) : "";
+            String toStr = (toDate != null) ? sdf.format(toDate) : "";
+            dateCell.setCellValue("Từ ngày: " + fromStr + "    đến ngày: " + toStr);
+            dateCell.setCellStyle(dateStyle);
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 8));
+
+            // --- Hàng 4: Header ---
+            Row headerRow = sheet.createRow(rowIdx++);
+            String[] columns = {"Mã nhập", "Tên sản phẩm", "Số lượng", "Giá nhập", "Đơn vị", "Ngày nhập", "Nhà cung cấp", "Loại hàng", "Nhân viên"};
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // --- Dữ liệu từ hàng 5 trở đi ---
+            for (Imports i : data) {
+                Row row = sheet.createRow(rowIdx++);
+                Cell c0 = row.createCell(0);
+                c0.setCellValue(i.getImport_id());
+                c0.setCellStyle(dataStyle);
+                Cell c1 = row.createCell(1);
+                c1.setCellValue(i.getProduct_name());
+                c1.setCellStyle(dataStyle);
+                Cell c2 = row.createCell(2);
+                c2.setCellValue(i.getQuantity());
+                c2.setCellStyle(dataStyle);
+                Cell c3 = row.createCell(3);
+                c3.setCellValue(i.getImport_price());
+                c3.setCellStyle(dataStyle);
+                Cell c4 = row.createCell(4);
+                c4.setCellValue(i.getUnit());
+                c4.setCellStyle(dataStyle);
+                Cell c5 = row.createCell(5);
+                c5.setCellValue(i.getImport_date().toString());
+                c5.setCellStyle(dataStyle);
+                Cell c6 = row.createCell(6);
+                c6.setCellValue(i.getSupplier_name());
+                c6.setCellStyle(dataStyle);
+                Cell c7 = row.createCell(7);
+                c7.setCellValue(i.getCategory_name());
+                c7.setCellStyle(dataStyle);
+                Cell c8 = row.createCell(8);
+                c8.setCellValue(i.getEmployee_name());
+                c8.setCellStyle(dataStyle);
+            }
+
+            // --- Căn chỉnh độ rộng ---
+            sheet.setColumnWidth(1, 10000); // Tên sản phẩm dài hơn
+            for (int i = 0; i < columns.length; i++) {
+                if (i != 1) {
+                    sheet.autoSizeColumn(i);
+                }
+            }
+
+            // --- Ghi file và mở ---
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                workbook.write(fos);
+            }
+            workbook.close();
+
+            Desktop.getDesktop().open(file);
+
+            JOptionPane.showMessageDialog(importsView, "Xuất Excel thành công!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi xuất Excel: " + e.getMessage());
+        }
+    }
+
+    public void exportStoreExcel(File file) {
+        try {
+            // --- Lấy giá trị lọc từ giao diện ---
+            String categoryName = importsView.getCategorySearchComboBox(); // view.get selected loại hàng
+            String supplierName = importsView.getSupplierSearchComboBox(); // view.get selected nhà cung cấp
+
+            Map<String, Integer> categoryMap = importsView.getCategoryMap();
+            Map<String, Integer> supplierMap = importsView.getSupplierMap();
+
+            Integer categoryId = null;
+            Integer supplierId = null;
+
+            if (categoryName != null && !categoryName.equals("--Chọn loại hàng")) {
+                categoryId = categoryMap.get(categoryName);
+            }
+
+            if (supplierName != null && !supplierName.equals("--Chọn nhà cung cấp")) {
+                supplierId = supplierMap.get(supplierName);
+            }
+
+            // --- Gọi DAO đúng cách ---
+            List<Products> productList = importsDAO.getAllProductsFromTable(categoryId, supplierId);
+
+            if (productList.isEmpty()) {
+                JOptionPane.showMessageDialog(importsView, "Không có dữ liệu để xuất!");
+                return;
+            }
+
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Tồn kho - Green Buy");
+            int rowIdx = 0;
+
+            // --- STYLE ---
+            CellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setFontHeightInPoints((short) 16);
+            titleFont.setBold(true);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            // --- Hàng 1: Tiêu đề ---
+            Row titleRow = sheet.createRow(rowIdx++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("DANH SÁCH SẢN PHẨM TỒN KHO");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+
+            // --- Hàng 2: Thông tin lọc ---
+            Row filterRow = sheet.createRow(rowIdx++);
+            filterRow.createCell(0).setCellValue("Loại hàng: " + (categoryName != null ? categoryName : ""));
+            filterRow.createCell(3).setCellValue("Nhà cung cấp: " + (supplierName != null ? supplierName : ""));
+
+            // --- Hàng 3: Dòng trống ---
+            rowIdx++;
+
+            // --- Hàng 4: Header ---
+            String[] columns = {"Mã SP", "Tên sản phẩm", "Loại hàng", "Giá", "Số lượng tồn", "Đơn vị"};
+            Row headerRow = sheet.createRow(rowIdx++);
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // --- Dữ liệu từ hàng 5 ---
+            for (Products p : productList) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(p.getProduct_id());
+                row.createCell(1).setCellValue(p.getProduct_name());
+                row.createCell(2).setCellValue(p.getCategoryName());
+                row.createCell(3).setCellValue(p.getPrice());
+                row.createCell(4).setCellValue(p.getStock_quantity());
+                row.createCell(5).setCellValue(p.getUnit());
+
+                for (int i = 0; i <= 5; i++) {
+                    row.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+
+            // --- Auto size ---
+            sheet.setColumnWidth(1, 10000); // Tên sản phẩm
+            for (int i = 0; i < columns.length; i++) {
+                if (i != 1) {
+                    sheet.autoSizeColumn(i);
+                }
+            }
+
+            // --- Ghi ra file và mở ---
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                workbook.write(fos);
+            }
+            workbook.close();
+
+            Desktop.getDesktop().open(file);
+            JOptionPane.showMessageDialog(importsView, "Xuất Excel thành công!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(importsView, "Lỗi khi xuất Excel: " + e.getMessage());
+        }
+    }
+
 }
