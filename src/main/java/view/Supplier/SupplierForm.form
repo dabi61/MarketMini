@@ -29,7 +29,7 @@
                   <Group type="102" attributes="0">
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="jPanel2" pref="390" max="32767" attributes="0"/>
+                      <Component id="jPanel2" pref="392" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -49,7 +49,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Component id="jPanel2" max="32767" attributes="0"/>
-                  <Component id="jPanel1" pref="75" max="32767" attributes="0"/>
+                  <Component id="jPanel1" max="32767" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jPanel3" min="-2" pref="470" max="-2" attributes="0"/>
@@ -113,7 +113,7 @@
         <Component class="javax.swing.JButton" name="btnThem">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\add (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/add (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Th&#xea;m"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -132,7 +132,7 @@
               <Color blue="ff" green="ff" red="cc" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\trash (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/trash (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="X&#xf3;a"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -151,7 +151,7 @@
               <Color blue="ff" green="ff" red="cc" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\edit (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/edit (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="S&#x1eed;a"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -170,7 +170,7 @@
               <Color blue="ff" green="ff" red="cc" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\excel.png"/>
+              <Image iconType="3" name="/com/raven/icon/sheets.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Nh&#x1ead;p Excel"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -189,7 +189,7 @@
               <Color blue="ff" green="ff" red="cc" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\sheets.png"/>
+              <Image iconType="3" name="/com/raven/icon/excel.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Xu&#x1ea5;t Excel"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -263,9 +263,6 @@
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="ff" green="ff" red="ff" type="rgb"/>
-            </Property>
-            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\searching.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="T&#xec;m ki&#x1ebf;m"/>
           </Properties>

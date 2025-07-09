@@ -141,7 +141,7 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Chức năng\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 12), new java.awt.Color(46, 125, 50))); // NOI18N
 
-        btnThem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
+        btnThem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/add (1).png"))); // NOI18N
         btnThem.setText("Thêm");
         btnThem.setBorderPainted(false);
         btnThem.setContentAreaFilled(false);
@@ -151,7 +151,7 @@ public class SupplierForm extends javax.swing.JPanel {
         btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         btnXoa.setBackground(new java.awt.Color(204, 255, 255));
-        btnXoa.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
+        btnXoa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/trash (1).png"))); // NOI18N
         btnXoa.setText("Xóa");
         btnXoa.setBorderPainted(false);
         btnXoa.setContentAreaFilled(false);
@@ -161,7 +161,7 @@ public class SupplierForm extends javax.swing.JPanel {
         btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         btnSua.setBackground(new java.awt.Color(204, 255, 255));
-        btnSua.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
+        btnSua.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/edit (1).png"))); // NOI18N
         btnSua.setText("Sửa");
         btnSua.setBorderPainted(false);
         btnSua.setContentAreaFilled(false);
@@ -171,7 +171,7 @@ public class SupplierForm extends javax.swing.JPanel {
         btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         btnNhap.setBackground(new java.awt.Color(204, 255, 255));
-        btnNhap.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
+        btnNhap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/sheets.png"))); // NOI18N
         btnNhap.setText("Nhập Excel");
         btnNhap.setBorderPainted(false);
         btnNhap.setContentAreaFilled(false);
@@ -181,7 +181,7 @@ public class SupplierForm extends javax.swing.JPanel {
         btnNhap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
         btnXuat.setBackground(new java.awt.Color(204, 255, 255));
-        btnXuat.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
+        btnXuat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/excel.png"))); // NOI18N
         btnXuat.setText("Xuất Excel");
         btnXuat.setBorderPainted(false);
         btnXuat.setContentAreaFilled(false);
@@ -227,7 +227,6 @@ public class SupplierForm extends javax.swing.JPanel {
 
         btnTimKiem.setBackground(new java.awt.Color(46, 125, 50));
         btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
-        btnTimKiem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\searching.png")); // NOI18N
         btnTimKiem.setText("Tìm kiếm");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -325,7 +324,7 @@ public class SupplierForm extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 392, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
@@ -340,7 +339,7 @@ public class SupplierForm extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 75, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 470, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31))
