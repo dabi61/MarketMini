@@ -48,8 +48,10 @@ public class ThemNVForm extends javax.swing.JDialog {
             Logger.getLogger(ThemNVForm.class.getName()).log(Level.SEVERE, null, ex);
         }
         initComponents();
+        date.setDate(new java.util.Date()); // Ngày hôm nay
         txtMa.setText(String.valueOf(dao.employeeIdMax()));
         txtMa.setEnabled(false);
+       
         LoadCbo();
     }
 
@@ -64,6 +66,7 @@ public class ThemNVForm extends javax.swing.JDialog {
         String password = txtPass.getText().trim();
         String chucVu = cboChucVu.getSelectedItem() != null ? cboChucVu.getSelectedItem().toString() : "";
         Date ngayThem = (Date) date.getDate();
+       
 
         String emailRegex = "^[a-zA-Z][\\w.-]*@[\\w]+(\\.[\\w]{2,})+$";
         String phoneRegex = "^(84|0[3|5|7|8|9])[0-9]{8}$";
@@ -119,8 +122,9 @@ public class ThemNVForm extends javax.swing.JDialog {
         txtPass.setText("");
         txtTen.setText("");
         txtPhone.setText("");
-        cboChucVu.setSelectedIndex(0);     
-        date.setDate(null);
+        cboChucVu.setSelectedIndex(0);    
+        date.setDate(new java.util.Date()); // Ngày hôm nay
+        //date.setDate(null);
         txtMa.setText(String.valueOf(dao.employeeIdMax()));
         txtMa.setEnabled(false);
         this.dispose();
