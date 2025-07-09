@@ -1,276 +1,458 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package controller;
 
 import dao.CategoryDAO;
-import model.Category;
-import view.CategoryForm;
-import view.SuaCategoryForm;
-
-import javax.swing.*;
-import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Vector;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import model.Category;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import static org.apache.poi.ss.usermodel.CellType.BOOLEAN;
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
+import static org.apache.poi.ss.usermodel.CellType.STRING;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import view.Category.CategorysForm;
 
 /**
- * Controller cho Category - xử lý logic nghiệp vụ
+ *
  * @author Admin
  */
-public class CategoryController implements ActionListener {
-    
-    private CategoryDAO categoryDAO;
-    private CategoryForm categoryForm;
-    private int userRole;
-    
-    public CategoryController(int userRole) {
-        this.userRole = userRole;
-        try {
-            this.categoryDAO = new CategoryDAO();
-        } catch (SQLException e) {
-            Logger.getLogger(CategoryController.class.getName()).log(Level.SEVERE, null, e);
-            JOptionPane.showMessageDialog(null, "Lỗi kết nối database: " + e.getMessage());
-        }
-    }
-    
-    public void setCategoryForm(CategoryForm categoryForm) {
+public class CategoryController {
+
+    public CategorysForm categoryForm;
+    public CategoryDAO categoryDao;
+    public Category category;
+
+    public CategoryController(CategorysForm categoryForm) {
         this.categoryForm = categoryForm;
+        categoryDao = new CategoryDAO();
+        loadCategory();
     }
-    
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (categoryDAO == null) return;
-        
-        String command = e.getActionCommand();
-        
+
+//    public void actionPerformed(ActionEvent e) {
+//        String button = e.getActionCommand();
+//        //categoryForm.HienthiForm(button);
+//        if ("Thêm DM".equals(button)) {
+//            categoryForm.AddSupplier();
+//        }
+//        if ("Hủy bỏ".equals(button)) {
+//            categoryForm.Huy();
+//        }
+//        //sửa
+//        if ("Lưu thay đổi".equals(button)) {
+//            categoryForm.UpdateCategory();
+//        }
+//        if ("Xuất Excel".equals(button)) {
+//            categoryForm.Xuatbaocao();
+//        }
+//        if ("Upload".equals(button)) {
+//            categoryForm.Upload();
+//        }
+//        if ("Save".equals(button)) {
+//            categoryForm.SaveDataFromExcel();
+//        }
+//        if ("Tìm kiếm".equals(button)) {
+//            categoryForm.timKiem();
+//        }
+//
+//    }
+    public void HienthiForm(String action) {
+        if ("Thêm".equals(action)) {
+            categoryForm.getThemDMForm().setLocationRelativeTo(categoryForm);
+            categoryForm.getThemDMForm().setVisible(true);
+
+        } else if ("Sửa".equals(action)) {
+            JTable tblDanhSach = categoryForm.getTblDanhSach();
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if (selectedRow >= 0) {
+                String maDM = tblDanhSach.getValueAt(selectedRow, 0).toString();
+                String ten = tblDanhSach.getValueAt(selectedRow, 1).toString();
+                String mota = tblDanhSach.getValueAt(selectedRow, 2).toString();
+                Category sp = new Category(Integer.parseInt(maDM), ten, mota);
+                categoryForm.getSuaDMForm().setValue(sp);
+                categoryForm.getSuaDMForm().setLocationRelativeTo(categoryForm);
+                categoryForm.getSuaDMForm().setVisible(true);
+
+            }
+        } else if ("Xóa".equals(action)) {
+            JTable tblDanhSach = categoryForm.getTblDanhSach();
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if (selectedRow >= 0) {
+                String maDM = tblDanhSach.getValueAt(selectedRow, 0).toString();
+                String ten = tblDanhSach.getValueAt(selectedRow, 1).toString();
+                String mota = tblDanhSach.getValueAt(selectedRow, 2).toString();
+                Category sp = new Category(Integer.parseInt(maDM), ten, mota);
+                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?",
+                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (choise == JOptionPane.YES_OPTION) {
+                    categoryDao.category_delete(sp);
+                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                    loadCategory();
+                }
+            }
+        } else if ("Nhập Excel".equals(action)) {
+            categoryForm.getNhapExcel().setLocationRelativeTo(categoryForm);
+            categoryForm.getNhapExcel().setVisible(true);
+        }
+
+    }
+
+    public void AddSupplier() {
         try {
-            switch (command) {
-                case "add":
-                    openAddCategoryForm();
-                    break;
-                case "edit":
-                    openEditCategoryForm();
-                    break;
-                case "delete":
-                    deleteCategory();
-                    break;
-                case "search":
-                    searchCategories();
-                    break;
-                case "refresh":
-                    refreshCategoryTable();
-                    break;
-
-                default:
-                    break;
-            }
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var supplier = categoryForm.getThemDMForm().getModel();
+            // gọi hàm dao   
+            categoryDao.category_insert(supplier);
+            JOptionPane.showMessageDialog(categoryForm, "Thêm thành công");
+            loadCategory();
+            //   themDMForm.clear();
         } catch (Exception ex) {
-            Logger.getLogger(CategoryController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(categoryForm, "Có lỗi xảy ra: " + ex.getMessage());
-        }
-    }
-    
-    // Mở form thêm category
-    private void openAddCategoryForm() {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(categoryForm);
-        SuaCategoryForm addForm = new SuaCategoryForm(parentFrame, true, null, userRole);
-        addForm.setController(this);
-        addForm.setVisible(true);
-    }
-    
-    // Mở form sửa category
-    private void openEditCategoryForm() {
-        int selectedRow = categoryForm.getCategoryTable().getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(categoryForm, "Vui lòng chọn danh mục cần sửa!");
-            return;
-        }
-        
-        // Lấy category ID từ table
-        int categoryId = (Integer) categoryForm.getCategoryTable().getValueAt(selectedRow, 0);
-        Category category = categoryDAO.getCategoryById(categoryId);
-        
-        if (category != null) {
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(categoryForm);
-            SuaCategoryForm editForm = new SuaCategoryForm(parentFrame, true, category, userRole);
-            editForm.setController(this);
-            editForm.setVisible(true);
-        } else {
-            JOptionPane.showMessageDialog(categoryForm, "Không thể tải thông tin danh mục!");
-        }
-    }
-    
-    // Xóa category
-    private void deleteCategory() {
-        int selectedRow = categoryForm.getCategoryTable().getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(categoryForm, "Vui lòng chọn danh mục cần xóa!");
-            return;
-        }
-        
-        int categoryId = (Integer) categoryForm.getCategoryTable().getValueAt(selectedRow, 0);
-        String categoryName = (String) categoryForm.getCategoryTable().getValueAt(selectedRow, 2);
-        
-        int confirm = JOptionPane.showConfirmDialog(
-            categoryForm,
-            "Bạn có chắc chắn muốn xóa danh mục '" + categoryName + "'?\n" +
-            "Lưu ý: Không thể xóa nếu còn sản phẩm trong danh mục này.",
-            "Xác nhận xóa",
-            JOptionPane.YES_NO_OPTION
-        );
-        
-        if (confirm == JOptionPane.YES_OPTION) {
-            boolean success = categoryDAO.deleteCategory(categoryId);
-            
-            if (success) {
-                JOptionPane.showMessageDialog(categoryForm, "Xóa danh mục thành công!");
-                refreshCategoryTable();
-            } else {
-                JOptionPane.showMessageDialog(categoryForm, 
-                    "Không thể xóa danh mục này!\n" +
-                    "Có thể vì còn sản phẩm đang sử dụng danh mục này."
-                );
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
             }
+            JOptionPane.showMessageDialog(categoryForm, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // Tìm kiếm categories
-    private void searchCategories() {
-        String keyword = categoryForm.getSearchField().getText().trim();
-        
-        if (keyword.isEmpty()) {
-            refreshCategoryTable();
-            return;
-        }
-        
-        List<Category> searchResults = categoryDAO.searchCategories(keyword);
-        updateCategoryTable(searchResults);
-    }
-    
-    // Refresh bảng categories
-    public void refreshCategoryTable() {
-        List<Category> categories = categoryDAO.getAllCategories();
-        updateCategoryTable(categories);
-    }
-    
 
-    
-    // Cập nhật bảng categories
-    public void updateCategoryTable(List<Category> categories) {
-        DefaultTableModel model = (DefaultTableModel) categoryForm.getCategoryTable().getModel();
-        model.setRowCount(0); // Clear existing data
-        
-        for (Category category : categories) {
-            model.addRow(new Object[]{
-                category.getCategory_id(),                                           // ID
-                category.getCategory_code() != null ? category.getCategory_code() : "AUTO-" + category.getCategory_id(), // Mã DM
-                category.getCategory_name(),                                        // Tên Danh Mục
-                category.getDescription() != null ? category.getDescription() : "", // Mô Tả
-                category.getCreated_at() != null ? category.getCreated_at().toLocalDate() : "" // Ngày Tạo
-            });
+    public void UpdateCategory() {
+        try {
+            var category = categoryForm.getSuaDMForm().getModel();
+            // gọi hàm dao   
+            categoryDao.category_update(category);
+            JOptionPane.showMessageDialog(categoryForm, "Sửa thành công");
+            categoryForm.getSuaDMForm().clear();
+            loadCategory();
+
+        } catch (Exception e) {
+            String messages = e.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(categoryForm, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // Thêm category mới
-    public boolean addCategory(Category category) {
-        // Kiểm tra dữ liệu
-        if (!validateCategoryData(category)) {
-            return false;
-        }
-        
-        // Kiểm tra category code trùng lặp
-        if (category.getCategory_code() != null && !category.getCategory_code().trim().isEmpty()) {
-            if (categoryDAO.isCategoryCodeExists(category.getCategory_code(), 0)) {
-                JOptionPane.showMessageDialog(null, "Mã danh mục đã tồn tại!");
-                return false;
+
+    public void Huy() {
+        categoryForm.getThemDMForm().setVisible(false);
+        categoryForm.getSuaDMForm().setVisible(false);
+        categoryForm.getThemDMForm().clear();
+    }
+
+    public void Upload() {
+        JFileChooser fc = new JFileChooser();
+        int result = fc.showOpenDialog(categoryForm);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+
+            categoryForm.getNhapExcel().getTxtFile().setText(file.getPath());
+
+            if (file.getName().toLowerCase().endsWith(".xlsx")) {
+                ReadExcel(file.getPath(), categoryForm.getNhapExcel().getTblNCC());
+                JOptionPane.showMessageDialog(categoryForm, "Import thành công!");
+                loadCategory(); // Gọi lại để load dữ liệu lên bảng
+            } else {
+                JOptionPane.showMessageDialog(categoryForm, "Vui lòng chọn file Excel (.xlsx)");
             }
         }
-        
-        boolean success = categoryDAO.addCategory(category);
-        
-        if (success) {
-            JOptionPane.showMessageDialog(null, "Thêm danh mục thành công!");
-            refreshCategoryTable();
-            return true;
-        } else {
-            JOptionPane.showMessageDialog(null, "Thêm danh mục thất bại!");
-            return false;
-        }
+
     }
-    
-    // Cập nhật category
-    public boolean updateCategory(Category category) {
-        // Kiểm tra dữ liệu
-        if (!validateCategoryData(category)) {
-            return false;
-        }
-        
-        // Kiểm tra category code trùng lặp (loại trừ chính nó)
-        if (category.getCategory_code() != null && !category.getCategory_code().trim().isEmpty()) {
-            if (categoryDAO.isCategoryCodeExists(category.getCategory_code(), category.getCategory_id())) {
-                JOptionPane.showMessageDialog(null, "Mã danh mục đã tồn tại!");
-                return false;
+
+    public void SaveDataFromExcel() {
+        DefaultTableModel model = (DefaultTableModel) categoryForm.getNhapExcel().getTblNCC().getModel();
+        int rowCount = model.getRowCount();
+        int countInserted = 0, countSkipped = 0;
+
+        for (int i = 0; i < rowCount; i++) {
+            Category category = new Category();
+            try {
+                category.setCategory_id(Integer.parseInt(model.getValueAt(i, 0).toString()));
+                category.setCategory_name(model.getValueAt(i, 1).toString());
+                category.setDescription(model.getValueAt(i, 2).toString());
+
+                // ❗ Kiểm tra trùng TÊN hoặc SỐ ĐIỆN THOẠI
+                if (categoryDao.isCategoryExists(category.getCategory_name())) {
+                    countSkipped++;
+                    continue;
+                }
+                // Insert vào DB
+                categoryDao.category_insert(category);
+                countInserted++;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(categoryForm, "Lỗi tại dòng " + (i + 1) + ": " + ex.getMessage());
             }
         }
-        
-        boolean success = categoryDAO.updateCategory(category);
-        
-        if (success) {
-            JOptionPane.showMessageDialog(null, "Cập nhật danh mục thành công!");
-            refreshCategoryTable();
-            return true;
-        } else {
-            JOptionPane.showMessageDialog(null, "Cập nhật danh mục thất bại!");
-            return false;
+        JOptionPane.showMessageDialog(categoryForm,
+                "✔️ Đã thêm " + countInserted + " DM mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng tên ");
+        loadCategory();
+
+    }
+
+    private void ReadExcel(String filePath, JTable tbBang) {
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            Workbook wb = new XSSFWorkbook(fis);
+            Sheet sheet = wb.getSheetAt(0);
+
+            Iterator<Row> itr = sheet.iterator();
+            if (itr.hasNext()) {
+                itr.next(); // Bỏ qua dòng tiêu đề
+            }
+            tbBang.removeAll();
+            String[] head = {"STT", "Tên Danh Mục", "Mô Tả"};
+            DefaultTableModel tb = new DefaultTableModel(head, 0);
+            while (itr.hasNext()) {
+                Row row = itr.next();
+                try {
+                    // Đọc và ép kiểu dữ liệu an toàn
+                    int stt = (int) row.getCell(0).getNumericCellValue();
+                    String name = getCellStringValue(row.getCell(1));
+                    String mota = getCellStringValue(row.getCell(2));
+
+                    // Gọi DAO hoặc Controller để thêm vào CSDL
+                    Category category = new Category();
+                    category.setCategory_id(stt);
+                    category.setCategory_name(name);
+                    category.setDescription(mota);
+
+                    // <-- đảm bảo bạn đã viết hàm này
+                    Vector vt = new Vector();
+                    vt.add(stt);
+                    vt.add(name);
+                    vt.add(mota);
+
+                    tb.addRow(vt);
+                    tbBang.setModel(tb);
+                } catch (Exception e) {
+                    System.err.println("Lỗi dòng " + row.getRowNum() + ": " + e.getMessage());
+                    // tiếp tục đọc các dòng sau
+                }
+            }
+
+            wb.close();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(categoryForm, "Lỗi khi đọc file Excel: " + e.getMessage());
         }
     }
-    
-    // Validate dữ liệu category
-    private boolean validateCategoryData(Category category) {
-        if (category.getCategory_name() == null || category.getCategory_name().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Tên danh mục không được để trống!");
-            return false;
+
+    public void Xuatbaocao() {
+        try {
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Danh Mục");
+
+            // Tạo styles
+            CellStyle styleTitle = workbook.createCellStyle();
+            Font fontTitle = workbook.createFont();
+            fontTitle.setFontHeightInPoints((short) 14);
+            fontTitle.setBold(true);
+            styleTitle.setFont(fontTitle);
+            styleTitle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle styleHeader = workbook.createCellStyle();
+            Font fontHeader = workbook.createFont();
+            fontHeader.setBold(true);
+            fontHeader.setColor(IndexedColors.WHITE.getIndex());
+            styleHeader.setFont(fontHeader);
+            styleHeader.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+            styleHeader.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            styleHeader.setBorderTop(BorderStyle.THIN);
+            styleHeader.setBorderBottom(BorderStyle.THIN);
+            styleHeader.setBorderLeft(BorderStyle.THIN);
+            styleHeader.setBorderRight(BorderStyle.THIN);
+            styleHeader.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle styleCell = workbook.createCellStyle();
+            styleCell.setBorderTop(BorderStyle.THIN);
+            styleCell.setBorderBottom(BorderStyle.THIN);
+            styleCell.setBorderLeft(BorderStyle.THIN);
+            styleCell.setBorderRight(BorderStyle.THIN);
+            styleCell.setVerticalAlignment(VerticalAlignment.CENTER);
+            styleCell.setWrapText(true);
+
+            // Tạo tiêu đề
+            Row titleRow = sheet.createRow(1); // Dòng 2 (index 1)
+            Cell titleCell = titleRow.createCell(0); // Cột A (index 0)
+            titleCell.setCellValue("DANH SÁCH DANH MỤC SẢN PHẨM");
+            titleCell.setCellStyle(styleTitle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 3)); // Merge A2:F2
+
+            // Tạo dòng tiêu đề bảng
+            Row headerRow = sheet.createRow(3);
+            String[] headers = {"STT", "Mã Danh Mục", "Tên Danh Mục", "Mô Tả"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(styleHeader);
+            }
+
+            // Lấy dữ liệu
+            String ten = categoryForm.getTxtTimKiem().getText().trim();
+            if(ten.equals("Tìm kiếm theo tên danh mục")){
+                ten = "";
+            }
+            category.setCategory_name(ten);
+            ResultSet rs = categoryDao.load_execel(category);
+
+            if (rs == null) {
+                JOptionPane.showMessageDialog(null, "Không có dữ liệu để xuất");
+                return;
+            }
+
+            int rowIdx = 4;
+            int stt = 1;
+            while (rs.next()) {
+                Row row = sheet.createRow(rowIdx++);
+
+                // STT
+                Cell cell0 = row.createCell(0);
+                cell0.setCellValue(stt++);
+                cell0.setCellStyle(styleCell);
+
+                // Mã NCC
+                row.createCell(1).setCellValue(rs.getInt("category_id"));
+                row.getCell(1).setCellStyle(styleCell);
+
+                // Tên NCC
+                row.createCell(2).setCellValue(rs.getString("category_name"));
+                row.getCell(2).setCellStyle(styleCell);
+
+                // Mô Tả
+                row.createCell(3).setCellValue(rs.getString("description"));
+                row.getCell(3).setCellStyle(styleCell);
+            }
+
+            // Auto resize cột
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Ghi ra file
+            File f = new File("D:\\caheo\\Danhsachdanhmuc.xlsx");
+            FileOutputStream out = new FileOutputStream(f);
+            workbook.write(out);
+            out.close();
+            workbook.close();
+
+            JOptionPane.showMessageDialog(null, "Xuất báo cáo thành công!");
+
+            //  Mở file Excel sau khi nhấn OK
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().open(f);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi khi xuất báo cáo: " + e.getMessage());
         }
-        
-        if (category.getCategory_name().length() > 255) {
-            JOptionPane.showMessageDialog(null, "Tên danh mục không được vượt quá 255 ký tự!");
-            return false;
+
+    }
+
+    private static CellStyle DinhdangHeader(XSSFSheet sheet) {
+        // Create font
+        Font font = sheet.getWorkbook().createFont();
+        font.setFontName("Times New Roman");
+        font.setBold(true);
+        font.setFontHeightInPoints((short) 12); // font size
+        font.setColor(IndexedColors.WHITE.getIndex()); // text color
+
+        // Create CellStyle
+        CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+        cellStyle.setFont(font);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+        cellStyle.setFillForegroundColor(IndexedColors.GREEN.getIndex());
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setWrapText(true);
+        return cellStyle;
+    }
+
+    private String getCellStringValue(Cell cell) {
+        if (cell == null) {
+            return "";
         }
-        
-        if (category.getCategory_code() != null && category.getCategory_code().length() > 20) {
-            JOptionPane.showMessageDialog(null, "Mã danh mục không được vượt quá 20 ký tự!");
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Lấy tất cả categories
-    public List<Category> getAllCategories() {
-        return categoryDAO.getAllCategories();
-    }
-    
-    // Lấy danh sách categories cho combobox
-    public List<Category> getActiveCategories() {
-        return categoryDAO.getActiveCategories();
-    }
-    
-    // Lấy danh sách root categories
-    public List<Category> getRootCategories() {
-        return categoryDAO.getRootCategories();
-    }
-    
-    // Lấy category theo ID
-    public Category getCategoryById(int categoryId) {
-        return categoryDAO.getCategoryById(categoryId);
-    }
-    
-    // Đóng kết nối
-    public void closeConnection() {
-        if (categoryDAO != null) {
-            categoryDAO.closeConnection();
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
         }
     }
-} 
+
+    public void timKiem() {
+        String tuKhoa = categoryForm.getTxtTimKiem().getText().trim();
+
+        // Nếu là placeholder hoặc người dùng xóa hết nội dung
+        if (tuKhoa.equals("Tìm kiếm theo tên danh mục") || tuKhoa.isEmpty()) {
+            loadCategory(); // Gọi lại hàm load toàn bộ danh mục
+            return;
+        }
+
+        DefaultTableModel model = (DefaultTableModel) categoryForm.getTblDanhSach().getModel();
+        model.setRowCount(0); // Xóa dữ liệu cũ
+
+        ResultSet rs = categoryDao.timKiem(tuKhoa);
+
+        try {
+            while (rs != null && rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("category_id"),
+                    rs.getString("category_name"),
+                    rs.getString("description")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<String> convertToStringList(String suppliersString) {
+        // Remove square brackets and split by ", "
+        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
+        if (cleanedString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
+    }
+
+    private void loadCategory() {
+        category = new Category();
+        category.setCategory_name("");
+        categoryDao.categoryfind(categoryForm.getTblDanhSach(), category);
+    }
+}

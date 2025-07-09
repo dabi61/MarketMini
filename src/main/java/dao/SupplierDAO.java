@@ -85,7 +85,7 @@ public class SupplierDAO {
             ps.setString(1,'%'+supplier.getSupplier_name()+'%');
             ResultSet rs = ps.executeQuery();
             tbBang.removeAll();
-            String[] head= {"Mã Nhà CC","Tên NCC","Điện thoại","Địa chỉ","Email"};
+            String[] head= {"Mã NCC","Tên NCC","Điện thoại","Địa chỉ","Email"};
             DefaultTableModel tb = new DefaultTableModel(head,0);
             while(rs.next()){
                 Vector vt = new Vector();
@@ -102,39 +102,56 @@ public class SupplierDAO {
             
         }
         }
-        public ResultSet timKiem(String tieuChi, String txtTimKiem) {
-        try {
-            Connection con = DBConnection.getConnection();
-            String sql = "SELECT *FROM suppliers";
-
-            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                switch (tieuChi) {
-                    case "Mã NCC":
-                        sql += " WHERE supplier_id LIKE ?";
-                        break;
-                    case "Tên":
-                        sql += " WHERE supplier_name LIKE ?";
-                        break;
-                    case "Email":
-                        sql += " WHERE email LIKE ?";
-                        break;
-                     case "Địa Chỉ":
-                        sql += " WHERE address LIKE ?";
-                        break;
-                    case "Số điện thoại":
-                        sql += " WHERE phone LIKE ?";
-                        break;
+        public ResultSet timKiem(String tuKhoa) {
+            try {
+                Connection con = DBConnection.getConnection();
+                String sql = "SELECT * FROM suppliers";
+                if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
+                    sql += " WHERE supplier_name LIKE ? OR phone LIKE ?";
                 }
-            }
-            PreparedStatement st = con.prepareStatement(sql);
-            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                st.setString(1, "%" + txtTimKiem + "%");
-            }
-            return st.executeQuery();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+                PreparedStatement ps = con.prepareStatement(sql);
+                if (tuKhoa != null && !tuKhoa.trim().isEmpty()) {
+                    ps.setString(1, "%" + tuKhoa + "%");
+                    ps.setString(2, "%" + tuKhoa + "%");
+                }
+                return ps.executeQuery();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+}
+//        try {
+//            
+//            Connection con = DBConnection.getConnection();
+//            String sql = "SELECT *FROM suppliers";
+//
+//            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
+//                switch (tieuChi) {
+//                    case "Mã NCC":
+//                        sql += " WHERE supplier_id LIKE ?";
+//                        break;
+//                    case "Tên":
+//                        sql += " WHERE supplier_name LIKE ?";
+//                        break;
+//                    case "Email":
+//                        sql += " WHERE email LIKE ?";
+//                        break;
+//                     case "Địa Chỉ":
+//                        sql += " WHERE address LIKE ?";
+//                        break;
+//                    case "Số điện thoại":
+//                        sql += " WHERE phone LIKE ?";
+//                        break;
+//                }
+//            }
+//            PreparedStatement st = con.prepareStatement(sql);
+//            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
+//                st.setString(1, "%" + txtTimKiem + "%");
+//            }
+//            return st.executeQuery();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
         }
         
         public int supplierIdMax(){

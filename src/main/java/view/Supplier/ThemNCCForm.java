@@ -70,7 +70,7 @@ public class ThemNCCForm extends javax.swing.JDialog {
         setTitle("Thêm nhà cung cấp mới\n");
         setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel1.setBackground(new java.awt.Color(0, 153, 0));
+        jPanel1.setBackground(new java.awt.Color(46, 125, 50));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -80,10 +80,10 @@ public class ThemNCCForm extends javax.swing.JDialog {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(172, 172, 172)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(190, 190, 190))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -114,7 +114,7 @@ public class ThemNCCForm extends javax.swing.JDialog {
 
         jScrollPane5.setViewportView(txtEmail);
 
-        btnThemNcc.setBackground(new java.awt.Color(0, 204, 51));
+        btnThemNcc.setBackground(new java.awt.Color(46, 125, 50));
         btnThemNcc.setForeground(new java.awt.Color(255, 255, 255));
         btnThemNcc.setText("Thêm NCC");
 
@@ -197,6 +197,8 @@ public class ThemNCCForm extends javax.swing.JDialog {
         txtTen.setText("");
         txtAddress.setText("");
         this.setVisible(false);
+        txtMa.setText(String.valueOf(dao.supplierIdMax()));
+        txtMa.setEnabled(false);
     }
 
     public Suppliers getModel() throws Exception {

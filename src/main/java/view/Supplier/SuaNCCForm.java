@@ -116,7 +116,7 @@ public class SuaNCCForm extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Sửa nhà cung cấp\n");
 
-        jPanel1.setBackground(new java.awt.Color(0, 153, 0));
+        jPanel1.setBackground(new java.awt.Color(46, 125, 50));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -159,7 +159,7 @@ public class SuaNCCForm extends javax.swing.JDialog {
 
         jScrollPane5.setViewportView(txtEmail);
 
-        btnLuu.setBackground(new java.awt.Color(0, 204, 51));
+        btnLuu.setBackground(new java.awt.Color(46, 125, 50));
         btnLuu.setForeground(new java.awt.Color(255, 255, 255));
         btnLuu.setText("Lưu thay đổi");
 

@@ -11,17 +11,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import model.Session;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.TimingTarget;
 import org.jdesktop.animation.timing.TimingTargetAdapter;
-import view.CategoryForm;
+import view.Category.CategorysForm;
 import view.DisplayForm;
 import view.Employee.EmployeeForm;
 import view.Expense;
@@ -126,13 +130,13 @@ public class Main extends javax.swing.JFrame {
             public void selected(int index) {
                 // Lấy role
                 int role = Session.getInstance().getRole();
-                
+
                 if (index == 0) { // Thống kê
                     main.show(new ThongKeView());
                 } else if (index == 1) { // bán hàng
                     main.show(new SalesForm());
                 } else if (index == 2) { // Kho, nhập hàng
-                        main.show(new StoreForm());
+                    main.show(new StoreForm());
                 } else if (index == 3) { // Nhà cung cấp
                     if (role == 1) {
                         main.show(new SupplierForm());
@@ -141,7 +145,7 @@ public class Main extends javax.swing.JFrame {
                     }
                 } else if (index == 4) { // Danh mục sản phẩm
                     if (role == 1) {
-                        main.show(new CategoryForm());
+                        main.show(new CategorysForm());
                     } else {
                         JOptionPane.showMessageDialog(null, "Bạn không có quyền truy cập vào chức năng này.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
                     }

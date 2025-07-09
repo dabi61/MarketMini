@@ -2,53 +2,52 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package view.Supplier;
+package view.Category;
 
-import view.NhapExcel;
-import controller.SupplierController;
+import controller.CategoryController;
 import java.awt.Color;
 import java.awt.Frame;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
+import view.NhapExcel;
 
 /**
  *
  * @author Admin
  */
-public class SupplierForm extends javax.swing.JPanel {
+public class CategorysForm extends javax.swing.JPanel {
 
-    private ThemNCCForm themNCCForm;
-    private SuaNCCForm suaNccForm;
+    private ThemDMForm themDMForm;
+    private SuaDMForm suaDMForm;
     private NhapExcel nhapExcel;
-    SupplierController spController;
+    CategoryController spController;
 
-    public ThemNCCForm getThemNCCForm() {
-        return themNCCForm;
+    public ThemDMForm getThemDMForm() {
+        return themDMForm;
     }
 
-    public SuaNCCForm getSuaNccForm() {
-        return suaNccForm;
-    }
-
-    public NhapExcel getNhapExcel() {
-        return nhapExcel;
+    public SuaDMForm getSuaDMForm() {
+        return suaDMForm;
     }
 
     public JTable getTblDanhSach() {
         return tblDanhSach;
     }
 
+    public NhapExcel getNhapExcel() {
+        return nhapExcel;
+    }
+
     public JTextPane getTxtTimKiem() {
         return txtTimKiem;
     }
-    
 
     /**
-     * Creates new form SupplierForm
+     * Creates new form CategorysForm
      */
-    public SupplierForm() {
+    public CategorysForm() {
         initComponents();
         // Chỉnh màu header bảng
         JTableHeader header = tblDanhSach.getTableHeader();
@@ -57,12 +56,17 @@ public class SupplierForm extends javax.swing.JPanel {
         header.setForeground(Color.WHITE);                   // Màu chữ header
         header.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));   // Font header
 
-        txtTimKiem.setText("Tìm kiếm theo tên nhà cung cấp");
+        // Tùy chỉnh chọn dòng
+        tblDanhSach.setSelectionBackground(new Color(0, 153, 0)); // Màu khi chọn dòng
+        tblDanhSach.setSelectionForeground(Color.WHITE);          // Chữ trắng khi chọn
+        tblDanhSach.setRowHeight(25);
+
+        txtTimKiem.setText("Tìm kiếm theo tên danh mục");
         txtTimKiem.setForeground(Color.GRAY);
 
         txtTimKiem.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (txtTimKiem.getText().equals("Tìm kiếm theo tên nhà cung cấp")) {
+                if (txtTimKiem.getText().equals("Tìm kiếm theo tên danh mục")) {
                     txtTimKiem.setText("");
                     txtTimKiem.setForeground(Color.BLACK);
                 }
@@ -70,27 +74,21 @@ public class SupplierForm extends javax.swing.JPanel {
 
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (txtTimKiem.getText().trim().isEmpty()) {
-                    txtTimKiem.setText("Tìm kiếm theo tên nhà cung cấp");
+                    txtTimKiem.setText("Tìm kiếm theo tên danh mục");
                     txtTimKiem.setForeground(Color.GRAY);
                 }
             }
         });
 
-        // Tùy chỉnh chọn dòng
-        tblDanhSach.setSelectionBackground(new Color(0, 153, 0)); // Màu khi chọn dòng
-        tblDanhSach.setSelectionForeground(Color.WHITE);          // Chữ trắng khi chọn
-        tblDanhSach.setRowHeight(25);
-
-        spController = new SupplierController(this);
+        spController = new CategoryController(this);
 
         // Lấy Frame cha của JPanel hiện tại
         Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
         // Khởi tạo các dialog với parent đúng kiểu
-        themNCCForm = new ThemNCCForm(parent, true);
-        suaNccForm = new SuaNCCForm(parent, true);
+        themDMForm = new ThemDMForm(parent, true);
+        suaDMForm = new SuaDMForm(parent, true);
         nhapExcel = new NhapExcel(parent, true);
 
-        //themNCCForm = new ThemNCCForm(this, true);
         btnThem.addActionListener(e -> spController.HienthiForm("Thêm"));
         btnSua.addActionListener(e -> spController.HienthiForm("Sửa"));
         btnXoa.addActionListener(e -> spController.HienthiForm("Xóa"));
@@ -100,12 +98,12 @@ public class SupplierForm extends javax.swing.JPanel {
         //  nhapExcel = new NhapExcel(this, true);
         nhapExcel.getBtnUpload().addActionListener(e -> spController.Upload());
         nhapExcel.getBtnSave().addActionListener(e -> spController.SaveDataFromExcel());
-        themNCCForm.getBtnThemNcc().addActionListener(e -> spController.AddSupplier());
-        themNCCForm.getBtnHuy().addActionListener(e -> spController.Huy());
 
-        //   suaNccForm = new SuaNCCForm(this, true);
-        suaNccForm.getBtnLuu().addActionListener(e -> spController.UpdateSupplier());
-        suaNccForm.getBtnHuy().addActionListener(e -> spController.Huy());
+        themDMForm.getBtnThemDm().addActionListener(e -> spController.AddSupplier());
+        themDMForm.getBtnHuy().addActionListener(e -> spController.Huy());
+
+        suaDMForm.getBtnLuu().addActionListener(e -> spController.UpdateCategory());
+        suaDMForm.getBtnHuy().addActionListener(e -> spController.Huy());
 
     }
 
@@ -118,6 +116,9 @@ public class SupplierForm extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel4 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         btnThem = new javax.swing.JButton();
         btnXoa = new javax.swing.JButton();
@@ -131,12 +132,40 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblDanhSach = new javax.swing.JTable();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
-        setPreferredSize(new java.awt.Dimension(885, 591));
+        jPanel4.setBackground(new java.awt.Color(46, 125, 50));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setText("QUẢN LÍ DANH MỤC");
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(200, 230, 201));
+        jLabel2.setText("Quản lí danh mục sản phẩm của GreenBuy");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(246, 246, 246))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(292, 292, 292))))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(9, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addContainerGap())
+        );
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Chức năng\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 12), new java.awt.Color(46, 125, 50))); // NOI18N
@@ -197,13 +226,13 @@ public class SupplierForm extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34)
+                .addGap(26, 26, 26)
                 .addComponent(btnNhap)
-                .addGap(40, 40, 40)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
                 .addComponent(btnXuat)
                 .addGap(29, 29, 29))
         );
@@ -235,10 +264,10 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnTimKiem)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -253,7 +282,6 @@ public class SupplierForm extends javax.swing.JPanel {
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Danh sách nhà cung cấp\n\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 14), new java.awt.Color(46, 125, 50))); // NOI18N
-        jPanel3.setDoubleBuffered(false);
         jPanel3.setPreferredSize(new java.awt.Dimension(827, 583));
 
         tblDanhSach.setModel(new javax.swing.table.DefaultTableModel(
@@ -278,59 +306,23 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel4.setBackground(new java.awt.Color(46, 125, 50));
-
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("QUẢN LÍ NHÀ CUNG CẤP");
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(200, 230, 201));
-        jLabel2.setText("Theo dõi danh sách nhà cung cấp");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(327, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(255, 255, 255))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(303, 303, 303))))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(9, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addContainerGap())
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
-                .addContainerGap())
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 878, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -346,6 +338,7 @@ public class SupplierForm extends javax.swing.JPanel {
                 .addGap(31, 31, 31))
         );
     }// </editor-fold>//GEN-END:initComponents
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNhap;
@@ -366,5 +359,6 @@ public class SupplierForm extends javax.swing.JPanel {
     private javax.swing.JTextPane txtTimKiem;
     // End of variables declaration//GEN-END:variables
 
-
 }
+
+

@@ -37,7 +37,7 @@ public class Session {
     }
 
     public int getEmployeeId() {
-        return currentEmployee != null ? currentEmployee.getEmployee_id() : null;
+        return currentEmployee != null ? currentEmployee.getEmployee_id() : 0;
     }
     
     public int getRole(){
