@@ -119,7 +119,7 @@ public class PromotionController {
 
     model.setColumnIdentifiers(new String[] {
         "ID", "Tên khuyến mãi", "Ngày bắt đầu", "Ngày kết thúc",
-        "Tên sản phẩm", "Giảm giá (%)", "Giá sau giảm", "Giá gốc"
+        "Tên sản phẩm", "Giảm giá (%)", "Giá gốc", "Giá sau giảm"
     });
 
     for (Object[] row : results) {
