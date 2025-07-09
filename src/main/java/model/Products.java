@@ -9,6 +9,7 @@ package model;
  * @author Admin
  */
 public class Products {
+
     private int product_id;
     private String product_name;
     private int category_id;
@@ -18,9 +19,13 @@ public class Products {
 
     //thêm phục vụ tìm kiếm
     private String categoryName;
-    
+
     //thêm phục vụ bán hàng
     private int selling_price;
+    //thêm phục vụ xuất hóa đơn bán hàng
+    private int quantity;
+    private int totalPrice;
+
     public Products() {
     }
 
@@ -96,6 +101,22 @@ public class Products {
     public void setSelling_price(int selling_price) {
         this.selling_price = selling_price;
     }
-    
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public int getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
     
 }

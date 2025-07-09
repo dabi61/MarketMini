@@ -303,4 +303,76 @@ public class ImportsDAO {
         return productList;
     }
 
+    public List<Imports> getImportsByDateRange(Date fromDate, Date toDate) {
+        List<Imports> importList = new ArrayList<>();
+        String sql = "SELECT i.import_id, p.product_name, i.quantity, i.import_price, "
+                + "p.unit, i.import_date, s.supplier_name, c.category_name, e.employee_name "
+                + "FROM imports i "
+                + "JOIN products p ON i.product_id = p.product_id "
+                + "JOIN category c ON p.category_id = c.category_id "
+                + "JOIN suppliers s ON i.supplier_id = s.supplier_id "
+                + "JOIN employees e ON i.employee_id = e.employee_id "
+                + "WHERE i.import_date BETWEEN ? AND ? "
+                + "ORDER BY i.import_date ASC";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setDate(1, fromDate);
+            stmt.setDate(2, toDate);
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Imports i = new Imports();
+                i.setImport_id(rs.getInt("import_id"));
+                i.setProduct_name(rs.getString("product_name"));
+                i.setQuantity(rs.getInt("quantity"));
+                i.setImport_price(rs.getInt("import_price"));
+                i.setUnit(rs.getString("unit"));
+                i.setImport_date(rs.getDate("import_date").toLocalDate());
+                i.setSupplier_name(rs.getString("supplier_name"));
+                i.setCategory_name(rs.getString("category_name"));
+                i.setEmployee_name(rs.getString("employee_name"));
+                importList.add(i);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return importList;
+    }
+
+    public List<Products> getAllProductsFromTable(Integer categoryId, Integer supplierId) {
+        List<Products> productList = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT DISTINCT p.product_id, p.product_name, c.category_name, p.price, p.stock_quantity, p.unit "
+                + "FROM products p "
+                + "JOIN category c ON p.category_id = c.category_id "
+                + "LEFT JOIN imports i ON p.product_id = i.product_id "
+                + "WHERE 1=1");
+
+        if (categoryId != null && categoryId > 0) {
+            sql.append(" AND p.category_id = ").append(categoryId);
+        }
+        if (supplierId != null && supplierId > 0) {
+            sql.append(" AND i.supplier_id = ").append(supplierId);
+        }
+
+        try {
+            PreparedStatement stmt = connection.prepareStatement(sql.toString());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Products p = new Products();
+                p.setProduct_id(rs.getInt("product_id"));
+                p.setProduct_name(rs.getString("product_name"));
+                p.setCategoryName(rs.getString("category_name"));
+                p.setPrice(rs.getInt("price"));
+                p.setStock_quantity(rs.getInt("stock_quantity"));
+                p.setUnit(rs.getString("unit"));
+                productList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
+    }
+
+    
 }
