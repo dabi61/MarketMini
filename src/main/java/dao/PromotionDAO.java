@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import model.DBConnection;
@@ -52,17 +53,19 @@ public class PromotionDAO {
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setString(1, "%" + keyword + "%");
         ResultSet rs = ps.executeQuery();
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
         while (rs.next()) {
             Object[] row = new Object[]{
                 rs.getInt("promotion_id"),
                 rs.getString("promotion_name"),
-                rs.getDate("start_date"),
-                rs.getDate("end_date"),
+                rs.getDate("start_date").toLocalDate().format(formatter),
+                rs.getDate("end_date").toLocalDate().format(formatter),
                 rs.getString("product_name"),
                 rs.getInt("discount"),
-                rs.getInt("discounted_price"),
-                rs.getInt("original_price")
+                
+                rs.getInt("original_price"),
+                rs.getInt("discounted_price")
             };
             list.add(row);
         }
@@ -117,13 +120,14 @@ public class PromotionDAO {
 
         try (PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             while (rs.next()) {
                 Object[] row = new Object[8];
                 row[0] = rs.getInt("promotion_id");
                 row[1] = rs.getString("promotion_name");
-                row[2] = rs.getDate("start_date");
-                row[3] = rs.getDate("end_date");
+                row[2] = rs.getDate("start_date").toLocalDate().format(formatter);
+                row[3] = rs.getDate("end_date").toLocalDate().format(formatter);
                 row[4] = rs.getString("product_name");
                 row[5] = rs.getInt("discount");
                 row[6] = rs.getInt("original_price");
