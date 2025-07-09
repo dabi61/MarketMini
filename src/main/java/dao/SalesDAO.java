@@ -16,6 +16,7 @@ import model.Customers;
 import model.DBConnection;
 import model.Orders;
 import model.Products;
+import model.Promotion;
 
 /**
  *
@@ -76,6 +77,7 @@ public class SalesDAO {
                 + "FROM products p "
                 + "JOIN imports i ON p.product_id = i.product_id "
                 + "JOIN category c ON p.category_id = c.category_id "
+                + "JOIN productdisplay pd ON p.product_id = pd.product_id "
                 + "WHERE 1=1");
 
         // Thêm điều kiện lọc nếu có
@@ -105,40 +107,6 @@ public class SalesDAO {
             e.printStackTrace();
         }
         return productList;
-    }
-
-    public boolean insertOrder1(int employeeId, Date orderDate, int totalAmount, int customerId, int productId, int quantity, int unitPrice) {
-        try {
-            String insertOrderSql = "INSERT INTO orders (employee_id,order_date, total_amount, customer_id) VALUES (?, ?, ?, ?)";
-            PreparedStatement orderPs = con.prepareStatement(insertOrderSql);
-            orderPs.setInt(1, employeeId);
-            orderPs.setDate(2, orderDate);
-            orderPs.setInt(3, totalAmount);
-            orderPs.setInt(4, customerId);
-            int orderResult = orderPs.executeUpdate();
-
-            // Lấy order_id được sinh ra
-            int generatedOrderId = -1;
-            ResultSet rs = orderPs.getGeneratedKeys();
-            if (rs.next()) {
-                generatedOrderId = rs.getInt(1);
-            } else {
-                throw new SQLException("Không lấy được order_id mới tạo.");
-            }
-
-            String insertOrderDetailsSql = "INSERT INTO ordersdetails (order_id,product_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
-            PreparedStatement orderDetailsPs = con.prepareStatement(insertOrderDetailsSql);
-            orderDetailsPs.setInt(1, generatedOrderId);
-            orderDetailsPs.setInt(2, productId);
-            orderDetailsPs.setInt(3, quantity);
-            orderDetailsPs.setInt(4, unitPrice);
-            int orderDetailsResult = orderDetailsPs.executeUpdate();
-
-            return orderResult > 0 && orderDetailsResult > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 
     public int insertOrder(int employeeId, Date orderDate, int totalAmount, int customerId, int finalAmount) {
@@ -238,4 +206,82 @@ public class SalesDAO {
             return false;
         }
     }
+
+    public Promotion getActivePromotionByProductId(int maSanPham) {
+        Promotion promotion = null;
+        String sql = "SELECT * FROM promotion "
+                + "WHERE product_id = ? "
+                + "AND CURDATE() BETWEEN start_date AND end_date "
+                + "ORDER BY discount DESC "
+                + "LIMIT 1";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, maSanPham);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                promotion = new Promotion();
+                promotion.setPromotionId(rs.getInt("promotion_id"));
+                promotion.setPromotionName(rs.getString("promotion_name"));
+                promotion.setStartDate(rs.getDate("start_date"));
+                promotion.setEndDate(rs.getDate("end_date"));
+                promotion.setProductId(rs.getInt("product_id"));
+                promotion.setDiscount(rs.getInt("discount"));
+                promotion.setDiscountedPrice(rs.getInt("discounted_price"));
+                promotion.setOriginalPrice(rs.getInt("original_price"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return promotion;
+    }
+
+    public Orders getOrderById(int orderId) {
+        String sql = "SELECT o.*, c.full_name, c.phone_number "
+                + "FROM orders o JOIN customers c ON o.customer_id = c.customer_id "
+                + "WHERE o.order_id = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Orders order = new Orders();
+                order.setOrder_id(rs.getInt("order_id"));
+                order.setOrder_date(rs.getDate("order_date").toLocalDate());
+                order.setTotal_amount(rs.getInt("total_amount"));
+                order.setFinalAmount(rs.getInt("final_amount"));
+                order.setCustomerName(rs.getString("full_name"));
+                order.setPhoneNumber(rs.getString("phone_number"));
+                return order;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Products> getOrderDetailsByOrderId(int orderId) {
+        List<Products> productList = new ArrayList<>();
+        String sql = "SELECT p.product_name, od.quantity, od.unit_price, "
+                + "       (od.quantity * od.unit_price) AS total_price "
+                + "FROM orderdetails od "
+                + "JOIN products p ON od.product_id = p.product_id "
+                + "WHERE od.order_id = ?";
+
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Products p = new Products();
+                p.setProduct_name(rs.getString("product_name"));
+                p.setQuantity(rs.getInt("quantity"));        // số lượng mua
+                p.setPrice(rs.getInt("unit_price"));         // đơn giá
+                p.setTotalPrice(rs.getInt("total_price"));   // thành tiền
+                productList.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productList;
+    }
+
 }

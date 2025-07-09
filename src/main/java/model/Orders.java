@@ -16,6 +16,10 @@ public class Orders {
     private LocalDate order_date;
     private int total_amount;
     private int customer_id;
+    
+    private int finalAmount;
+    private String customerName;
+    private String phoneNumber;
 
     public Orders() {
     }
@@ -67,6 +71,28 @@ public class Orders {
     public void setCustomer_id(int customer_id) {
         this.customer_id = customer_id;
     }
-    
-    
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public int getFinalAmount() {
+        return finalAmount;
+    }
+
+    public void setFinalAmount(int finalAmount) {
+        this.finalAmount = finalAmount;
+    }
 }

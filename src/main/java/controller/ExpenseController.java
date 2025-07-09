@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -45,29 +46,47 @@ public class ExpenseController {
     }
 
     public DefaultTableModel getExpenseTableModel() {
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        model.setColumnIdentifiers(new String[] {
-            "Mã chi phí", "Tháng", "Tiền điện", "Tiền thuê", "Tiền nước", "Chi phí sửa chữa"
-        });
-
-        try {
-            List<Object[]> list = dao.getAllExpenses();
-            for (Object[] row : list) {
-                model.addRow(row);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Lỗi khi tải dữ liệu chi phí!");
+    DefaultTableModel model = new DefaultTableModel() {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
         }
+    };
 
-        return model;
+    model.setColumnIdentifiers(new String[] {
+        "Mã chi phí", "Tháng/Năm", "Chi phí điện", "Chi phí thuê", "Chi phí nước", "Chi phí sửa chữa"
+    });
+
+    try {
+        List<Object[]> list = dao.getAllExpenses();
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/yyyy"); // ✅ định dạng Tháng/Năm
+
+        for (Object[] row : list) {
+            Object[] formattedRow = new Object[row.length];
+            formattedRow[0] = row[0]; // Mã chi phí
+
+            // ✅ Format lại cột Tháng/Năm
+            if (row[1] instanceof Date) {
+                formattedRow[1] = sdf.format((Date) row[1]);
+            } else {
+                formattedRow[1] = row[1]; // fallback nếu không phải Date
+            }
+
+            for (int i = 2; i < row.length; i++) {
+                formattedRow[i] = row[i];
+            }
+
+            model.addRow(formattedRow);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        JOptionPane.showMessageDialog(null, "Lỗi khi tải dữ liệu chi phí!");
     }
+
+    return model;
+}
+
+
     
     public boolean saveExpense(
     boolean isEditing,
@@ -77,27 +96,39 @@ public class ExpenseController {
     int rent,
     int water,
     int repair
-    ) {
-        Expense expense = new Expense();
-        expense.setMonthYear(monthYear);
-        expense.setElectricityCost(electricity);
-        expense.setRentCost(rent);
-        expense.setWaterCost(water);
-        expense.setRepairCost(repair);
+) throws SQLException {
+    Expense expense = new Expense();
+    expense.setMonthYear(monthYear);
+    expense.setElectricityCost(electricity);
+    expense.setRentCost(rent);
+    expense.setWaterCost(water);
+    expense.setRepairCost(repair);
 
-        if (isEditing) {
-            expense.setExpenseId(editingExpenseId);
-            return dao.update(expense);
-        } else {
-            return dao.insert(expense);
-        }
+    ExpenseDAO dao = new ExpenseDAO();
+
+    // 🔒 Kiểm tra trùng tháng-năm nếu đang thêm mới
+    if (!isEditing && dao.isMonthYearExists(monthYear)) {
+        JOptionPane.showMessageDialog(null,
+            "Chi phí của tháng này đã tồn tại. Vui lòng chọn tháng khác!",
+            "Trùng tháng",
+            JOptionPane.WARNING_MESSAGE);
+        return false;
     }
+
+    if (isEditing) {
+        expense.setExpenseId(editingExpenseId);
+        return dao.update(expense);
+    } else {
+        return dao.insert(expense);
+    }
+}
+
     
     public boolean deleteExpense(int expenseId) {
         return dao.delete(expenseId);
     }
 
-    public DefaultTableModel searchExpenses(String keyword) {
+    public DefaultTableModel searchExpenses(int month, int year) {
     DefaultTableModel model = new DefaultTableModel() {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -106,17 +137,11 @@ public class ExpenseController {
     };
 
     model.setColumnIdentifiers(new String[] {
-        "ID", "Tháng/Năm", "Chi phí điện", "Chi phí mặt bằng", "Chi phí nước", "Chi phí sửa chữa"
+        "Mã chi phí", "Tháng/Năm", "Chi phí điện", "Chi phí mặt bằng", "Chi phí nước", "Chi phí sửa chữa"
     });
 
-    List<Object[]> list;
     try {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            list = dao.getAllExpenses();
-        } else {
-            list = dao.searchByMonthOrYear(keyword);
-        }
-
+        List<Object[]> list = dao.searchByMonthAndYear(month + 1, year); // +1 vì tháng trong DB là 1-12
         for (Object[] row : list) {
             model.addRow(row);
         }
@@ -127,6 +152,7 @@ public class ExpenseController {
 
     return model;
 }
+
 
     
     public void exportToExcel(TableModel model, String filePath) {
