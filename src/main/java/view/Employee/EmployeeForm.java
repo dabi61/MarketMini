@@ -186,7 +186,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Chức năng\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 14), new java.awt.Color(46, 125, 50))); // NOI18N
 
-        btnThem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\add (1).png")); // NOI18N
+        btnThem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/add (1).png"))); // NOI18N
         btnThem.setText("Thêm");
         btnThem.setBorderPainted(false);
         btnThem.setContentAreaFilled(false);
@@ -195,7 +195,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         btnThem.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        btnXoa.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\trash (1).png")); // NOI18N
+        btnXoa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/trash (1).png"))); // NOI18N
         btnXoa.setText("Xóa");
         btnXoa.setBorderPainted(false);
         btnXoa.setContentAreaFilled(false);
@@ -204,7 +204,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         btnXoa.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnXoa.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        btnSua.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\edit (1).png")); // NOI18N
+        btnSua.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/edit (1).png"))); // NOI18N
         btnSua.setText("Sửa");
         btnSua.setBorderPainted(false);
         btnSua.setContentAreaFilled(false);
@@ -213,7 +213,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         btnSua.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnSua.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        btnNhap.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\excel.png")); // NOI18N
+        btnNhap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/sheets.png"))); // NOI18N
         btnNhap.setText("Nhập Excel");
         btnNhap.setBorderPainted(false);
         btnNhap.setContentAreaFilled(false);
@@ -222,7 +222,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         btnNhap.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnNhap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        btnXuat.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\sheets.png")); // NOI18N
+        btnXuat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/excel.png"))); // NOI18N
         btnXuat.setText("Xuất Excel");
         btnXuat.setBorderPainted(false);
         btnXuat.setContentAreaFilled(false);
@@ -231,7 +231,7 @@ public class EmployeeForm extends javax.swing.JPanel {
         btnXuat.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnXuat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
 
-        btnXem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\eye.png")); // NOI18N
+        btnXem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/eye.png"))); // NOI18N
         btnXem.setText("Xem chi tiết");
         btnXem.setBorderPainted(false);
         btnXem.setContentAreaFilled(false);
@@ -279,7 +279,7 @@ public class EmployeeForm extends javax.swing.JPanel {
 
         btnTimKiem.setBackground(new java.awt.Color(46, 125, 50));
         btnTimKiem.setForeground(new java.awt.Color(255, 255, 255));
-        btnTimKiem.setIcon(new javax.swing.ImageIcon("D:\\iconJV\\search.png")); // NOI18N
+        btnTimKiem.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/search_1.png"))); // NOI18N
         btnTimKiem.setText("Tìm");
 
         cboTieuChi.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "--Chọn tìm kiếm--", "Tên", "Chức vụ", "Số điện thoại", "Ngày thêm" }));

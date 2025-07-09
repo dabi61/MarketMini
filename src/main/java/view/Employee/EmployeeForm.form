@@ -112,7 +112,7 @@
         <Component class="javax.swing.JButton" name="btnThem">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\add (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/add (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Th&#xea;m"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -128,7 +128,7 @@
         <Component class="javax.swing.JButton" name="btnXoa">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\trash (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/trash (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="X&#xf3;a"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -144,7 +144,7 @@
         <Component class="javax.swing.JButton" name="btnSua">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\edit (1).png"/>
+              <Image iconType="3" name="/com/raven/icon/edit (1).png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="S&#x1eed;a"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -160,7 +160,7 @@
         <Component class="javax.swing.JButton" name="btnNhap">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\excel.png"/>
+              <Image iconType="3" name="/com/raven/icon/sheets.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Nh&#x1ead;p Excel"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -176,7 +176,7 @@
         <Component class="javax.swing.JButton" name="btnXuat">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\sheets.png"/>
+              <Image iconType="3" name="/com/raven/icon/excel.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Xu&#x1ea5;t Excel"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -192,7 +192,7 @@
         <Component class="javax.swing.JButton" name="btnXem">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\eye.png"/>
+              <Image iconType="3" name="/com/raven/icon/eye.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Xem chi ti&#x1ebf;t"/>
             <Property name="borderPainted" type="boolean" value="false"/>
@@ -260,7 +260,7 @@
               <Color blue="ff" green="ff" red="ff" type="rgb"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="D:\iconJV\search.png"/>
+              <Image iconType="3" name="/com/raven/icon/search_1.png"/>
             </Property>
             <Property name="text" type="java.lang.String" value="T&#xec;m"/>
           </Properties>
