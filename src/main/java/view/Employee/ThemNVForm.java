@@ -121,6 +121,8 @@ public class ThemNVForm extends javax.swing.JDialog {
         txtPhone.setText("");
         cboChucVu.setSelectedIndex(0);     
         date.setDate(null);
+        txtMa.setText(String.valueOf(dao.employeeIdMax()));
+        txtMa.setEnabled(false);
         this.dispose();
     }
 

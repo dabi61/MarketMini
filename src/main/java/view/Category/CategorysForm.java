@@ -2,11 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
-package view.Supplier;
+package view.Category;
 
-import view.NhapExcel;
-import controller.SupplierController;
-import dao.SupplierDAO;
+
+import controller.CategoryController;
+import dao.CategoryDAO;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.Frame;
@@ -20,20 +20,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import model.Category;
 import model.Suppliers;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -52,37 +45,44 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import view.NhapExcel;
+
 
 /**
  *
  * @author Admin
  */
-public class SupplierForm extends javax.swing.JPanel {
-    private ThemNCCForm themNCCForm;  
-    private SuaNCCForm suaNccForm;
+public class CategorysForm extends javax.swing.JPanel {
+    private ThemDMForm themDMForm;  
+    private SuaDMForm suaDMForm;
     private NhapExcel nhapExcel;
-    SupplierController spController;
-    SupplierDAO supplierDao;
-    Suppliers supplier;
+    CategoryController spController;
+    CategoryDAO categoryDao;
+    Category category;
 
     /**
-     * Creates new form SupplierForm
+     * Creates new form CategorysForm
      */
-    public SupplierForm() {        
-        initComponents();      
-        // Chỉnh màu header bảng
+    public CategorysForm() {
+        initComponents();
+          // Chỉnh màu header bảng
         JTableHeader header = tblDanhSach.getTableHeader();
         header.setOpaque(false);
         header.setBackground(new java.awt.Color(46, 125, 50)); // Màu nền header
         header.setForeground(Color.WHITE);                   // Màu chữ header
         header.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 14));   // Font header
-
-        txtTimKiem.setText("Tìm kiếm theo tên nhà cung cấp");
+        
+        // Tùy chỉnh chọn dòng
+        tblDanhSach.setSelectionBackground(new Color(0, 153, 0)); // Màu khi chọn dòng
+        tblDanhSach.setSelectionForeground(Color.WHITE);          // Chữ trắng khi chọn
+        tblDanhSach.setRowHeight(25); 
+        
+        txtTimKiem.setText("Tìm kiếm theo tên danh mục");
         txtTimKiem.setForeground(Color.GRAY);
 
         txtTimKiem.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (txtTimKiem.getText().equals("Tìm kiếm theo tên nhà cung cấp")) {
+                if (txtTimKiem.getText().equals("Tìm kiếm theo tên danh mục")) {
                     txtTimKiem.setText("");
                     txtTimKiem.setForeground(Color.BLACK);
                 }
@@ -90,31 +90,23 @@ public class SupplierForm extends javax.swing.JPanel {
 
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (txtTimKiem.getText().trim().isEmpty()) {
-                    txtTimKiem.setText("Tìm kiếm theo tên nhà cung cấp");
+                    txtTimKiem.setText("Tìm kiếm theo tên danh mục");
                     txtTimKiem.setForeground(Color.GRAY);
                 }
             }
         });
-       
         
-        // Tùy chỉnh chọn dòng
-        tblDanhSach.setSelectionBackground(new Color(0, 153, 0)); // Màu khi chọn dòng
-        tblDanhSach.setSelectionForeground(Color.WHITE);          // Chữ trắng khi chọn
-        tblDanhSach.setRowHeight(25); 
-        
-     
-        
-        spController = new SupplierController(this);
-        supplierDao = new SupplierDAO();
+        spController = new CategoryController(this);
+        categoryDao = new CategoryDAO();
         
         // Lấy Frame cha của JPanel hiện tại
         Frame parent = (Frame) SwingUtilities.getWindowAncestor(this);
         // Khởi tạo các dialog với parent đúng kiểu
-        themNCCForm = new ThemNCCForm(parent, true);
-        suaNccForm = new SuaNCCForm(parent, true);
+        themDMForm = new ThemDMForm(parent, true);
+        suaDMForm = new SuaDMForm(parent, true);
         nhapExcel = new NhapExcel(parent, true);
  
-        //themNCCForm = new ThemNCCForm(this, true);
+
         btnThem.addActionListener(spController);
         btnSua.addActionListener(spController);
         btnXoa.addActionListener(spController);  
@@ -124,14 +116,14 @@ public class SupplierForm extends javax.swing.JPanel {
       //  nhapExcel = new NhapExcel(this, true);
         nhapExcel.getBtnUpload().addActionListener(spController);
         nhapExcel.getBtnSave().addActionListener(spController);
-        themNCCForm.getBtnThemNcc().addActionListener(spController);
-        themNCCForm.getBtnHuy().addActionListener(spController);
+        themDMForm.getBtnThemDm().addActionListener(spController);
+        themDMForm.getBtnHuy().addActionListener(spController);
         
-     //   suaNccForm = new SuaNCCForm(this, true);
-        suaNccForm.getBtnLuu().addActionListener(spController);
-        suaNccForm.getBtnHuy().addActionListener(spController);
         
-        loadSupplier();
+        suaDMForm.getBtnLuu().addActionListener(spController);
+        suaDMForm.getBtnHuy().addActionListener(spController);
+        
+        loadCategory();
     }
 
     /**
@@ -143,6 +135,9 @@ public class SupplierForm extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel4 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         btnThem = new javax.swing.JButton();
         btnXoa = new javax.swing.JButton();
@@ -156,12 +151,40 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblDanhSach = new javax.swing.JTable();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
-        setPreferredSize(new java.awt.Dimension(885, 591));
+        jPanel4.setBackground(new java.awt.Color(46, 125, 50));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setText("QUẢN LÍ DANH MỤC");
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(200, 230, 201));
+        jLabel2.setText("Quản lí danh mục sản phẩm của GreenBuy");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(246, 246, 246))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(292, 292, 292))))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(9, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addContainerGap())
+        );
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Chức năng\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 12), new java.awt.Color(46, 125, 50))); // NOI18N
@@ -222,13 +245,13 @@ public class SupplierForm extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(btnThem, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(btnXoa, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(34, 34, 34)
+                .addGap(26, 26, 26)
                 .addComponent(btnNhap)
-                .addGap(40, 40, 40)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 61, Short.MAX_VALUE)
                 .addComponent(btnXuat)
                 .addGap(29, 29, 29))
         );
@@ -260,10 +283,10 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 271, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnTimKiem, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnTimKiem)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -278,7 +301,6 @@ public class SupplierForm extends javax.swing.JPanel {
 
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Danh sách nhà cung cấp\n\n", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 1, 14), new java.awt.Color(46, 125, 50))); // NOI18N
-        jPanel3.setDoubleBuffered(false);
         jPanel3.setPreferredSize(new java.awt.Dimension(827, 583));
 
         tblDanhSach.setModel(new javax.swing.table.DefaultTableModel(
@@ -303,59 +325,23 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 441, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel4.setBackground(new java.awt.Color(46, 125, 50));
-
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("QUẢN LÍ NHÀ CUNG CẤP");
-
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(200, 230, 201));
-        jLabel2.setText("Theo dõi danh sách nhà cung cấp");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(327, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(255, 255, 255))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addGap(303, 303, 303))))
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(9, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addContainerGap())
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 458, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)))
-                .addContainerGap())
             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 878, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -371,146 +357,7 @@ public class SupplierForm extends javax.swing.JPanel {
                 .addGap(31, 31, 31))
         );
     }// </editor-fold>//GEN-END:initComponents
- public void HienthiForm(String action)  {
-        if("Thêm".equals(action)){
-            themNCCForm.setLocationRelativeTo(this);
-            themNCCForm.setVisible(true);
-          
-        }else if("Sửa".equals(action)){
-            int selectedRow = tblDanhSach.getSelectedRow();
-            if(selectedRow >= 0){
-               String maNcc = tblDanhSach.getValueAt(selectedRow, 0).toString();
-               String tenNcc = tblDanhSach.getValueAt(selectedRow, 1).toString();
-               String sdt = tblDanhSach.getValueAt(selectedRow, 2).toString();
-               String diachi = tblDanhSach.getValueAt(selectedRow, 3).toString();
-               String email = tblDanhSach.getValueAt(selectedRow, 4).toString();
-               Suppliers sp = new Suppliers(Integer.parseInt(maNcc), tenNcc, sdt, diachi, email);
-               suaNccForm.setValue(sp);
-               suaNccForm.setLocationRelativeTo(this);
-               suaNccForm.setVisible(true);
-               
-               }           
-        }else if("Xóa".equals(action)){
-            int selectedRow = tblDanhSach.getSelectedRow();
-            if(selectedRow >=0){
-               String maNcc = tblDanhSach.getValueAt(selectedRow, 0).toString();
-               String tenNcc = tblDanhSach.getValueAt(selectedRow, 1).toString();
-               String sdt = tblDanhSach.getValueAt(selectedRow, 2).toString();
-               String diachi = tblDanhSach.getValueAt(selectedRow, 3).toString();
-               String email = tblDanhSach.getValueAt(selectedRow, 4).toString();
-               Suppliers sp = new Suppliers(Integer.parseInt(maNcc), tenNcc, sdt, diachi, email);
-                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?", 
-                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if(choise == JOptionPane.YES_OPTION){
-                    supplierDao.supplier_delete(sp);
-                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
-                    loadSupplier();
-                }                            
-            } 
-        }else if("Nhập Excel".equals(action)){
-            nhapExcel.setLocationRelativeTo(this);
-            nhapExcel.setVisible(true);
-        }
-        
-    }
-    public void AddSupplier(){        
-        try{
-            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
-            var supplier = themNCCForm.getModel();
-            // gọi hàm dao   
-            supplierDao.supplier_insert(supplier);
-            JOptionPane.showMessageDialog(this, "Thêm thành công");
-            loadSupplier();   
-            themNCCForm.clear();
-        }catch(Exception ex){
-            String messages = ex.getMessage();
-            var mesErr = convertToStringList(messages);
-            String mess = "";
-            for (String m : mesErr) {
-                mess += m + "\n";
-            }
-            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }        
-    }
-    public void UpdateSupplier(){
-        
-        try {            
-             var supplier = suaNccForm.getModel();
-            // gọi hàm dao   
-            supplierDao.supplier_update(supplier);
-            JOptionPane.showMessageDialog(this, "Sửa thành công");
-            suaNccForm.clear();
-            loadSupplier();   
-        } catch (Exception e) {
-            String messages = e.getMessage();
-            var mesErr = convertToStringList(messages);
-            String mess = "";
-            for (String m : mesErr) {
-                mess += m + "\n";
-            }
-            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    public void Huy(){
-        themNCCForm.setVisible(false);
-        suaNccForm.setVisible(false);
-        themNCCForm.clear();
-    }
-    private void loadSupplier() {
-        supplier = new Suppliers();
-        supplier.setSupplier_name("");
-        supplierDao.supplierfind(tblDanhSach,supplier);        
-    }
-    public void timKiem() {
-        String tuKhoa = txtTimKiem.getText().trim();
 
-        // Nếu là placeholder hoặc người dùng xóa hết nội dung
-        if (tuKhoa.equals("Tìm kiếm theo tên nhà cung cấp") || tuKhoa.isEmpty()) {
-            loadSupplier(); // Gọi lại hàm load toàn bộ danh mục
-            return;
-        }
-
-        DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
-        model.setRowCount(0); // Xóa dữ liệu cũ
-
-        ResultSet rs = supplierDao.timKiem(tuKhoa);
-//        String tieuChi = cboTieuChi.getSelectedItem().toString();
-//          // Kiểm tra nếu chưa chọn tiêu chí tìm kiếm
-//        if (tieuChi.equals("--Chọn--") || tieuChi.isEmpty()) {
-//            JOptionPane.showMessageDialog(
-//                this,
-//                "Bạn cần chọn tiêu chí tìm kiếm!",
-//                "Thông báo",
-//                JOptionPane.WARNING_MESSAGE
-//            );
-//            return;
-//        }
-//        String tuKhoa = txtTimKiem.getText().trim();
-//        DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
-//        model.setRowCount(0);
-//        ResultSet rs = supplierDao.timKiem(tieuChi, tuKhoa);
-        try {
-            while (rs != null && rs.next()) {
-                model.addRow(new Object[]{
-                        rs.getInt("supplier_id"),
-                        rs.getString("supplier_name"),
-                        rs.getString("phone"),
-                        rs.getString("address"),
-                        rs.getString("email")
-                });
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    private List<String> convertToStringList(String suppliersString) {
-        // Remove square brackets and split by ", "
-        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
-        if (cleanedString.isEmpty()) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNhap;
@@ -530,7 +377,98 @@ public class SupplierForm extends javax.swing.JPanel {
     private javax.swing.JTable tblDanhSach;
     private javax.swing.JTextPane txtTimKiem;
     // End of variables declaration//GEN-END:variables
-private static CellStyle DinhdangHeader(XSSFSheet sheet) {
+
+    public void HienthiForm(String action) {
+        if("Thêm".equals(action)){
+            themDMForm.setLocationRelativeTo(this);
+            themDMForm.setVisible(true);
+          
+        }else if("Sửa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >= 0){
+                    String maDM = tblDanhSach.getValueAt(selectedRow, 0).toString();
+                    String ten = tblDanhSach.getValueAt(selectedRow, 1).toString();
+                    String mota = tblDanhSach.getValueAt(selectedRow, 2).toString();
+                    Category sp = new Category(Integer.parseInt(maDM), ten, mota);
+                    suaDMForm.setValue(sp);
+                    suaDMForm.setLocationRelativeTo(this);
+                    suaDMForm.setVisible(true);
+
+               }           
+        }else if("Xóa".equals(action)){
+            int selectedRow = tblDanhSach.getSelectedRow();
+            if(selectedRow >=0){
+                String maDM = tblDanhSach.getValueAt(selectedRow, 0).toString();
+                String ten = tblDanhSach.getValueAt(selectedRow, 1).toString();
+                String mota = tblDanhSach.getValueAt(selectedRow, 2).toString();
+                Category sp = new Category(Integer.parseInt(maDM), ten, mota);
+                int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?", 
+                        "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if(choise == JOptionPane.YES_OPTION){
+                    categoryDao.category_delete(sp);
+                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                    loadCategory();
+                }                            
+            } 
+        }else if("Nhập Excel".equals(action)){
+            nhapExcel.setLocationRelativeTo(this);
+            nhapExcel.setVisible(true);
+        }
+        
+    }
+
+    public void AddSupplier() {
+        try{
+            //gọi hàm getmodel ở form themncc đẻ lấy thông tin vừa nhập
+            var supplier = themDMForm.getModel();
+            // gọi hàm dao   
+            categoryDao.category_insert(supplier);
+            JOptionPane.showMessageDialog(this, "Thêm thành công");
+            loadCategory();   
+         //   themDMForm.clear();
+        }catch(Exception ex){
+            String messages = ex.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }    
+    }
+
+    public void Huy() {
+        themDMForm.setVisible(false);
+        suaDMForm.setVisible(false);
+        themDMForm.clear();
+    }
+   
+    public void UpdateCategory() {
+         try {            
+            var category = suaDMForm.getModel();
+            // gọi hàm dao   
+            categoryDao.category_update(category);
+            JOptionPane.showMessageDialog(this, "Sửa thành công");
+            suaDMForm.clear();
+            loadCategory();   
+        
+        } catch (Exception e) {
+            String messages = e.getMessage();
+            var mesErr = convertToStringList(messages);
+            String mess = "";
+            for (String m : mesErr) {
+                mess += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, mess, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    private void loadCategory() {
+           category = new Category();
+           category.setCategory_name("");
+           categoryDao.categoryfind(tblDanhSach,category);        
+       }
+    
+    private static CellStyle DinhdangHeader(XSSFSheet sheet) {
            // Create font
            Font font = sheet.getWorkbook().createFont();
            font.setFontName("Times New Roman");
@@ -552,7 +490,7 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
     public void Xuatbaocao() {
         try {
         XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = workbook.createSheet("Nhà Cung Cấp");
+        XSSFSheet sheet = workbook.createSheet("Danh Mục");
 
         // Tạo styles
         CellStyle styleTitle = workbook.createCellStyle();
@@ -586,13 +524,13 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         // Tạo tiêu đề
         Row titleRow = sheet.createRow(1); // Dòng 2 (index 1)
         Cell titleCell = titleRow.createCell(0); // Cột A (index 0)
-        titleCell.setCellValue("DANH SÁCH NHÀ CUNG CẤP");
+        titleCell.setCellValue("DANH SÁCH DANH MỤC SẢN PHẨM");
         titleCell.setCellStyle(styleTitle);
-        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5)); // Merge A2:F2
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 3)); // Merge A2:F2
 
         // Tạo dòng tiêu đề bảng
         Row headerRow = sheet.createRow(3);
-        String[] headers = { "STT", "Mã NCC", "Tên NCC", "Điện Thoại", "Địa Chỉ", "Email" };
+        String[] headers = { "STT", "Mã Danh Mục", "Tên Danh Mục", "Mô Tả" };
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
@@ -600,9 +538,9 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         }
 
         // Lấy dữ liệu
-        String tenNCC = txtTimKiem.getText().trim();
-        supplier.setSupplier_name(tenNCC);
-        ResultSet rs = supplierDao.load_execel(supplier);
+        String ten = txtTimKiem.getText().trim();
+        category.setCategory_name(ten);
+        ResultSet rs = categoryDao.load_execel(category);
 
         if (rs == null) {
             JOptionPane.showMessageDialog(null, "Không có dữ liệu để xuất");
@@ -620,24 +558,16 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
             cell0.setCellStyle(styleCell);
 
             // Mã NCC
-            row.createCell(1).setCellValue(rs.getInt("supplier_id"));
+            row.createCell(1).setCellValue(rs.getInt("category_id"));
             row.getCell(1).setCellStyle(styleCell);
 
             // Tên NCC
-            row.createCell(2).setCellValue(rs.getString("supplier_name"));
+            row.createCell(2).setCellValue(rs.getString("category_name"));
             row.getCell(2).setCellStyle(styleCell);
 
-            // Điện thoại
-            row.createCell(3).setCellValue(rs.getString("phone"));
-            row.getCell(3).setCellStyle(styleCell);
-
-            // Địa chỉ
-            row.createCell(4).setCellValue(rs.getString("address"));
-            row.getCell(4).setCellStyle(styleCell);
-
-            // Email
-            row.createCell(5).setCellValue(rs.getString("email"));
-            row.getCell(5).setCellStyle(styleCell);
+            // Mô Tả
+            row.createCell(3).setCellValue(rs.getString("description"));
+            row.getCell(3).setCellStyle(styleCell);  
         }
 
         // Auto resize cột
@@ -646,7 +576,7 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         }
 
         // Ghi ra file
-        File f = new File("D:\\caheo\\Danhsachnhacungcap.xlsx");
+        File f = new File("D:\\caheo\\Danhsachdanhmuc.xlsx");
         FileOutputStream out = new FileOutputStream(f);
         workbook.write(out);
         out.close();
@@ -663,9 +593,8 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(null, "Lỗi khi xuất báo cáo: " + e.getMessage());
     }
+        
     }
-    
-    
     
     // nhập excel
     private void ReadExcel(String filePath, JTable tbBang) {
@@ -676,7 +605,7 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         Iterator<Row> itr = sheet.iterator();
         if (itr.hasNext()) itr.next(); // Bỏ qua dòng tiêu đề
         tbBang.removeAll();
-        String[] head= {"STT","Tên NCC","Phone","Address","Email"};
+        String[] head= {"STT","Tên Danh Mục","Mô Tả"};
         DefaultTableModel tb = new DefaultTableModel(head,0);
         while (itr.hasNext()) {
             Row row = itr.next();
@@ -684,26 +613,22 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
                 // Đọc và ép kiểu dữ liệu an toàn
                 int stt = (int) row.getCell(0).getNumericCellValue();
                 String name = getCellStringValue(row.getCell(1));
-                String phone = getCellStringValue(row.getCell(2));
-                String address = getCellStringValue(row.getCell(3));
-                String email = getCellStringValue(row.getCell(4));
-
+                String mota = getCellStringValue(row.getCell(2));
+              
                 // Gọi DAO hoặc Controller để thêm vào CSDL
-                Suppliers supplier = new Suppliers();
-                supplier.setSupplier_id(stt);
-                supplier.setSupplier_name(name);
-                supplier.setPhone(phone);
-                supplier.setAddress(address);
-                supplier.setEmail(email);
+                Category category = new Category();
+                category.setCategory_id(stt);
+                category.setCategory_name(name);
+                category.setDescription(mota);
+               
 
                  // <-- đảm bảo bạn đã viết hàm này
              
                 Vector vt = new Vector();
                     vt.add(stt);
                     vt.add(name);
-                    vt.add(phone);
-                    vt.add(address);
-                    vt.add(email);
+                    vt.add(mota);
+                   
                 tb.addRow(vt);
                 tbBang.setModel(tb);
             } catch (Exception e) {
@@ -717,36 +642,7 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
         JOptionPane.showMessageDialog(this, "Lỗi khi đọc file Excel: " + e.getMessage());
     }
 }
-    public void SaveDataFromExcel(){
-        DefaultTableModel model = (DefaultTableModel) nhapExcel.getTblNCC().getModel();
-        int rowCount = model.getRowCount();
-        int countInserted = 0, countSkipped = 0;
-
-        for (int i = 0; i < rowCount; i++) {
-            Suppliers supplier = new Suppliers();
-            try {
-                supplier.setSupplier_id(Integer.parseInt(model.getValueAt(i, 0).toString()));
-                supplier.setSupplier_name(model.getValueAt(i, 1).toString());
-                supplier.setPhone(model.getValueAt(i, 2).toString());
-                supplier.setAddress(model.getValueAt(i, 3).toString());
-                supplier.setEmail(model.getValueAt(i, 4).toString());
-                // ❗ Kiểm tra trùng TÊN hoặc SỐ ĐIỆN THOẠI
-                if (supplierDao.isSupplierExists(supplier.getSupplier_name(), supplier.getPhone())) {
-                    countSkipped++;
-                    continue;
-                }
-                // Insert vào DB
-                supplierDao.supplier_insert(supplier);
-                countInserted++;
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi tại dòng " + (i + 1) + ": " + ex.getMessage());
-            }
-        }
-        JOptionPane.showMessageDialog(this,
-        "✔️ Đã thêm " + countInserted + " NCC mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng tên hoặc số điện thoại");
-        loadSupplier();
-        }
-        private String getCellStringValue(Cell cell) {
+    private String getCellStringValue(Cell cell) {
             if (cell == null) return "";
             switch (cell.getCellType()) {
                 case STRING:
@@ -759,8 +655,8 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
                     return "";
             }
         }
-        public void Upload() {
-            JFileChooser fc = new JFileChooser();
+    public void Upload() {
+          JFileChooser fc = new JFileChooser();
             int result = fc.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -770,12 +666,77 @@ private static CellStyle DinhdangHeader(XSSFSheet sheet) {
                 if (file.getName().toLowerCase().endsWith(".xlsx")) {
                     ReadExcel(file.getPath(), nhapExcel.getTblNCC());
                     JOptionPane.showMessageDialog(this, "Import thành công!");
-                    loadSupplier(); // Gọi lại để load dữ liệu lên bảng
+                    loadCategory(); // Gọi lại để load dữ liệu lên bảng
                 } else {
                     JOptionPane.showMessageDialog(this, "Vui lòng chọn file Excel (.xlsx)");
                 }
             }
+        
+    }
+
+    public void SaveDataFromExcel() {
+         DefaultTableModel model = (DefaultTableModel) nhapExcel.getTblNCC().getModel();
+        int rowCount = model.getRowCount();
+        int countInserted = 0, countSkipped = 0;
+
+        for (int i = 0; i < rowCount; i++) {
+            Category category = new Category();
+            try {
+                category.setCategory_id(Integer.parseInt(model.getValueAt(i, 0).toString()));
+                category.setCategory_name(model.getValueAt(i, 1).toString());
+                category.setDescription(model.getValueAt(i, 2).toString());
+               
+                // ❗ Kiểm tra trùng TÊN hoặc SỐ ĐIỆN THOẠI
+                if (categoryDao.isCategoryExists(category.getCategory_name())) {
+                    countSkipped++;
+                    continue;
+                }
+                // Insert vào DB
+                categoryDao.category_insert(category);
+                countInserted++;
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi tại dòng " + (i + 1) + ": " + ex.getMessage());
+            }
         }
+        JOptionPane.showMessageDialog(this,
+        "✔️ Đã thêm " + countInserted + " DM mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng tên ");
+        loadCategory();
+        
+    }
+
+    public void timKiem() {
+    String tuKhoa = txtTimKiem.getText().trim();
+
+    // Nếu là placeholder hoặc người dùng xóa hết nội dung
+    if (tuKhoa.equals("Tìm kiếm theo tên danh mục") || tuKhoa.isEmpty()) {
+        loadCategory(); // Gọi lại hàm load toàn bộ danh mục
+        return;
+    }
+
+    DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
+    model.setRowCount(0); // Xóa dữ liệu cũ
+
+    ResultSet rs = categoryDao.timKiem(tuKhoa);
+
+    try {
+        while (rs != null && rs.next()) {
+            model.addRow(new Object[]{
+                rs.getInt("category_id"),
+                rs.getString("category_name"),
+                rs.getString("description")
+            });
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
+    private List<String> convertToStringList(String suppliersString) {
+        // Remove square brackets and split by ", "
+        String cleanedString = suppliersString.replaceAll("\\[|\\]", "");
+        if (cleanedString.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(Arrays.asList(cleanedString.split(", ")));
+    }
 
 }
-
