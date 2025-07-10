@@ -107,20 +107,17 @@ public class WorkShiftForm extends JPanel {
     private JPanel createHeaderPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(PRIMARY_COLOR);
-        panel.setBorder(new EmptyBorder(20, 25, 20, 25));
+        panel.setBorder(new EmptyBorder(15, 25, 15, 25));
         
-        JLabel title = new JLabel("⏰ QUẢN LÝ CA LÀM VIỆC", JLabel.CENTER);
+        JLabel title = new JLabel(" QUẢN LÝ CA LÀM VIỆC", JLabel.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 24));
         title.setForeground(Color.WHITE);
         
-        JLabel subtitle = new JLabel("Thiết lập và theo dõi lịch làm việc của nhân viên", JLabel.CENTER);
-        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitle.setForeground(new Color(200, 230, 201));
+        
         
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(PRIMARY_COLOR);
         titlePanel.add(title, BorderLayout.CENTER);
-        titlePanel.add(subtitle, BorderLayout.SOUTH);
         
         panel.add(titlePanel, BorderLayout.CENTER);
         
@@ -138,32 +135,32 @@ public class WorkShiftForm extends JPanel {
         panel.setPreferredSize(new Dimension(350, 600));
         
         // Title
-        JLabel formTitle = new JLabel("📝 Thông tin ca làm việc");
+        JLabel formTitle = new JLabel(" Thông tin ca làm việc");
         formTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         formTitle.setForeground(PRIMARY_COLOR);
         formTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(formTitle);
-        panel.add(Box.createVerticalStrut(20));
+        panel.add(Box.createVerticalStrut(15));
         
         // Employee selection
-        panel.add(createFieldGroup("👤 Nhân viên:", createEmployeeCombo()));
-        panel.add(Box.createVerticalStrut(15));
+        panel.add(createFieldGroup(" Nhân viên:", createEmployeeCombo()));
+        panel.add(Box.createVerticalStrut(10));
         
         // Date selection với DatePicker
-        panel.add(createFieldGroup("📅 Ngày làm việc:", createDateChooser()));
-        panel.add(Box.createVerticalStrut(15));
+        panel.add(createFieldGroup(" Ngày làm việc:", createDateChooser()));
+        panel.add(Box.createVerticalStrut(10));
         
         // Shift type
-        panel.add(createFieldGroup("🕐 Loại ca:", createShiftTypeCombo()));
-        panel.add(Box.createVerticalStrut(15));
+        panel.add(createFieldGroup(" Loại ca:", createShiftTypeCombo()));
+        panel.add(Box.createVerticalStrut(10));
         
         // Time selection với Spinner
-        panel.add(createFieldGroup("⏰ Giờ bắt đầu:", createTimeSpinner()));
-        panel.add(Box.createVerticalStrut(15));
+        panel.add(createFieldGroup(" Giờ bắt đầu:", createTimeSpinner()));
+        panel.add(Box.createVerticalStrut(10));
         
         // Notes
-        panel.add(createFieldGroup("📋 Ghi chú:", createNotesArea()));
-        panel.add(Box.createVerticalStrut(25));
+        panel.add(createFieldGroup(" Ghi chú:", createNotesArea()));
+        panel.add(Box.createVerticalStrut(15));
         
         // Buttons
         panel.add(createButtonPanel());
@@ -183,7 +180,7 @@ public class WorkShiftForm extends JPanel {
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         component.setAlignmentX(Component.LEFT_ALIGNMENT);
-        component.setMaximumSize(new Dimension(300, component.getPreferredSize().height));
+        component.setMaximumSize(new Dimension(500, component.getPreferredSize().height));
         
         group.add(label);
         group.add(Box.createVerticalStrut(5));
@@ -215,7 +212,7 @@ public class WorkShiftForm extends JPanel {
     }
     
     private JComboBox<String> createShiftTypeCombo() {
-        String[] shiftTypes = {"-- Chọn ca làm việc --", "🌅 Ca Sáng", "☀️ Ca Chiều", "🌙 Ca Tối", "⭐ Ca Nguyên"};
+        String[] shiftTypes = {"-- Chọn ca làm việc --", " Ca Sáng", "️ Ca Chiều", " Ca Tối", " Ca Nguyên"};
         cboShiftType = new JComboBox<>(shiftTypes);
         styleComboBox(cboShiftType);
         return cboShiftType;
@@ -280,10 +277,10 @@ public class WorkShiftForm extends JPanel {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.setMaximumSize(new Dimension(300, 80));
         
-        btnAdd = createStyledButton("➕ Thêm", PRIMARY_COLOR);
-        btnUpdate = createStyledButton("✏️ Sửa", ACCENT_COLOR);
-        btnDelete = createStyledButton("🗑️ Xóa", new Color(244, 67, 54));
-        btnRefresh = createStyledButton("🔄 Làm mới", SECONDARY_COLOR);
+        btnAdd = createStyledButton(" Thêm", PRIMARY_COLOR);
+        btnUpdate = createStyledButton("️ Sửa", ACCENT_COLOR);
+        btnDelete = createStyledButton("️ Xóa", new Color(244, 67, 54));
+        btnRefresh = createStyledButton(" Làm mới", SECONDARY_COLOR);
         
         btnAdd.addActionListener(e -> addShift());
         btnUpdate.addActionListener(e -> updateShift());
@@ -358,13 +355,13 @@ public class WorkShiftForm extends JPanel {
         ));
         
         // Table title
-        JLabel tableTitle = new JLabel("📊 Danh sách ca làm việc");
+        JLabel tableTitle = new JLabel(" Danh sách ca làm việc");
         tableTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         tableTitle.setForeground(PRIMARY_COLOR);
         panel.add(tableTitle, BorderLayout.NORTH);
         
         // Table
-        String[] columns = {"ID", "👤 Nhân viên", "📅 Ngày", "🕐 Ca làm", "⏰ Giờ vào", "⏰ Giờ ra", "📊 Dự kiến (h)", "✅ Thực tế (h)", "📋 Trạng thái"};
+        String[] columns = {"ID", " Nhân viên", " Ngày", " Ca làm", " Giờ vào", " Giờ ra", " Dự kiến (h)", " Thực tế (h)", " Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {

@@ -58,7 +58,11 @@ public class PromotionController {
 
         return model;
     }
-    
+    public boolean isPromotionNameDuplicate(String promotionName) throws SQLException {
+    PromotionDAO dao = new PromotionDAO();
+    return dao.isPromotionNameExists(promotionName);
+}
+
     public boolean savePromotion(
         boolean isEditing,
         int editingPromotionId,
