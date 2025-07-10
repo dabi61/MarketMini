@@ -22,12 +22,11 @@ public class CategoryDAO {
                 // kết nối db
                 con = DBConnection.getConnection();
                 // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-                String sql = "Insert into category Values(?,?,?,?)";
+                String sql = "Insert into category Values(?,?,?)";
                 PreparedStatement ps = con.prepareStatement(sql);  
                 ps.setNull(1, java.sql.Types.INTEGER );
                 ps.setString(2,category.getCategory_name());
                 ps.setString(3,category.getDescription());
-                ps.setString(4,null);
                 ps.executeUpdate();
                 con.close();
             } catch (SQLException ex) {

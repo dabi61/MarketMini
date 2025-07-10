@@ -35,6 +35,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Date;
 import model.Employees;
@@ -108,6 +111,13 @@ private void loadDanhSachSanPham() {
     if (txtTenKM.getText().trim().isEmpty()) {
         JOptionPane.showMessageDialog(this, "Vui lòng nhập tên khuyến mãi!");
         txtTenKM.requestFocus();
+        return false;
+    }
+    
+    String discountStr = txtGiamGia.getText().trim();
+    if (discountStr.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Vui lòng nhập phần trăm giảm giá!");
+        txtGiamGia.requestFocus();
         return false;
     }
 
@@ -597,35 +607,51 @@ private void enableButtons() {
 
     private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
         // TODO add your handling code here:int selectedRow = jTable1.getSelectedRow();
+        int selectedRow = jTable1.getSelectedRow();
+
+    if (selectedRow >= 0) {
         btnThem.setEnabled(false);
         btnSua.setEnabled(true);
         btnXoa.setEnabled(true);
         btnLuu.setEnabled(false);
         btnBoQua.setEnabled(true);
-        int selectedRow = jTable1.getSelectedRow();
-    if (selectedRow >= 0) {
+
         // Lấy dữ liệu từ bảng
-        int promotionId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
-        editingPromotionId = promotionId; 
-        String promotionName = jTable1.getValueAt(selectedRow, 1).toString();
-        String startDateStr = jTable1.getValueAt(selectedRow, 2).toString();
-        String endDateStr = jTable1.getValueAt(selectedRow, 3).toString();
-        String productName = jTable1.getValueAt(selectedRow, 4).toString();
-        String discountStr = jTable1.getValueAt(selectedRow, 5).toString();
-        String discountedPriceStr = jTable1.getValueAt(selectedRow, 6).toString();
-        String originalPriceStr = jTable1.getValueAt(selectedRow, 7).toString();
+        try {
+            int promotionId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
+            editingPromotionId = promotionId;
 
-        // Hiển thị lên form
-        txtTenKM.setText(promotionName);
-        dtpNgayTao.setDate(java.sql.Date.valueOf(startDateStr));
-        dtpNgayHH.setDate(java.sql.Date.valueOf(endDateStr));
-        txtTenSP.setText(productName);        // Bạn cần có thêm txtDiscount
-        txtGiamGia.setText(discountStr);         // Bạn cần có thêm txtOriginal
+            String promotionName = jTable1.getValueAt(selectedRow, 1).toString();
+            String startDateStr = jTable1.getValueAt(selectedRow, 2).toString();
+            String endDateStr = jTable1.getValueAt(selectedRow, 3).toString();
+            String productName = jTable1.getValueAt(selectedRow, 4).toString();
+            String discountStr = jTable1.getValueAt(selectedRow, 5).toString();
+            String discountedPriceStr = jTable1.getValueAt(selectedRow, 6).toString();
+            String originalPriceStr = jTable1.getValueAt(selectedRow, 7).toString();
 
-        // Bật chế độ chỉnh sửa
-        isEditing = true;
+            // Định dạng ngày
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy"); // Hoặc "MM/yyyy" nếu chỉ có tháng/năm
 
-        enableFields();
+            // Parse ngày
+            LocalDate startLocalDate = LocalDate.parse(startDateStr, formatter);
+            LocalDate endLocalDate = LocalDate.parse(endDateStr, formatter);
+
+            // Hiển thị lên form
+            txtTenKM.setText(promotionName);
+            dtpNgayTao.setDate(java.sql.Date.valueOf(startLocalDate));
+            dtpNgayHH.setDate(java.sql.Date.valueOf(endLocalDate));
+            txtTenSP.setText(productName);
+            txtGiamGia.setText(discountStr);
+
+            isEditing = true;
+            enableFields();
+
+        } catch (DateTimeParseException e) {
+            JOptionPane.showMessageDialog(this, "Lỗi định dạng ngày tháng: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi lấy dữ liệu khuyến mãi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
     btnXoa.setEnabled(true);
     }//GEN-LAST:event_jTable1MouseClicked
@@ -677,6 +703,10 @@ private void enableButtons() {
         int discount = Integer.parseInt(discountStr);
 
         PromotionController controller = new PromotionController();
+        if (controller.isPromotionNameDuplicate(promotionName) && !isEditing) {
+    JOptionPane.showMessageDialog(this, "Tên khuyến mãi đã tồn tại. Vui lòng nhập tên khác!", "Trùng tên", JOptionPane.WARNING_MESSAGE);
+    return;
+}
         boolean success = controller.savePromotion(
             isEditing,
             editingPromotionId,

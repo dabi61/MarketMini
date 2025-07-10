@@ -15,7 +15,7 @@ public class DBConnection {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            String url = "jdbc:mysql://localhost:3306/marketmini";
+            String url = "jdbc:mysql://localhost:3307/marketmini";
 
             String user = "root";
             String password = "";

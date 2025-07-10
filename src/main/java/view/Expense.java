@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -457,48 +459,45 @@ private void enableButtons() {
     private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
         // TODO add your handling code here:int selectedRow = jTable1.getSelectedRow();
         int selectedRow = jTable1.getSelectedRow();
-        disableFields();
+    disableFields();
+
     if (selectedRow >= 0) {
-        // Lấy dữ liệu từ bảng
-        int editingExpenseId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
-        editingOrderId = editingExpenseId;
-
-        String monthYearStr = jTable1.getValueAt(selectedRow, 1).toString(); // ví dụ: "10/2025"
-        String electricity = jTable1.getValueAt(selectedRow, 2).toString();
-        String rent = jTable1.getValueAt(selectedRow, 3).toString();
-        String water = jTable1.getValueAt(selectedRow, 4).toString();
-        String repair = jTable1.getValueAt(selectedRow, 5).toString();
-
-        // Phân tích chuỗi "MM/yyyy"
         try {
-    // Parse chuỗi ngày từ bảng
-    Date date = java.sql.Date.valueOf(monthYearStr);  // monthYearStr = "2025-05-01"
-    Calendar cal = Calendar.getInstance();
-    cal.setTime(date);
+            // Lấy dữ liệu từ bảng
+            int editingExpenseId = Integer.parseInt(jTable1.getValueAt(selectedRow, 0).toString());
+            editingOrderId = editingExpenseId;
 
-    int month = cal.get(Calendar.MONTH);  // 0 - 11
-    int year = cal.get(Calendar.YEAR);
+            String monthYearStr = jTable1.getValueAt(selectedRow, 1).toString(); // ví dụ: "10/2025"
+            String electricity = jTable1.getValueAt(selectedRow, 2).toString();
+            String rent = jTable1.getValueAt(selectedRow, 3).toString();
+            String water = jTable1.getValueAt(selectedRow, 4).toString();
+            String repair = jTable1.getValueAt(selectedRow, 5).toString();
 
-    mpNgayTao.setMonth(month);     // JMonthChooser
-    ypNgayTao.setYear(year);       // JYearChooser
+            // ✅ Phân tích "MM/yyyy" thành month và year
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yyyy");
+            YearMonth ym = YearMonth.parse(monthYearStr, formatter);
+            int month = ym.getMonthValue() - 1; // JMonthChooser dùng 0-11
+            int year = ym.getYear();
 
-} catch (IllegalArgumentException e) {
-    JOptionPane.showMessageDialog(this, "Lỗi định dạng ngày tháng: " + monthYearStr);
-}
+            // Gán lên form
+            mpNgayTao.setMonth(month);
+            ypNgayTao.setYear(year);
+            txtDien.setText(electricity);
+            txtMatBang.setText(rent);
+            txtNuoc.setText(water);
+            txtSuaChua.setText(repair);
 
-        // Gán dữ liệu còn lại lên form
-        txtDien.setText(electricity);
-        txtMatBang.setText(rent);
-        txtNuoc.setText(water);
-        txtSuaChua.setText(repair);
+            isEditing = true;
 
-        isEditing = true;
-
-        btnThem.setEnabled(false);
-        btnSua.setEnabled(true);
-        btnXoa.setEnabled(true);
-        btnLuu.setEnabled(false);
-        btnBoQua.setEnabled(true);
+            btnThem.setEnabled(false);
+            btnSua.setEnabled(true);
+            btnXoa.setEnabled(true);
+            btnLuu.setEnabled(false);
+            btnBoQua.setEnabled(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khi xử lý ngày tháng: " + e.getMessage());
+        }
     }
     }//GEN-LAST:event_jTable1MouseClicked
 

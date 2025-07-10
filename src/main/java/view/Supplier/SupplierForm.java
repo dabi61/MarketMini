@@ -176,6 +176,11 @@ public class SupplierForm extends javax.swing.JPanel {
         btnThem.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnThem.setMargin(new java.awt.Insets(0, 0, 0, 0));
         btnThem.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnThem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnThemActionPerformed(evt);
+            }
+        });
 
         btnXoa.setBackground(new java.awt.Color(204, 255, 255));
         btnXoa.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/trash (1).png"))); // NOI18N
@@ -335,7 +340,7 @@ public class SupplierForm extends javax.swing.JPanel {
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(9, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
@@ -373,6 +378,10 @@ public class SupplierForm extends javax.swing.JPanel {
                 .addGap(58, 58, 58))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnThemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnThemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNhap;

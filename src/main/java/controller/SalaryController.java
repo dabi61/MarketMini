@@ -22,28 +22,7 @@ public class SalaryController implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String button = e.getActionCommand();
-
-        salaryForm.HienthiForm(button);
-
-        if ("Hủy bỏ".equals(button)) {
-            salaryForm.Huy();
-        }
-        if ("Cập nhật".equals(button)) {
-            salaryForm.SuaTTLuong();
-        }
-        if ("Tìm".equals(button)) {
-            salaryForm.timKiem();
-        }
-        if ("Xuất Excel".equals(button)) {
-            salaryForm.Xuatbaocao();
-        }
-        if ("Upload".equals(button)) {
-            salaryForm.Upload();
-        }
-        if ("Save".equals(button)) {
-            salaryForm.SaveDataFromExcel();
-        }
+       
     }
 
 }

@@ -986,6 +986,7 @@ public class SalesForm extends javax.swing.JPanel {
     private void btnThanhToanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnThanhToanActionPerformed
         salesController.insertOrder();
         loadDuLieuProduct();
+       
     }//GEN-LAST:event_btnThanhToanActionPerformed
 
     private void btnDonHangMoiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDonHangMoiActionPerformed
