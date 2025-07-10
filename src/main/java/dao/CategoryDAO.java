@@ -53,7 +53,7 @@ public class CategoryDAO {
             }
             }
         
-        public void category_delete(Category category){
+        public void category_delete(Category category) throws SQLException{
             try {
                 // kết nối db
                 con = DBConnection.getConnection();
@@ -63,8 +63,11 @@ public class CategoryDAO {
                 ps.setInt(1,category.getCategory_id());
                 ps.executeUpdate();
                 con.close();
-            } catch (SQLException ex) {}
-            }   
+            } catch (SQLException ex) 
+            {
+                throw ex;
+            }
+        }   
         
         public void categoryfind(JTable tbBang,Category category){
         try {

@@ -85,7 +85,6 @@ public class SupplierController {
 
         } else if ("Sửa".equals(action)) {
             tblDanhSach = this.supplierForm.getTblDanhSach();
-
             int selectedRow = tblDanhSach.getSelectedRow();
             if (selectedRow >= 0) {
                 String maNcc = tblDanhSach.getValueAt(selectedRow, 0).toString();
@@ -173,6 +172,8 @@ public class SupplierController {
         supplier = new Suppliers();
         supplier.setSupplier_name("");
         supplierDao.supplierfind(tblDanhSach, supplier);
+        supplierForm.autoResizeColumnWidth(tblDanhSach);
+        
     }
 
     public void timKiem() {

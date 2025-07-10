@@ -43,6 +43,7 @@ public class NhapExcel extends javax.swing.JDialog {
     public JTable getTblNCC() {
         return tblNCC;
     }
+     
   
     /**
      * This method is called from within the constructor to initialize the form.
