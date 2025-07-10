@@ -77,6 +77,25 @@ DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     return list;
 }
 
+    public boolean isPromotionNameExists(String promotionName) {
+    String sql = "SELECT COUNT(*) FROM promotion WHERE promotion_name = ?";
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, promotionName.trim());
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            return count > 0;
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+    
     public boolean delete(int promotionId) {
     String sql = "DELETE FROM promotion WHERE promotion_id = ?";
 

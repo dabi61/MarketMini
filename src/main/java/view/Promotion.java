@@ -677,6 +677,10 @@ private void enableButtons() {
         int discount = Integer.parseInt(discountStr);
 
         PromotionController controller = new PromotionController();
+        if (controller.isPromotionNameDuplicate(promotionName) && !isEditing) {
+    JOptionPane.showMessageDialog(this, "Tên khuyến mãi đã tồn tại. Vui lòng nhập tên khác!", "Trùng tên", JOptionPane.WARNING_MESSAGE);
+    return;
+}
         boolean success = controller.savePromotion(
             isEditing,
             editingPromotionId,
