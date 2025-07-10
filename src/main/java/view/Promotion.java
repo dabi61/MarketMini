@@ -113,6 +113,13 @@ private void loadDanhSachSanPham() {
         txtTenKM.requestFocus();
         return false;
     }
+    
+    String discountStr = txtGiamGia.getText().trim();
+    if (discountStr.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Vui lòng nhập phần trăm giảm giá!");
+        txtGiamGia.requestFocus();
+        return false;
+    }
 
     // Kiểm tra ngày tạo và ngày hết hạn
     Date ngayTao = dtpNgayTao.getDate();
