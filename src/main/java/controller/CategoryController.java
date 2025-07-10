@@ -40,6 +40,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import view.Category.CategorysForm;
+import view.NhapExcel;
 
 /**
  *
@@ -113,9 +114,13 @@ public class CategoryController {
                 int choise = JOptionPane.showConfirmDialog(null, "Bạn chắc chắn có muốn xóa dữ liệu?",
                         "Xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (choise == JOptionPane.YES_OPTION) {
-                    categoryDao.category_delete(sp);
-                    JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
-                    loadCategory();
+                    try {
+                        categoryDao.category_delete(sp);
+                        JOptionPane.showMessageDialog(null, "Đã xóa thành công.");
+                        loadCategory();
+                    } catch (Exception e) {
+                         
+                    }
                 }
             }
         } else if ("Nhập Excel".equals(action)) {
@@ -216,6 +221,7 @@ public class CategoryController {
         }
         JOptionPane.showMessageDialog(categoryForm,
                 "✔️ Đã thêm " + countInserted + " DM mới\n❌ Bỏ qua " + countSkipped + " dòng do trùng tên ");
+//        categoryForm.getNhapExcel().setVisible(false);
         loadCategory();
 
     }
@@ -318,7 +324,7 @@ public class CategoryController {
 
             // Lấy dữ liệu
             String ten = categoryForm.getTxtTimKiem().getText().trim();
-            if(ten.equals("Tìm kiếm theo tên danh mục")){
+            if (ten.equals("Tìm kiếm theo tên danh mục")) {
                 ten = "";
             }
             category.setCategory_name(ten);

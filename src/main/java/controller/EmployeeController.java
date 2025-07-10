@@ -572,6 +572,7 @@ public class EmployeeController {
             );
             return;
         }
+        txtTimKiem = this.employeeForm.getTxtTimKiem();
         String tuKhoa = txtTimKiem.getText().trim();
         DefaultTableModel model = (DefaultTableModel) tblDanhSach.getModel();
         model.setRowCount(0);

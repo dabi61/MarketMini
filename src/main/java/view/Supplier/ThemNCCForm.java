@@ -8,6 +8,7 @@ import dao.SupplierDAO;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import model.Suppliers;
 
 /**
@@ -33,6 +34,12 @@ public class ThemNCCForm extends javax.swing.JDialog {
     public ThemNCCForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+         // Tự động focus vào ô Tên NCC
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                txtTen.requestFocusInWindow();
+            }
+        });
         txtMa.setText(String.valueOf(dao.supplierIdMax()));
         txtMa.setEnabled(false);
     }
