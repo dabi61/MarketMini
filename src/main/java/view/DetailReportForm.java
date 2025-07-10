@@ -145,8 +145,8 @@ public class DetailReportForm extends JFrame {
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         content.add(title, BorderLayout.NORTH);
         
-        // Revenue table
-        String[] columns = {"Ngày", "Số Đơn", "Doanh Thu (VNĐ)", "Giảm Giá (VNĐ)", "Thực Thu (VNĐ)"};
+        // Revenue table - Xóa cột "Số Đơn" và "Thực Thu"
+        String[] columns = {"Ngày", "Doanh Thu (VNĐ)", "Giảm Giá (VNĐ)"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         
         // Get recent revenue data
@@ -154,10 +154,8 @@ public class DetailReportForm extends JFrame {
         for (Map<String, Object> day : recentRevenue) {
             model.addRow(new Object[]{
                 day.get("date"),
-                day.get("order_count"),
                 String.format("%,d", (Long) day.getOrDefault("daily_revenue", 0L)),
-                String.format("%,d", (Long) day.getOrDefault("total_discount", 0L)),
-                String.format("%,d", (Long) day.getOrDefault("actual_revenue", 0L))
+                String.format("%,d", (Long) day.getOrDefault("total_discount", 0L))
             });
         }
         
@@ -324,15 +322,14 @@ public class DetailReportForm extends JFrame {
         
         content.add(infoPanel, BorderLayout.NORTH);
         
-        // Recent shifts table
-        String[] columns = {"Ngày", "Ca Làm", "Giờ Vào", "Giờ Ra", "Trạng Thái", "Ghi Chú"};
+        // Recent shifts table - Xóa cột "Ca Làm"
+        String[] columns = {"Ngày", "Giờ Vào", "Giờ Ra", "Trạng Thái", "Ghi Chú"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         
         List<Map<String, Object>> recentShifts = thongKeDAO.getRecentShifts(employeeId);
         for (Map<String, Object> shift : recentShifts) {
             model.addRow(new Object[]{
                 shift.get("shift_date"),
-                shift.get("shift_type"),
                 shift.get("start_time"),
                 shift.get("end_time") != null ? shift.get("end_time") : "Chưa kết thúc",
                 shift.get("status"),

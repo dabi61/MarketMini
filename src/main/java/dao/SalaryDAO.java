@@ -4,23 +4,15 @@
  */
 package dao;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
-import java.util.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLDataException;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import model.DBConnection;
-import model.Employees;
 import model.Salary;
 
 /**
@@ -28,328 +20,676 @@ import model.Salary;
  * @author macbook
  */
 public class SalaryDAO {
-
-    //Cac truy van toi database
     private Connection conn;
 
     public SalaryDAO() {
-
-    }
-
-    public void salary_insert(Salary salary) {
         try {
-            // kết nối db
-            conn = DBConnection.getConnection();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "Insert into salary Values(?,?,?,?,?,?,?)";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, salaryIdMax());
-            ps.setInt(2, salary.getEmployee_id());
-            ps.setBigDecimal(3, salary.getTotal_hours());
-            ps.setBigDecimal(4, salary.getHourly_wage());
-            ps.setBigDecimal(5, salary.getBonus());
-            if (salary.getPayment_date() == null) {
-                ps.setNull(6, java.sql.Types.DATE);
-            } else {
-                java.sql.Date sqlDate = new java.sql.Date(salary.getPayment_date().getTime());
-                ps.setDate(6, sqlDate);
-            }
-
-            java.sql.Date created_date = new java.sql.Date(salary.getCreated_date().getTime());
-            ps.setDate(7, created_date);
-            ps.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-        }
-    }
-
-    public void salary_update(Salary salary) {
-        try {
-            // kết nối db
-            conn = DBConnection.getConnection();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "Update salary Set bonus=?,payment_date=? where salary_id=?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setBigDecimal(1, salary.getBonus());
-            if (salary.getPayment_date() == null) {
-                ps.setNull(2, java.sql.Types.DATE);
-            } else {
-                java.sql.Date sqlDate = new java.sql.Date(salary.getPayment_date().getTime());
-                ps.setDate(2, sqlDate);
-            }
-            ps.setInt(3, salary.getSalary_id());
-            ps.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void salary_update_total_hours(Salary salary) {
-        try {
-            // kết nối db
-            conn = DBConnection.getConnection();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "Update salary Set total_hours=? where salary_id=?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setBigDecimal(1, salary.getTotal_hours());           
-            ps.setInt(2, salary.getSalary_id());
-            ps.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void salary_delete(Salary salary) {
-        try {
-            // kết nối db
-            conn = DBConnection.getConnection();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "delete from salary where salary_id=?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, salary.getSalary_id());
-            ps.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-        }
-    }
-
-    public void salaryfind(JTable tbBang, int month) {
-        try {
-            // kết nối db
-            conn = DBConnection.getConnection();
-            LocalDate currentDate = LocalDate.now();
-            int currentYear = currentDate.getYear();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "SELECT distinct s.salary_id, e.employee_id, e.employee_name, total_hours, hourly_wage, bonus, payment_date FROM employees e "
-                    + "JOIN salary s ON e.employee_id = s.employee_id "
-                    + "WHERE MONTH(s.created_date)  = ? AND YEAR(s.created_date) = ? ";
-            //"AND employee_name like ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, month);
-            ps.setInt(2, currentDate.getYear());
-            //ps.setString(1,'%'+salary.getEmployee_id()+'%');
-            ResultSet rs = ps.executeQuery();
-            tbBang.removeAll();
-            String[] head = {"Mã lương", "Tên nhân viên", "Tổng giờ làm", "Lương theo h", "Tiền thưởng", "Tổng", "Ngày trả"};
-            DefaultTableModel tb = new DefaultTableModel(head, 0);
-            while (rs.next()) {
-                Vector vt = new Vector();
-                vt.add(rs.getInt("salary_id"));
-                vt.add(rs.getString("employee_name"));
-                vt.add(rs.getBigDecimal("total_hours"));
-                vt.add(rs.getBigDecimal("hourly_wage"));
-                vt.add(rs.getBigDecimal("bonus"));
-                vt.add(calculateSalary(rs.getInt("employee_id"), month));
-                vt.add(rs.getDate("payment_date"));
-                tb.addRow(vt);
-            }
-            tbBang.setModel(tb);
-            conn.close();
-        } catch (SQLException ex) {
-        }
-    }
-
-    public int salaryIdMax() {
-        try {
-            // kết nối db
-            int maxId = 0;
-            conn = DBConnection.getConnection();
-            // tạo đối tượng pre để thực hiện câu lệnh truy vấn
-            String sql = "select max(salary_id) from salary";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                maxId = rs.getInt(1); // lấy cột đầu tiên của kết quả (MAX(id))
-            }
-            conn.close();
-            return maxId + 1;
-        } catch (SQLException ex) {
-
-        }
-        return 0;
-    }
-
-    public double calculateSalary(int employeeId, int month) {
-        double totalSalary = 0.0;
-        String sql = "SELECT s.total_hours, s.hourly_wage, s.bonus "
-                + "FROM salary s "
-                + "WHERE employee_id = ? and MONTH(created_date) = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, employeeId);
-            pstmt.setInt(2, month);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                double totalHours = rs.getDouble("total_hours");
-                double hourlyWage = rs.getDouble("hourly_wage");
-                double bonus = rs.getDouble("bonus");
-                totalSalary = (totalHours * hourlyWage) + bonus;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return totalSalary;
-    }
-
-//    public double calculateSalaryForAll() {
-//        String sql = "SELECT s.employee_id, s.total_hours, s.hourly_wage, s.bonus "
-//                + "FROM salary s "
-//                + "JOIN employees e ON s.employee_id = e.employee_id "
-//                + "JOIN workingsession w ON s.employee_id = w.employee_id "
-//                + "WHERE MONTH(w.date) = ? AND YEAR(w.date) = ?";
-//        LocalDate currentDate = LocalDate.now();
-//        double totalSalary = 0.0;
-//        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-//            pstmt.setInt(1, currentDate.getMonthValue());
-//            pstmt.setInt(2, currentDate.getYear());
-//            ResultSet rs = pstmt.executeQuery();
-//            while (rs.next()) {
-//                double totalHours = rs.getDouble("total_hours");
-//                double hourlyWage = rs.getDouble("hourly_wage");
-//                double bonus = rs.getDouble("bonus");
-//                totalSalary += (totalHours * hourlyWage) + bonus;
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-//        return totalSalary;
-//    }
-    public void getTotalWorkingHoursByEmployee(int month) {
-        try {
-            conn = DBConnection.getConnection();
-        } catch (SQLDataException ex) {
-            Logger.getLogger(SalaryDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        LocalDate currentDate = LocalDate.now();
-        int currentYear = currentDate.getYear();
-        String sql = "SELECT e.employee_id, e.employee_name, COALESCE(SUM(w.working_hours), 0) as total_hours "
-                + "FROM employees e "
-                + "LEFT JOIN workingsession w ON e.employee_id = w.employee_id "
-                + "AND MONTH(w.date) = ? AND YEAR(w.date) = ? "
-                + "GROUP BY e.employee_id, e.employee_name";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, month);
-            pstmt.setInt(2, currentYear);
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                int employee_id = rs.getInt("employee_id");
-                BigDecimal total_hour = rs.getBigDecimal("total_hours");
-                BigDecimal hour_wage = calculateHourlyWage(employee_id);
-                BigDecimal bonus = new BigDecimal("0");
-                Salary sl = new Salary(0, employee_id, total_hour, hour_wage, bonus, null, Date.from(currentDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                int r = hasSalaryDataThisMonth(employee_id);
-                if (r != -1) {
-                    sl.setSalary_id(r);
-                    salary_update_total_hours(sl);
-                } else {
-                    salary_insert(sl);
-                }
-            }
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public BigDecimal calculateHourlyWage(int employeeId) {
-        try {
-            conn = DBConnection.getConnection();
-        } catch (SQLDataException ex) {
-            Logger.getLogger(SalaryDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        String sql = "SELECT e.role, e.date FROM employees e WHERE e.employee_id = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, employeeId);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                int role = rs.getInt("role");
-                LocalDate hireDate = rs.getDate("date").toLocalDate();
-                LocalDate now = LocalDate.now();
-                long monthsWorked = ChronoUnit.MONTHS.between(hireDate, now);
-
-                if (role == 1) { // Giả sử role 1 là quản lý
-                    return new BigDecimal("30000.0");
-                } else if (monthsWorked < 6) {
-                    return new BigDecimal("18000.0");
-                } else {
-                    return new BigDecimal("20000.0");
-                }
-            }
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return new BigDecimal("0.0");
-    }
-
-    public boolean isLastDayOfMonth() {
-        LocalDate currentDate = LocalDate.now();
-        LocalDate nextDate = currentDate.plusDays(1);
-        return currentDate.getMonth() != nextDate.getMonth();
-    }
-
-    public int hasSalaryDataThisMonth(int employeeId) {
-        try {
-            conn = DBConnection.getConnection();
-        } catch (SQLDataException ex) {
-            Logger.getLogger(SalaryDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        LocalDate currentDate = LocalDate.now();
-        String sql = "SELECT distinct salary_id FROM salary s "
-                + "WHERE s.employee_id = ? AND MONTH(created_date) = ? AND YEAR(created_date) = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, employeeId);
-            pstmt.setInt(2, currentDate.getMonthValue());
-            pstmt.setInt(3, currentDate.getYear());
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return Integer.valueOf(rs.getString("salary_id"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    public ResultSet timKiem(String tieuChi, String txtTimKiem) {
-        try {
-            LocalDate currentDate = LocalDate.now();
-            int currentYear = currentDate.getYear();
-            Connection con = DBConnection.getConnection();
-            String sql = "SELECT distinct s.salary_id, e.employee_id, e.employee_name, total_hours, hourly_wage, bonus, payment_date FROM employees e "
-                    + "JOIN salary s ON e.employee_id = s.employee_id "
-                    + "WHERE MONTH(s.created_date)  = ? AND YEAR(s.created_date) = ? ";
-
-            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                switch (tieuChi) {
-                    case "Tên":
-                        sql += " AND e.employee_name LIKE ?";
-                        break;
-                }
-            }
-            PreparedStatement st = con.prepareStatement(sql);
-            st.setInt(1, currentDate.getMonthValue());
-            st.setInt(2, currentDate.getYear());
-            if (!tieuChi.equals("Tất cả") && txtTimKiem != null && !txtTimKiem.isEmpty()) {
-                st.setString(3, "%" + txtTimKiem + "%");
-            }
-            return st.executeQuery();
+            this.conn = DBConnection.getConnection();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
     }
 
-    public ResultSet load_execel(String txtTimKiem) {
-        ResultSet rs = null;
-        try {
-            conn = DBConnection.getConnection();
-            rs = timKiem("Tên", txtTimKiem);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+    public SalaryDAO(Connection con) {
+        this.conn = con;
+    }
+    
+    /**
+     * Lấy connection
+     * @return Connection
+     */
+    public Connection getConnection() {
+        return this.conn;
+    }
+    
+    /**
+     * Thêm lương mới
+     * @param salary đối tượng Salary cần thêm
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean addSalary(Salary salary) {
+        String sql = "INSERT INTO salary (employee_id, total_hours, hourly_wage, bonus, payment_date, created_date, penalty_deduction) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, salary.getEmployee_id());
+            stmt.setBigDecimal(2, salary.getTotal_hours());
+            stmt.setInt(3, salary.getHourly_wage());
+            stmt.setInt(4, salary.getBonus());
+            stmt.setDate(5, new java.sql.Date(salary.getPayment_date().getTime()));
+            stmt.setDate(6, new java.sql.Date(salary.getCreated_date().getTime()));
+            stmt.setInt(7, salary.getPenalty_deduction());
+            
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        return rs;
+    }
+    
+    /**
+     * Cập nhật lương
+     * @param salary đối tượng Salary cần cập nhật
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean updateSalary(Salary salary) {
+        String sql = "UPDATE salary SET employee_id=?, total_hours=?, hourly_wage=?, bonus=?, payment_date=?, penalty_deduction=? WHERE salary_id=?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, salary.getEmployee_id());
+            stmt.setBigDecimal(2, salary.getTotal_hours());
+            stmt.setInt(3, salary.getHourly_wage());
+            stmt.setInt(4, salary.getBonus());
+            stmt.setDate(5, new java.sql.Date(salary.getPayment_date().getTime()));
+            stmt.setInt(6, salary.getPenalty_deduction());
+            stmt.setInt(7, salary.getSalary_id());
+            
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Xóa lương theo ID
+     * @param salaryId ID lương cần xóa
+     * @return true nếu thành công, false nếu thất bại
+     */
+    public boolean deleteSalary(int salaryId) {
+        String sql = "DELETE FROM salary WHERE salary_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, salaryId);
+            
+            int result = stmt.executeUpdate();
+            return result > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Lấy lương theo ID
+     * @param salaryId ID lương cần lấy
+     * @return đối tượng Salary hoặc null nếu không tìm thấy
+     */
+    public Salary getSalaryById(int salaryId) {
+        String sql = "SELECT * FROM salary WHERE salary_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, salaryId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return mapResultSetToSalary(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    /**
+     * Lấy tất cả lương
+     * @return danh sách tất cả lương
+     */
+    public List<Salary> getAllSalaries() {
+        List<Salary> salaries = new ArrayList<>();
+        String sql = "SELECT * FROM salary ORDER BY created_date DESC";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                salaries.add(mapResultSetToSalary(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return salaries;
+    }
+    
+    /**
+     * Lấy lương theo nhân viên
+     * @param employeeId ID nhân viên
+     * @return danh sách lương của nhân viên
+     */
+    public List<Salary> getSalariesByEmployee(int employeeId) {
+        List<Salary> salaries = new ArrayList<>();
+        String sql = "SELECT * FROM salary WHERE employee_id = ? ORDER BY created_date DESC";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                salaries.add(mapResultSetToSalary(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return salaries;
+    }
+    
+    /**
+     * Load danh sách lương vào table
+     * @param table Table để hiển thị
+     */
+    public void loadSalaryTable(JTable table) {
+        // Kiểm tra xem các trường mới có tồn tại không
+        String sql = "SELECT s.salary_id, e.full_name, s.total_hours, s.hourly_wage, " +
+                    "s.bonus, s.payment_date, s.created_date, s.overtime_pay, " +
+                    "s.gross_salary, s.penalty_deduction, s.net_salary " +
+                    "FROM salary s " +
+                    "JOIN employees e ON s.employee_id = e.employee_id " +
+                    "ORDER BY s.created_date DESC";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("ID");
+            model.addColumn("Tên nhân viên");
+            model.addColumn("Tổng giờ");
+            model.addColumn("Lương/giờ");
+            model.addColumn("Thưởng");
+            model.addColumn("Overtime Pay");
+            model.addColumn("Gross Salary");
+            model.addColumn("Penalty");
+            model.addColumn("Net Salary");
+            model.addColumn("Ngày thanh toán");
+            model.addColumn("Ngày tạo");
+            
+            while (rs.next()) {
+                Object[] row = {
+                    rs.getObject("salary_id") != null ? rs.getInt("salary_id") : 0,
+                    rs.getString("full_name") != null ? rs.getString("full_name") : "Không xác định",
+                    rs.getObject("total_hours") != null ? rs.getBigDecimal("total_hours") : new java.math.BigDecimal("0"),
+                    rs.getObject("hourly_wage") != null ? rs.getInt("hourly_wage") : 0,
+                    rs.getObject("bonus") != null ? rs.getInt("bonus") : 0,
+                    rs.getObject("overtime_pay") != null ? rs.getBigDecimal("overtime_pay") : new java.math.BigDecimal("0"),
+                    rs.getObject("gross_salary") != null ? rs.getBigDecimal("gross_salary") : new java.math.BigDecimal("0"),
+                    rs.getObject("penalty_deduction") != null ? rs.getInt("penalty_deduction") : 0,
+                    rs.getObject("net_salary") != null ? rs.getBigDecimal("net_salary") : new java.math.BigDecimal("0"),
+                    rs.getDate("payment_date") != null ? rs.getDate("payment_date") : new java.sql.Date(System.currentTimeMillis()),
+                    rs.getDate("created_date") != null ? rs.getDate("created_date") : new java.sql.Date(System.currentTimeMillis())
+                };
+                model.addRow(row);
+            }
+            
+            table.setModel(model);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi load salary table: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Lấy danh sách nhân viên cho ComboBox
+     * @return Vector chứa thông tin nhân viên
+     */
+    public java.util.Vector<String> getEmployeeList() {
+        java.util.Vector<String> employeeList = new java.util.Vector<>();
+        employeeList.add("-- Chọn nhân viên --");
+        
+        String sql = "SELECT employee_id, full_name FROM employees WHERE role = 2 ORDER BY full_name";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                String employeeInfo = rs.getInt("employee_id") + " - " + rs.getString("full_name");
+                employeeList.add(employeeInfo);
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return employeeList;
+    }
+    
+    /**
+     * Test kết nối database và dữ liệu
+     */
+    public void testConnection() {
+        try {
+            System.out.println("Đang test kết nối database...");
+            
+            // Test query đơn giản
+            String sql = "SELECT COUNT(*) as count FROM salary";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                System.out.println("Số lượng bản ghi trong bảng salary: " + count);
+            }
+            
+            // Test query với JOIN
+            sql = "SELECT COUNT(*) as count FROM salary s JOIN employees e ON s.employee_id = e.employee_id";
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                int count = rs.getInt("count");
+                System.out.println("Số lượng bản ghi sau JOIN: " + count);
+            }
+            
+            System.out.println("Test kết nối thành công!");
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi test kết nối: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Thêm dữ liệu test
+     */
+    public void addTestData() {
+        try {
+            System.out.println("Đang thêm dữ liệu test...");
+            
+            // Kiểm tra xem có nhân viên nào không
+            String checkEmployeeSql = "SELECT COUNT(*) as count FROM employees WHERE role = 2";
+            PreparedStatement checkStmt = conn.prepareStatement(checkEmployeeSql);
+            ResultSet checkRs = checkStmt.executeQuery();
+            
+            if (checkRs.next() && checkRs.getInt("count") > 0) {
+                // Lấy employee_id đầu tiên
+                String getEmployeeSql = "SELECT employee_id FROM employees WHERE role = 2 LIMIT 1";
+                PreparedStatement getStmt = conn.prepareStatement(getEmployeeSql);
+                ResultSet getRs = getStmt.executeQuery();
+                
+                if (getRs.next()) {
+                    int employeeId = getRs.getInt("employee_id");
+                    
+                    // Thêm dữ liệu test
+                    String insertSql = "INSERT INTO salary (employee_id, total_hours, hourly_wage, bonus, payment_date, created_date, penalty_deduction) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                    insertStmt.setInt(1, employeeId);
+                    insertStmt.setBigDecimal(2, new java.math.BigDecimal("160"));
+                    insertStmt.setInt(3, 50000);
+                    insertStmt.setInt(4, 100000);
+                    insertStmt.setDate(5, new java.sql.Date(System.currentTimeMillis()));
+                    insertStmt.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+                    insertStmt.setInt(7, 0); // Penalty deduction
+                    
+                    int result = insertStmt.executeUpdate();
+                    if (result > 0) {
+                        System.out.println("Thêm dữ liệu test thành công!");
+                    } else {
+                        System.out.println("Thêm dữ liệu test thất bại!");
+                    }
+                }
+            } else {
+                System.out.println("Không có nhân viên nào trong database!");
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi thêm dữ liệu test: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Thêm dữ liệu test cho bảng employees
+     */
+    public void addTestEmployeeData() {
+        try {
+            System.out.println("Đang thêm dữ liệu test cho bảng employees...");
+            
+            // Kiểm tra xem có nhân viên nào không
+            String checkSql = "SELECT COUNT(*) as count FROM employees WHERE role = 2";
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+            ResultSet checkRs = checkStmt.executeQuery();
+            
+            if (checkRs.next() && checkRs.getInt("count") == 0) {
+                // Thêm nhân viên test
+                String insertSql = "INSERT INTO employees (full_name, email, phone, address, role, created_date) VALUES (?, ?, ?, ?, ?, ?)";
+                PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                insertStmt.setString(1, "Nguyễn Văn A");
+                insertStmt.setString(2, "nguyenvana@example.com");
+                insertStmt.setString(3, "0123456789");
+                insertStmt.setString(4, "Hà Nội");
+                insertStmt.setInt(5, 2); // role = 2 cho nhân viên
+                insertStmt.setDate(6, new java.sql.Date(System.currentTimeMillis()));
+                
+                int result = insertStmt.executeUpdate();
+                if (result > 0) {
+                    System.out.println("Thêm nhân viên test thành công!");
+                } else {
+                    System.out.println("Thêm nhân viên test thất bại!");
+                }
+            } else {
+                System.out.println("Đã có nhân viên trong database!");
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi thêm dữ liệu test cho employees: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Kiểm tra cấu trúc bảng
+     */
+    public void checkTableStructure() {
+        try {
+            System.out.println("Đang kiểm tra cấu trúc bảng...");
+            
+            // Kiểm tra bảng salary
+            String checkSalarySql = "DESCRIBE salary";
+            PreparedStatement salaryStmt = conn.prepareStatement(checkSalarySql);
+            ResultSet salaryRs = salaryStmt.executeQuery();
+            
+            System.out.println("Cấu trúc bảng salary:");
+            while (salaryRs.next()) {
+                String field = salaryRs.getString("Field");
+                String type = salaryRs.getString("Type");
+                String null_ = salaryRs.getString("Null");
+                String key = salaryRs.getString("Key");
+                String default_ = salaryRs.getString("Default");
+                System.out.println(field + " | " + type + " | " + null_ + " | " + key + " | " + default_);
+            }
+            
+            // Kiểm tra bảng employees
+            String checkEmployeesSql = "DESCRIBE employees";
+            PreparedStatement employeesStmt = conn.prepareStatement(checkEmployeesSql);
+            ResultSet employeesRs = employeesStmt.executeQuery();
+            
+            System.out.println("Cấu trúc bảng employees:");
+            while (employeesRs.next()) {
+                String field = employeesRs.getString("Field");
+                String type = employeesRs.getString("Type");
+                String null_ = employeesRs.getString("Null");
+                String key = employeesRs.getString("Key");
+                String default_ = employeesRs.getString("Default");
+                System.out.println(field + " | " + type + " | " + null_ + " | " + key + " | " + default_);
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi kiểm tra cấu trúc bảng: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo bảng salary nếu chưa tồn tại
+     */
+    public void createSalaryTableIfNotExists() {
+        try {
+            System.out.println("Đang kiểm tra và tạo bảng salary...");
+            
+            String createTableSql = "CREATE TABLE IF NOT EXISTS salary (" +
+                "salary_id INT AUTO_INCREMENT PRIMARY KEY," +
+                "employee_id INT NOT NULL," +
+                "total_hours DECIMAL(10,2) DEFAULT 0," +
+                "hourly_wage INT DEFAULT 0," +
+                "bonus INT DEFAULT 0," +
+                "payment_date DATE," +
+                "created_date DATE," +
+                "overtime_rate DECIMAL(5,2) DEFAULT 1.2," +
+                "gross_salary INT DEFAULT 0," +
+                "penalty_deduction INT DEFAULT 0," +
+                "net_salary INT DEFAULT 0," +
+                "FOREIGN KEY (employee_id) REFERENCES employees(employee_id)" +
+                ")";
+            
+            PreparedStatement stmt = conn.prepareStatement(createTableSql);
+            stmt.executeUpdate();
+            System.out.println("Bảng salary đã được tạo hoặc đã tồn tại!");
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi tạo bảng salary: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo bảng employees nếu chưa tồn tại
+     */
+    public void createEmployeesTableIfNotExists() {
+        try {
+            System.out.println("Đang kiểm tra và tạo bảng employees...");
+            
+            String createTableSql = "CREATE TABLE IF NOT EXISTS employees (" +
+                "employee_id INT AUTO_INCREMENT PRIMARY KEY," +
+                "full_name VARCHAR(255) NOT NULL," +
+                "email VARCHAR(255)," +
+                "phone VARCHAR(20)," +
+                "address TEXT," +
+                "role INT DEFAULT 2," +
+                "created_date DATE," +
+                "updated_date DATE" +
+                ")";
+            
+            PreparedStatement stmt = conn.prepareStatement(createTableSql);
+            stmt.executeUpdate();
+            System.out.println("Bảng employees đã được tạo hoặc đã tồn tại!");
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi tạo bảng employees: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Kiểm tra lỗi chi tiết
+     */
+    public void checkDetailedErrors() {
+        try {
+            System.out.println("Đang kiểm tra lỗi chi tiết...");
+            
+            // Kiểm tra kết nối
+            if (conn == null) {
+                System.err.println("Connection là null!");
+                return;
+            }
+            
+            if (conn.isClosed()) {
+                System.err.println("Connection đã đóng!");
+                return;
+            }
+            
+            System.out.println("Connection OK!");
+            
+            // Kiểm tra các bảng
+            String[] tables = {"employees", "salary"};
+            for (String table : tables) {
+                try {
+                    String checkSql = "SELECT COUNT(*) as count FROM " + table;
+                    PreparedStatement stmt = conn.prepareStatement(checkSql);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        System.out.println("Bảng " + table + " có " + rs.getInt("count") + " bản ghi");
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Lỗi khi kiểm tra bảng " + table + ": " + e.getMessage());
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi kiểm tra chi tiết: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Lấy dữ liệu lương chi tiết cho xuất Excel
+     * @return List<Salary> với đầy đủ thông tin
+     */
+    public List<Salary> getDetailedSalaryData() {
+        List<Salary> salaries = new ArrayList<>();
+        String sql = "SELECT s.*, e.full_name " +
+                    "FROM salary s " +
+                    "JOIN employees e ON s.employee_id = e.employee_id " +
+                    "ORDER BY s.created_date DESC";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Salary salary = mapResultSetToSalary(rs);
+                // Thêm tên nhân viên vào salary object nếu cần
+                salaries.add(salary);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return salaries;
+    }
+    
+    /**
+     * Lấy dữ liệu lương theo nhân viên cho xuất Excel
+     * @param employeeId ID nhân viên
+     * @return List<Salary> với đầy đủ thông tin của nhân viên
+     */
+    public List<Salary> getSalaryDataByEmployee(int employeeId) {
+        List<Salary> salaries = new ArrayList<>();
+        String sql = "SELECT s.*, e.full_name " +
+                    "FROM salary s " +
+                    "JOIN employees e ON s.employee_id = e.employee_id " +
+                    "WHERE s.employee_id = ? " +
+                    "ORDER BY s.created_date DESC";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                Salary salary = mapResultSetToSalary(rs);
+                salaries.add(salary);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return salaries;
+    }
+    
+    /**
+     * Lấy tên nhân viên theo ID
+     * @param employeeId ID nhân viên
+     * @return tên nhân viên
+     */
+    public String getEmployeeNameById(int employeeId) {
+        String sql = "SELECT full_name FROM employees WHERE employee_id = ?";
+        
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("full_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Không xác định";
+    }
+    
+    /**
+     * Map ResultSet thành đối tượng Salary
+     * @param rs ResultSet
+     * @return đối tượng Salary
+     * @throws SQLException
+     */
+    private Salary mapResultSetToSalary(ResultSet rs) throws SQLException {
+        Salary salary = new Salary();
+        
+        if (rs.getObject("salary_id") != null) {
+            salary.setSalary_id(rs.getInt("salary_id"));
+        } else {
+            salary.setSalary_id(0);
+        }
+        
+        if (rs.getObject("employee_id") != null) {
+            salary.setEmployee_id(rs.getInt("employee_id"));
+        } else {
+            salary.setEmployee_id(0);
+        }
+        
+        // Xử lý NULL values cho các cột cơ bản
+        if (rs.getObject("total_hours") != null) {
+            salary.setTotal_hours(rs.getBigDecimal("total_hours"));
+        } else {
+            salary.setTotal_hours(new java.math.BigDecimal("0"));
+        }
+        
+        if (rs.getObject("hourly_wage") != null) {
+            salary.setHourly_wage(rs.getInt("hourly_wage"));
+        } else {
+            salary.setHourly_wage(0);
+        }
+        
+        if (rs.getObject("bonus") != null) {
+            salary.setBonus(rs.getInt("bonus"));
+        } else {
+            salary.setBonus(0);
+        }
+        
+        if (rs.getObject("payment_date") != null) {
+            salary.setPayment_date(rs.getDate("payment_date"));
+        } else {
+            salary.setPayment_date(new java.sql.Date(System.currentTimeMillis()));
+        }
+        
+        if (rs.getObject("created_date") != null) {
+            salary.setCreated_date(rs.getDate("created_date"));
+        } else {
+            salary.setCreated_date(new java.sql.Date(System.currentTimeMillis()));
+        }
+        
+        // Các trường mới - kiểm tra xem có tồn tại không
+        try {
+            if (rs.getObject("overtime_pay") != null) {
+                salary.setOvertime_rate(rs.getBigDecimal("overtime_pay"));
+            } else {
+                salary.setOvertime_rate(new java.math.BigDecimal("0"));
+            }
+        } catch (SQLException e) {
+            // Cột không tồn tại, bỏ qua
+            salary.setOvertime_rate(new java.math.BigDecimal("0"));
+        }
+        
+        try {
+            if (rs.getObject("gross_salary") != null) {
+                salary.setGross_salary(rs.getBigDecimal("gross_salary").intValue());
+            } else {
+                salary.setGross_salary(0);
+            }
+        } catch (SQLException e) {
+            // Cột không tồn tại, bỏ qua
+            salary.setGross_salary(0);
+        }
+        
+        try {
+            if (rs.getObject("penalty_deduction") != null) {
+                salary.setPenalty_deduction(rs.getInt("penalty_deduction"));
+            } else {
+                salary.setPenalty_deduction(0);
+            }
+        } catch (SQLException e) {
+            // Cột không tồn tại, bỏ qua
+            salary.setPenalty_deduction(0);
+        }
+        
+        try {
+            if (rs.getObject("net_salary") != null) {
+                salary.setNet_salary(rs.getBigDecimal("net_salary").intValue());
+            } else {
+                salary.setNet_salary(0);
+            }
+        } catch (SQLException e) {
+            // Cột không tồn tại, bỏ qua
+            salary.setNet_salary(0);
+        }
+        
+        return salary;
     }
 }

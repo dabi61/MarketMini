@@ -244,6 +244,13 @@ public class ThongKeDAO {
     }
     
     /**
+     * Thống kê 7 ngày gần nhất (Staff) - Alias cho getRecentDaysRevenue
+     */
+    public List<Map<String, Object>> getRecentDaysStats(int days) throws SQLException {
+        return getRecentDaysRevenue();
+    }
+    
+    /**
      * Thống kê khách hàng (Cả Admin và Staff)
      */
     public Map<String, Object> getCustomerStats() throws SQLException {
@@ -276,14 +283,13 @@ public class ThongKeDAO {
         // Ca làm trong tháng
         String monthlySql = "SELECT " +
                            "COUNT(*) as monthly_shifts, " +
-                           "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
-                           "SUM(CASE WHEN status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
-                           "SUM(COALESCE(actual_hours, planned_hours)) as total_hours, " +
-                           "SUM(overtime_hours) as overtime_hours " +
-                           "FROM workshifts " +
+                           "SUM(CASE WHEN work_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
+                           "SUM(CASE WHEN work_status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
+                           "SUM(COALESCE(working_hours, 0)) as total_hours " +
+                           "FROM workingsession " +
                            "WHERE employee_id = ? " +
-                           "AND MONTH(shift_date) = MONTH(CURRENT_DATE) " +
-                           "AND YEAR(shift_date) = YEAR(CURRENT_DATE)";
+                           "AND MONTH(date) = MONTH(CURRENT_DATE) " +
+                           "AND YEAR(date) = YEAR(CURRENT_DATE)";
         
         try (PreparedStatement ps = conn.prepareStatement(monthlySql)) {
             ps.setInt(1, employeeId);
@@ -294,25 +300,23 @@ public class ThongKeDAO {
                 result.put("completed_shifts", rs.getInt("completed_shifts"));
                 result.put("absent_shifts", rs.getInt("absent_shifts"));
                 result.put("total_hours", rs.getBigDecimal("total_hours"));
-                result.put("overtime_hours", rs.getBigDecimal("overtime_hours"));
             }
         }
         
         // Ca làm hôm nay
-        String todaySql = "SELECT * FROM workshifts " +
-                         "WHERE employee_id = ? AND shift_date = CURRENT_DATE " +
-                         "ORDER BY start_time LIMIT 1";
+        String todaySql = "SELECT * FROM workingsession " +
+                         "WHERE employee_id = ? AND date = CURRENT_DATE " +
+                         "ORDER BY login_time LIMIT 1";
         
         try (PreparedStatement ps = conn.prepareStatement(todaySql)) {
             ps.setInt(1, employeeId);
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
-                result.put("today_shift_type", rs.getString("shift_type"));
-                result.put("today_start_time", rs.getTime("start_time"));
-                result.put("today_end_time", rs.getTime("end_time"));
-                result.put("today_status", rs.getString("status"));
-                result.put("today_shift_id", rs.getInt("shift_id"));
+                result.put("today_start_time", rs.getTimestamp("login_time"));
+                result.put("today_end_time", rs.getTimestamp("logout_time"));
+                result.put("today_status", rs.getString("work_status"));
+                result.put("today_shift_id", rs.getInt("working_session_id"));
             } else {
                 result.put("today_shift_type", "Không có ca");
                 result.put("today_status", "NO_SHIFT");
@@ -330,13 +334,12 @@ public class ThongKeDAO {
         
         String sql = "SELECT " +
                     "s.hourly_wage, " +
-                    "SUM(COALESCE(ws.actual_hours, ws.planned_hours)) as total_hours, " +
-                    "SUM(ws.overtime_hours) as overtime_hours " +
+                    "SUM(COALESCE(ws.working_hours, 0)) as total_hours " +
                     "FROM salary s " +
-                    "LEFT JOIN workshifts ws ON s.employee_id = ws.employee_id " +
-                    "AND MONTH(ws.shift_date) = MONTH(CURRENT_DATE) " +
-                    "AND YEAR(ws.shift_date) = YEAR(CURRENT_DATE) " +
-                    "AND ws.status = 'COMPLETED' " +
+                    "LEFT JOIN workingsession ws ON s.employee_id = ws.employee_id " +
+                    "AND MONTH(ws.date) = MONTH(CURRENT_DATE) " +
+                    "AND YEAR(ws.date) = YEAR(CURRENT_DATE) " +
+                    "AND ws.work_status = 'COMPLETED' " +
                     "WHERE s.employee_id = ? " +
                     "GROUP BY s.employee_id, s.hourly_wage";
         
@@ -347,17 +350,13 @@ public class ThongKeDAO {
             if (rs.next()) {
                 double hourlyWage = rs.getDouble("hourly_wage");
                 double totalHours = rs.getDouble("total_hours");
-                double overtimeHours = rs.getDouble("overtime_hours");
                 
                 double regularEarnings = totalHours * hourlyWage;
-                double overtimeEarnings = overtimeHours * hourlyWage * 1.5;
-                double totalEarnings = regularEarnings + overtimeEarnings;
+                double totalEarnings = regularEarnings;
                 
                 result.put("hourly_wage", hourlyWage);
                 result.put("total_hours", totalHours);
-                result.put("overtime_hours", overtimeHours);
                 result.put("regular_earnings", regularEarnings);
-                result.put("overtime_earnings", overtimeEarnings);
                 result.put("total_earnings", totalEarnings);
             }
         }
@@ -374,14 +373,13 @@ public class ThongKeDAO {
         String sql = "SELECT " +
                     "COUNT(*) as total_shifts, " +
                     "COUNT(DISTINCT employee_id) as active_employees, " +
-                    "SUM(CASE WHEN status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
-                    "SUM(CASE WHEN status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
-                    "SUM(CASE WHEN status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as ongoing_shifts, " +
-                    "SUM(COALESCE(actual_hours, planned_hours)) as total_hours, " +
-                    "SUM(overtime_hours) as overtime_hours, " +
-                    "AVG(COALESCE(actual_hours, planned_hours)) as avg_hours_per_shift " +
-                    "FROM workshifts " +
-                    "WHERE MONTH(shift_date) = ? AND YEAR(shift_date) = ?";
+                    "SUM(CASE WHEN work_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
+                    "SUM(CASE WHEN work_status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
+                    "SUM(CASE WHEN work_status = 'IN_PROGRESS' THEN 1 ELSE 0 END) as ongoing_shifts, " +
+                    "SUM(COALESCE(working_hours, 0)) as total_hours, " +
+                    "AVG(COALESCE(working_hours, 0)) as avg_hours_per_shift " +
+                    "FROM workingsession " +
+                    "WHERE MONTH(date) = ? AND YEAR(date) = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, month);
@@ -395,7 +393,6 @@ public class ThongKeDAO {
                 result.put("absent_shifts", rs.getInt("absent_shifts"));
                 result.put("ongoing_shifts", rs.getInt("ongoing_shifts"));
                 result.put("total_hours", rs.getDouble("total_hours"));
-                result.put("overtime_hours", rs.getDouble("overtime_hours"));
                 result.put("avg_hours_per_shift", rs.getDouble("avg_hours_per_shift"));
             }
         }
@@ -411,17 +408,15 @@ public class ThongKeDAO {
         
         String sql = "SELECT " +
                     "e.employee_id, e.full_name, e.role, " +
-                    "COUNT(ws.shift_id) as total_shifts, " +
-                    "SUM(CASE WHEN ws.status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
-                    "SUM(CASE WHEN ws.status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
-                    "SUM(COALESCE(ws.actual_hours, ws.planned_hours)) as total_hours, " +
-                    "SUM(ws.overtime_hours) as overtime_hours, " +
+                    "COUNT(ws.working_session_id) as total_shifts, " +
+                    "SUM(CASE WHEN ws.work_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
+                    "SUM(CASE WHEN ws.work_status = 'ABSENT' THEN 1 ELSE 0 END) as absent_shifts, " +
+                    "SUM(COALESCE(ws.working_hours, 0)) as total_hours, " +
                     "s.hourly_wage, " +
-                    "SUM((COALESCE(ws.actual_hours, ws.planned_hours) * s.hourly_wage) + " +
-                    "    (ws.overtime_hours * s.hourly_wage * 1.5)) as total_earnings " +
+                    "SUM(COALESCE(ws.working_hours, 0) * s.hourly_wage) as total_earnings " +
                     "FROM employees e " +
-                    "LEFT JOIN workshifts ws ON e.employee_id = ws.employee_id " +
-                    "AND MONTH(ws.shift_date) = ? AND YEAR(ws.shift_date) = ? " +
+                    "LEFT JOIN workingsession ws ON e.employee_id = ws.employee_id " +
+                    "AND MONTH(ws.date) = ? AND YEAR(ws.date) = ? " +
                     "LEFT JOIN salary s ON e.employee_id = s.employee_id " +
                     "WHERE e.role IN (1, 2) " +
                     "GROUP BY e.employee_id, e.full_name, e.role, s.hourly_wage " +
@@ -441,7 +436,6 @@ public class ThongKeDAO {
                 emp.put("completed_shifts", rs.getInt("completed_shifts"));
                 emp.put("absent_shifts", rs.getInt("absent_shifts"));
                 emp.put("total_hours", rs.getDouble("total_hours"));
-                emp.put("overtime_hours", rs.getDouble("overtime_hours"));
                 emp.put("hourly_wage", rs.getDouble("hourly_wage"));
                 emp.put("total_earnings", rs.getDouble("total_earnings"));
                 
@@ -465,13 +459,13 @@ public class ThongKeDAO {
         List<Map<String, Object>> result = new ArrayList<>();
         
         String sql = "SELECT " +
-                    "shift_date, shift_type, start_time, end_time, " +
-                    "COALESCE(actual_hours, planned_hours) as hours_worked, " +
-                    "overtime_hours, status " +
-                    "FROM workshifts " +
+                    "date, login_time, logout_time, " +
+                    "COALESCE(working_hours, 0) as hours_worked, " +
+                    "work_status " +
+                    "FROM workingsession " +
                     "WHERE employee_id = ? " +
-                    "AND shift_date >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY) " +
-                    "ORDER BY shift_date DESC";
+                    "AND date >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY) " +
+                    "ORDER BY date DESC";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, employeeId);
@@ -479,14 +473,213 @@ public class ThongKeDAO {
             
             while (rs.next()) {
                 Map<String, Object> shift = new HashMap<>();
-                shift.put("shift_date", rs.getDate("shift_date"));
-                shift.put("shift_type", rs.getString("shift_type"));
-                shift.put("start_time", rs.getTime("start_time"));
-                shift.put("end_time", rs.getTime("end_time"));
+                shift.put("shift_date", rs.getDate("date"));
+                shift.put("start_time", rs.getTimestamp("login_time"));
+                shift.put("end_time", rs.getTimestamp("logout_time"));
                 shift.put("hours_worked", rs.getDouble("hours_worked"));
-                shift.put("overtime_hours", rs.getDouble("overtime_hours"));
-                shift.put("status", rs.getString("status"));
+                shift.put("status", rs.getString("work_status"));
                 result.add(shift);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Thống kê ca làm của nhân viên theo số ngày (Staff)
+     */
+    public Map<String, Object> getEmployeeShiftStats(int employeeId, int days) throws SQLException {
+        Map<String, Object> result = new HashMap<>();
+        
+        String sql = "SELECT " +
+                    "COUNT(*) as total_shifts, " +
+                    "SUM(CASE WHEN work_status = 'COMPLETED' THEN 1 ELSE 0 END) as completed_shifts, " +
+                    "SUM(COALESCE(working_hours, 0)) as total_hours, " +
+                    "AVG(COALESCE(working_hours, 0)) as avg_hours " +
+                    "FROM workingsession " +
+                    "WHERE employee_id = ? " +
+                    "AND date >= DATE_SUB(CURRENT_DATE, INTERVAL ? DAY)";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, employeeId);
+            ps.setInt(2, days);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                result.put("total_shifts", rs.getInt("total_shifts"));
+                result.put("completed_shifts", rs.getInt("completed_shifts"));
+                result.put("total_hours", rs.getDouble("total_hours"));
+                result.put("avg_hours", rs.getDouble("avg_hours"));
+                
+                // Tính ước tính thu nhập
+                double totalHours = rs.getDouble("total_hours");
+                double estimatedEarnings = totalHours * 30000; // Giả sử lương cơ bản 30k/giờ
+                result.put("estimated_earnings", estimatedEarnings);
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * Dữ liệu cho biểu đồ line chart - Doanh thu theo ngày trong tuần
+     */
+    public List<Map<String, Object>> getWeeklyRevenueData() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        String sql = "SELECT " +
+                    "DAYNAME(order_date) as day_name, " +
+                    "DAYOFWEEK(order_date) as day_order, " +
+                    "COUNT(*) as orders_count, " +
+                    "SUM(final_amount) as daily_revenue " +
+                    "FROM orders " +
+                    "WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) " +
+                    "GROUP BY DAYNAME(order_date), DAYOFWEEK(order_date) " +
+                    "ORDER BY day_order";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> day = new HashMap<>();
+                day.put("day_name", rs.getString("day_name"));
+                day.put("day_order", rs.getInt("day_order"));
+                day.put("orders_count", rs.getInt("orders_count"));
+                day.put("daily_revenue", rs.getLong("daily_revenue"));
+                result.add(day);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Dữ liệu cho biểu đồ pie chart - Phân bố doanh thu theo danh mục
+     */
+    public List<Map<String, Object>> getCategoryRevenueData() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        String sql = "SELECT " +
+                    "c.category_name, " +
+                    "COUNT(od.order_id) as orders_count, " +
+                    "SUM(od.quantity * od.unit_price) as category_revenue " +
+                    "FROM category c " +
+                    "JOIN products p ON c.category_id = p.category_id " +
+                    "JOIN orderdetails od ON p.product_id = od.product_id " +
+                    "JOIN orders o ON od.order_id = o.order_id " +
+                    "WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+                    "GROUP BY c.category_id, c.category_name " +
+                    "ORDER BY category_revenue DESC";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> category = new HashMap<>();
+                category.put("category_name", rs.getString("category_name"));
+                category.put("orders_count", rs.getInt("orders_count"));
+                category.put("category_revenue", rs.getLong("category_revenue"));
+                result.add(category);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Dữ liệu cho biểu đồ line chart - Ca làm việc theo ngày trong tuần
+     */
+    public List<Map<String, Object>> getWeeklyShiftData() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        String sql = "SELECT " +
+                    "DAYNAME(date) as day_name, " +
+                    "DAYOFWEEK(date) as day_order, " +
+                    "COUNT(*) as shifts_count, " +
+                    "SUM(COALESCE(working_hours, 0)) as total_hours " +
+                    "FROM workingsession " +
+                    "WHERE date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) " +
+                    "AND work_status = 'COMPLETED' " +
+                    "GROUP BY DAYNAME(date), DAYOFWEEK(date) " +
+                    "ORDER BY day_order";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> day = new HashMap<>();
+                day.put("day_name", rs.getString("day_name"));
+                day.put("day_order", rs.getInt("day_order"));
+                day.put("shifts_count", rs.getInt("shifts_count"));
+                day.put("total_hours", rs.getDouble("total_hours"));
+                result.add(day);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Dữ liệu cho biểu đồ line chart - Doanh thu theo tháng (12 tháng gần nhất)
+     */
+    public List<Map<String, Object>> getMonthlyRevenueTrend() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        String sql = "SELECT " +
+                    "YEAR(order_date) as year, " +
+                    "MONTH(order_date) as month, " +
+                    "MONTHNAME(order_date) as month_name, " +
+                    "COUNT(*) as orders_count, " +
+                    "SUM(final_amount) as monthly_revenue " +
+                    "FROM orders " +
+                    "WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) " +
+                    "GROUP BY YEAR(order_date), MONTH(order_date), MONTHNAME(order_date) " +
+                    "ORDER BY year, month";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> month = new HashMap<>();
+                month.put("year", rs.getInt("year"));
+                month.put("month", rs.getInt("month"));
+                month.put("month_name", rs.getString("month_name"));
+                month.put("orders_count", rs.getInt("orders_count"));
+                month.put("monthly_revenue", rs.getLong("monthly_revenue"));
+                result.add(month);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Dữ liệu cho biểu đồ pie chart - Top 5 sản phẩm bán chạy
+     */
+    public List<Map<String, Object>> getTopProductsPieData() throws SQLException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        String sql = "SELECT " +
+                    "p.product_name, " +
+                    "SUM(od.quantity) as total_sold, " +
+                    "SUM(od.quantity * od.unit_price) as total_revenue " +
+                    "FROM products p " +
+                    "JOIN orderdetails od ON p.product_id = od.product_id " +
+                    "JOIN orders o ON od.order_id = o.order_id " +
+                    "WHERE o.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) " +
+                    "GROUP BY p.product_id, p.product_name " +
+                    "ORDER BY total_sold DESC " +
+                    "LIMIT 5";
+        
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, Object> product = new HashMap<>();
+                product.put("product_name", rs.getString("product_name"));
+                product.put("total_sold", rs.getInt("total_sold"));
+                product.put("total_revenue", rs.getLong("total_revenue"));
+                result.add(product);
             }
         }
         

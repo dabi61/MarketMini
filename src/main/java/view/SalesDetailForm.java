@@ -84,7 +84,8 @@ public class SalesDetailForm extends JFrame {
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         panel.add(title, BorderLayout.NORTH);
         
-        String[] columns = {"Mã SP", "Tên Sản Phẩm", "Danh Mục", "Số Lượng Bán", "Doanh Thu", "Số Đơn"};
+        // Xóa cột "Danh Mục" và "Số Đơn"
+        String[] columns = {"Mã SP", "Tên Sản Phẩm", "Số Lượng Bán", "Doanh Thu"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         
         List<Map<String, Object>> topProducts = thongKeDAO.getTopSellingProducts(20);
@@ -92,10 +93,8 @@ public class SalesDetailForm extends JFrame {
             model.addRow(new Object[]{
                 product.get("product_id"),
                 product.get("product_name"),
-                product.get("category_name"),
                 product.get("total_sold"),
-                String.format("%,d VNĐ", (Long) product.getOrDefault("total_revenue", 0L)),
-                product.get("order_count")
+                String.format("%,d VNĐ", (Long) product.getOrDefault("total_revenue", 0L))
             });
         }
         
@@ -114,17 +113,16 @@ public class SalesDetailForm extends JFrame {
         title.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         panel.add(title, BorderLayout.NORTH);
         
-        String[] columns = {"Ngày", "Số Đơn", "Doanh Thu", "Giảm Giá", "Thực Thu"};
+        // Xóa cột "Số Đơn" và "Thực Thu"
+        String[] columns = {"Ngày", "Doanh Thu", "Giảm Giá"};
         DefaultTableModel model = new DefaultTableModel(columns, 0);
         
         List<Map<String, Object>> dailyRevenue = thongKeDAO.getRecentDaysRevenue();
         for (Map<String, Object> day : dailyRevenue) {
             model.addRow(new Object[]{
                 day.get("date"),
-                day.get("order_count"),
                 String.format("%,d VNĐ", (Long) day.getOrDefault("daily_revenue", 0L)),
-                String.format("%,d VNĐ", (Long) day.getOrDefault("total_discount", 0L)),
-                String.format("%,d VNĐ", (Long) day.getOrDefault("actual_revenue", 0L))
+                String.format("%,d VNĐ", (Long) day.getOrDefault("total_discount", 0L))
             });
         }
         

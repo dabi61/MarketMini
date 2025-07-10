@@ -6,7 +6,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 /**
- * Model cho quản lý ca làm việc
+ * Model cho quản lý ca làm việc dựa trên bảng workingsession
  * @author macbook
  */
 public class WorkShift {
@@ -45,73 +45,57 @@ public class WorkShift {
         }
     }
     
-    private int shiftId;
+    // Fields từ bảng workingsession
+    private int workingSessionId;
     private int employeeId;
     private String employeeName; // Thêm để hiển thị
-    private Date shiftDate;
-    private ShiftType shiftType;
-    private Time startTime;
-    private Time endTime;
-    private BigDecimal plannedHours;
-    private BigDecimal actualHours;
-    private int breakMinutes;
-    private BigDecimal overtimeHours;
-    private ShiftStatus status;
-    private String notes;
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
-    
-    // Enhanced fields for penalty system
-    private Time checkInTime;
-    private Time checkOutTime;
-    private int lateMinutes;
-    private int earlyLeaveMinutes;
-    private boolean isScheduled;
-    private BigDecimal penaltyAmount;
-    private String penaltyReason;
-    private BigDecimal salaryAdjustmentPercent;
-    private String adjustmentReason;
-    private boolean autoCheckoutPenalty;
+    private Timestamp loginTime;
+    private Timestamp logoutTime;
+    private BigDecimal workingHours;
+    private Date date;
+    private String workStatus;
     
     // Calculated fields
     private BigDecimal hourlyWage;
     private BigDecimal totalEarnings;
     private BigDecimal overtimeEarnings;
     private BigDecimal finalEarnings;
+    
+    // Helper fields
+    private Time startTime;
+    private Time endTime;
+    private BigDecimal plannedHours;
+    private BigDecimal actualHours;
+    private BigDecimal overtimeHours;
+    private ShiftType shiftType;
+    private ShiftStatus status;
+    private String notes;
 
     // Constructors
     public WorkShift() {
         this.plannedHours = BigDecimal.valueOf(8.0);
-        this.breakMinutes = 60;
         this.overtimeHours = BigDecimal.ZERO;
         this.status = ShiftStatus.SCHEDULED;
         this.shiftType = ShiftType.FULL;
-        
-        // Initialize penalty system fields
-        this.lateMinutes = 0;
-        this.earlyLeaveMinutes = 0;
-        this.isScheduled = true;
-        this.penaltyAmount = BigDecimal.ZERO;
-        this.salaryAdjustmentPercent = BigDecimal.valueOf(100.0);
-        this.autoCheckoutPenalty = false;
+        this.workStatus = "SCHEDULED";
     }
 
-    public WorkShift(int employeeId, Date shiftDate, ShiftType shiftType, Time startTime) {
+    public WorkShift(int employeeId, Date date, ShiftType shiftType, Time startTime) {
         this();
         this.employeeId = employeeId;
-        this.shiftDate = shiftDate;
+        this.date = date;
         this.shiftType = shiftType;
         this.startTime = startTime;
         setPlannedHoursByShiftType();
     }
 
-    // Getters and Setters
-    public int getShiftId() {
-        return shiftId;
+    // Getters and Setters cho bảng workingsession
+    public int getWorkingSessionId() {
+        return workingSessionId;
     }
 
-    public void setShiftId(int shiftId) {
-        this.shiftId = shiftId;
+    public void setWorkingSessionId(int workingSessionId) {
+        this.workingSessionId = workingSessionId;
     }
 
     public int getEmployeeId() {
@@ -130,23 +114,80 @@ public class WorkShift {
         this.employeeName = employeeName;
     }
 
-    public Date getShiftDate() {
-        return shiftDate;
+    public Timestamp getLoginTime() {
+        return loginTime;
     }
 
-    public void setShiftDate(Date shiftDate) {
-        this.shiftDate = shiftDate;
+    public void setLoginTime(Timestamp loginTime) {
+        this.loginTime = loginTime;
     }
 
-    public ShiftType getShiftType() {
-        return shiftType;
+    public Timestamp getLogoutTime() {
+        return logoutTime;
     }
 
-    public void setShiftType(ShiftType shiftType) {
-        this.shiftType = shiftType;
-        setPlannedHoursByShiftType();
+    public void setLogoutTime(Timestamp logoutTime) {
+        this.logoutTime = logoutTime;
     }
 
+    public BigDecimal getWorkingHours() {
+        return workingHours;
+    }
+
+    public void setWorkingHours(BigDecimal workingHours) {
+        this.workingHours = workingHours;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public String getWorkStatus() {
+        return workStatus;
+    }
+
+    public void setWorkStatus(String workStatus) {
+        this.workStatus = workStatus;
+    }
+
+    // Getters and Setters cho calculated fields
+    public BigDecimal getHourlyWage() {
+        return hourlyWage;
+    }
+
+    public void setHourlyWage(BigDecimal hourlyWage) {
+        this.hourlyWage = hourlyWage;
+    }
+
+    public BigDecimal getTotalEarnings() {
+        return totalEarnings;
+    }
+
+    public void setTotalEarnings(BigDecimal totalEarnings) {
+        this.totalEarnings = totalEarnings;
+    }
+
+    public BigDecimal getOvertimeEarnings() {
+        return overtimeEarnings;
+    }
+
+    public void setOvertimeEarnings(BigDecimal overtimeEarnings) {
+        this.overtimeEarnings = overtimeEarnings;
+    }
+
+    public BigDecimal getFinalEarnings() {
+        return finalEarnings;
+    }
+
+    public void setFinalEarnings(BigDecimal finalEarnings) {
+        this.finalEarnings = finalEarnings;
+    }
+
+    // Helper getters and setters
     public Time getStartTime() {
         return startTime;
     }
@@ -179,20 +220,21 @@ public class WorkShift {
         this.actualHours = actualHours;
     }
 
-    public int getBreakMinutes() {
-        return breakMinutes;
-    }
-
-    public void setBreakMinutes(int breakMinutes) {
-        this.breakMinutes = breakMinutes;
-    }
-
     public BigDecimal getOvertimeHours() {
         return overtimeHours;
     }
 
     public void setOvertimeHours(BigDecimal overtimeHours) {
         this.overtimeHours = overtimeHours;
+    }
+
+    public ShiftType getShiftType() {
+        return shiftType;
+    }
+
+    public void setShiftType(ShiftType shiftType) {
+        this.shiftType = shiftType;
+        setPlannedHoursByShiftType();
     }
 
     public ShiftStatus getStatus() {
@@ -209,135 +251,6 @@ public class WorkShift {
 
     public void setNotes(String notes) {
         this.notes = notes;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Timestamp getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Timestamp updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public BigDecimal getHourlyWage() {
-        return hourlyWage;
-    }
-
-    public void setHourlyWage(BigDecimal hourlyWage) {
-        this.hourlyWage = hourlyWage;
-    }
-
-    public BigDecimal getTotalEarnings() {
-        return totalEarnings;
-    }
-
-    public void setTotalEarnings(BigDecimal totalEarnings) {
-        this.totalEarnings = totalEarnings;
-    }
-
-    public BigDecimal getOvertimeEarnings() {
-        return overtimeEarnings;
-    }
-
-    public void setOvertimeEarnings(BigDecimal overtimeEarnings) {
-        this.overtimeEarnings = overtimeEarnings;
-    }
-
-    // Enhanced penalty system getters and setters
-    public Time getCheckInTime() {
-        return checkInTime;
-    }
-
-    public void setCheckInTime(Time checkInTime) {
-        this.checkInTime = checkInTime;
-    }
-
-    public Time getCheckOutTime() {
-        return checkOutTime;
-    }
-
-    public void setCheckOutTime(Time checkOutTime) {
-        this.checkOutTime = checkOutTime;
-    }
-
-    public int getLateMinutes() {
-        return lateMinutes;
-    }
-
-    public void setLateMinutes(int lateMinutes) {
-        this.lateMinutes = lateMinutes;
-    }
-
-    public int getEarlyLeaveMinutes() {
-        return earlyLeaveMinutes;
-    }
-
-    public void setEarlyLeaveMinutes(int earlyLeaveMinutes) {
-        this.earlyLeaveMinutes = earlyLeaveMinutes;
-    }
-
-    public boolean isScheduled() {
-        return isScheduled;
-    }
-
-    public void setScheduled(boolean scheduled) {
-        isScheduled = scheduled;
-    }
-
-    public BigDecimal getPenaltyAmount() {
-        return penaltyAmount;
-    }
-
-    public void setPenaltyAmount(BigDecimal penaltyAmount) {
-        this.penaltyAmount = penaltyAmount;
-    }
-
-    public String getPenaltyReason() {
-        return penaltyReason;
-    }
-
-    public void setPenaltyReason(String penaltyReason) {
-        this.penaltyReason = penaltyReason;
-    }
-
-    public BigDecimal getSalaryAdjustmentPercent() {
-        return salaryAdjustmentPercent;
-    }
-
-    public void setSalaryAdjustmentPercent(BigDecimal salaryAdjustmentPercent) {
-        this.salaryAdjustmentPercent = salaryAdjustmentPercent;
-    }
-
-    public String getAdjustmentReason() {
-        return adjustmentReason;
-    }
-
-    public void setAdjustmentReason(String adjustmentReason) {
-        this.adjustmentReason = adjustmentReason;
-    }
-
-    public boolean isAutoCheckoutPenalty() {
-        return autoCheckoutPenalty;
-    }
-
-    public void setAutoCheckoutPenalty(boolean autoCheckoutPenalty) {
-        this.autoCheckoutPenalty = autoCheckoutPenalty;
-    }
-
-    public BigDecimal getFinalEarnings() {
-        return finalEarnings;
-    }
-
-    public void setFinalEarnings(BigDecimal finalEarnings) {
-        this.finalEarnings = finalEarnings;
     }
 
     // Helper methods
@@ -362,12 +275,12 @@ public class WorkShift {
     }
 
     /**
-     * Tính toán lương từ ca làm với penalty system - dựa trên thời gian thực tế
+     * Tính toán lương từ ca làm dựa trên working_hours
      */
     public void calculateEarnings() {
-        if (hourlyWage != null) {
+        if (hourlyWage != null && workingHours != null) {
             // Lương cơ bản dựa trên thời gian thực tế làm việc
-            BigDecimal actualWorkHours = actualHours != null ? actualHours : BigDecimal.ZERO;
+            BigDecimal actualWorkHours = workingHours;
             BigDecimal plannedWorkHours = plannedHours != null ? plannedHours : BigDecimal.valueOf(8.0);
             
             // Chỉ tính lương cho thời gian thực tế làm việc
@@ -392,33 +305,14 @@ public class WorkShift {
             }
             
             System.out.println("Earnings calculation:");
-            System.out.println("- Actual hours: " + actualWorkHours);
+            System.out.println("- Working hours: " + actualWorkHours);
             System.out.println("- Planned hours: " + plannedWorkHours);  
             System.out.println("- Regular hours: " + regularHours);
             System.out.println("- Overtime hours: " + overtimeWorkHours);
             System.out.println("- Hourly wage: " + hourlyWage);
-            System.out.println("- Total before adjustments: " + totalEarnings);
+            System.out.println("- Total earnings: " + totalEarnings);
             
-            // Áp dụng điều chỉnh lương (%)
-            if (salaryAdjustmentPercent != null) {
-                totalEarnings = totalEarnings.multiply(salaryAdjustmentPercent).divide(BigDecimal.valueOf(100));
-                System.out.println("- After salary adjustment (" + salaryAdjustmentPercent + "%): " + totalEarnings);
-            }
-            
-            // Trừ penalty
-            if (penaltyAmount != null) {
-                finalEarnings = totalEarnings.subtract(penaltyAmount);
-                System.out.println("- After penalty (-" + penaltyAmount + "): " + finalEarnings);
-            } else {
-                finalEarnings = totalEarnings;
-            }
-            
-            // Đảm bảo lương cuối không âm
-            if (finalEarnings.compareTo(BigDecimal.ZERO) < 0) {
-                finalEarnings = BigDecimal.ZERO;
-            }
-            
-            System.out.println("- Final earnings: " + finalEarnings);
+            finalEarnings = totalEarnings;
         }
     }
     
@@ -426,89 +320,28 @@ public class WorkShift {
      * Kiểm tra nhân viên có thể bắt đầu ca không
      */
     public boolean canCheckIn() {
-        return status == ShiftStatus.SCHEDULED && checkInTime == null;
+        return "SCHEDULED".equals(workStatus) && loginTime == null;
     }
     
     /**
      * Kiểm tra nhân viên có thể chốt ca không
      */
     public boolean canCheckOut() {
-        return status == ShiftStatus.IN_PROGRESS && checkInTime != null && checkOutTime == null;
+        return "IN_PROGRESS".equals(workStatus) && loginTime != null && logoutTime == null;
     }
     
-    /**
-     * Tính số phút đến muộn
-     */
-    public void calculateLateMinutes() {
-        if (checkInTime != null && startTime != null) {
-            long diffMs = checkInTime.getTime() - startTime.getTime();
-            if (diffMs > 0) {
-                lateMinutes = (int) (diffMs / (1000 * 60)); // Convert to minutes
-            } else {
-                lateMinutes = 0;
-            }
-        }
-    }
-    
-    /**
-     * Tính số phút về sớm (nếu có)
-     */
-    public void calculateEarlyLeaveMinutes() {
-        if (checkOutTime != null && endTime != null) {
-            long diffMs = endTime.getTime() - checkOutTime.getTime();
-            if (diffMs > 0) {
-                earlyLeaveMinutes = (int) (diffMs / (1000 * 60));
-            } else {
-                earlyLeaveMinutes = 0;
-            }
-        }
-    }
-    
-    /**
-     * Áp dụng penalty cho đến muộn
-     */
-    public void applyLatePenalty() {
-        if (lateMinutes > 0) {
-            // Giảm 25% lương cho mỗi giờ muộn (làm tròn lên)
-            int lateHours = (int) Math.ceil(lateMinutes / 60.0);
-            BigDecimal penaltyPercent = BigDecimal.valueOf(25 * lateHours);
-            
-            // Áp dụng penalty percent (giảm từ 100%)
-            BigDecimal newPercent = salaryAdjustmentPercent.subtract(penaltyPercent);
-            if (newPercent.compareTo(BigDecimal.ZERO) < 0) {
-                newPercent = BigDecimal.ZERO;
-            }
-            
-            setSalaryAdjustmentPercent(newPercent);
-            setAdjustmentReason("Đến muộn " + lateMinutes + " phút - giảm " + penaltyPercent + "% lương");
-        }
-    }
-    
-    /**
-     * Lấy trạng thái chấm công
-     */
-    public String getAttendanceStatus() {
-        if (lateMinutes > 0) {
-            return "Muộn " + lateMinutes + " phút";
-        } else if (earlyLeaveMinutes > 0) {
-            return "Về sớm " + earlyLeaveMinutes + " phút";
-        } else {
-            return "Đúng giờ";
-        }
-    }
-
     /**
      * Kiểm tra ca làm có thể chốt ca không
      */
     public boolean canCloseShift() {
-        return status == ShiftStatus.IN_PROGRESS;
+        return "IN_PROGRESS".equals(workStatus);
     }
 
     /**
      * Kiểm tra ca làm có đang diễn ra không
      */
     public boolean isActive() {
-        return status == ShiftStatus.IN_PROGRESS;
+        return "IN_PROGRESS".equals(workStatus);
     }
 
     /**
@@ -516,15 +349,15 @@ public class WorkShift {
      */
     public Object[] toTableRow() {
         return new Object[] {
-            shiftId,
+            workingSessionId,
             employeeName != null ? employeeName : "N/A",
-            shiftDate,
+            date,
             shiftType != null ? shiftType.getDisplayName() : "",
             startTime,
             endTime,
             plannedHours,
-            actualHours,
-            status != null ? status.getDisplayName() : ""
+            workingHours != null ? workingHours : "N/A",
+            workStatus != null ? getStatusDisplayName() : ""
         };
     }
     
@@ -533,18 +366,36 @@ public class WorkShift {
      */
     public Object[] toStaffTableRow() {
         return new Object[] {
-            shiftDate,
+            date,
             shiftType != null ? shiftType.getDisplayName() : "",
             startTime,
             endTime != null ? endTime : "Chưa kết thúc",
-            actualHours != null ? actualHours : plannedHours,
-            status != null ? status.getDisplayName() : ""
+            workingHours != null ? workingHours : plannedHours,
+            workStatus != null ? getStatusDisplayName() : ""
         };
+    }
+    
+    /**
+     * Lấy tên hiển thị của trạng thái
+     */
+    private String getStatusDisplayName() {
+        switch (workStatus) {
+            case "SCHEDULED":
+                return "Đã lên lịch";
+            case "IN_PROGRESS":
+                return "Đang làm";
+            case "COMPLETED":
+                return "Hoàn thành";
+            case "ABSENT":
+                return "Vắng mặt";
+            default:
+                return workStatus;
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("WorkShift{shiftId=%d, employeeId=%d, shiftDate=%s, type=%s, status=%s}", 
-                shiftId, employeeId, shiftDate, shiftType, status);
+        return String.format("WorkShift{workingSessionId=%d, employeeId=%d, date=%s, type=%s, status=%s}", 
+                workingSessionId, employeeId, date, shiftType, workStatus);
     }
 } 

@@ -6,6 +6,15 @@ package controller;
 
 import dao.ThongKeDAO;
 import dao.WorkShiftDAO;
+import model.WorkShift;
+import view.ThongKeView;
+import view.DetailReportForm;
+import view.WorkShiftForm;
+import view.InventoryDetailForm;
+import view.SalesDetailForm;
+import view.PersonalStatsForm;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
@@ -13,53 +22,53 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-import model.Session;
-import view.ThongKeView;
-import com.raven.chart.ModelChartLine;
-import com.raven.chart.ModelChartPie;
-import java.awt.Color;
 import java.util.ArrayList;
 
 /**
- *
+ * Controller cho quản lý thống kê
  * @author macbook
  */
 public class ThongKeController implements ActionListener {
+    
     private ThongKeView thongKeView;
     private ThongKeDAO thongKeDAO;
     private WorkShiftDAO workShiftDAO;
     private int currentUserRole;
     private int currentEmployeeId;
-    private DecimalFormat formatter = new DecimalFormat("#,###");
+    private DecimalFormat formatter = new DecimalFormat("đ #,###");
     
-    public ThongKeController(ThongKeView thongKeView) {
+    public ThongKeController(ThongKeView thongKeView) throws SQLException {
         this.thongKeView = thongKeView;
-        this.currentUserRole = Session.getInstance().getRole();
-        this.currentEmployeeId = Session.getInstance().getEmployeeId();
+        this.thongKeDAO = new ThongKeDAO();
+        this.workShiftDAO = new WorkShiftDAO();
         
+        // Lấy thông tin user từ session
         try {
-            this.thongKeDAO = new ThongKeDAO();
-            this.workShiftDAO = new WorkShiftDAO();
-            
-            // Cập nhật buttons theo role
-            thongKeView.updateButtonsForRole(currentUserRole);
-            
+            this.currentUserRole = model.Session.getInstance().getRole();
+            this.currentEmployeeId = model.Session.getInstance().getEmployeeId();
+        } catch (Exception e) {
+            this.currentUserRole = -1;
+            this.currentEmployeeId = -1;
+            System.err.println("Lỗi khi lấy thông tin session: " + e.getMessage());
+        }
+        
+        // Load thống kê ban đầu
+        try {
             loadStatisticsBasedOnRole();
-        } catch (SQLException ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi kết nối cơ sở dữ liệu: " + ex.getMessage());
+            // Cập nhật trạng thái nút ca làm việc
+            thongKeView.updateShiftButtonStates();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi khi tải thống kê: " + e.getMessage());
         }
     }
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
-        
         try {
+            // Xử lý các sự kiện từ ThongKeView
+            String command = e.getActionCommand();
+            
             switch (command) {
                 case "START_SHIFT":
                     handleStartShift();
@@ -82,19 +91,33 @@ public class ThongKeController implements ActionListener {
                 case "PERSONAL_STATS":
                     openPersonalStatsForm();
                     break;
-                case "REFRESH":
-                    loadStatisticsBasedOnRole();
-                    break;
                 default:
-                    loadStatisticsBasedOnRole();
+                    // Xử lý các sự kiện từ button text
+                    if (e.getSource() instanceof com.raven.swing.Button) {
+                        com.raven.swing.Button button = (com.raven.swing.Button) e.getSource();
+                        String buttonText = button.getText();
+                        
+                        if (buttonText.contains("Bắt Đầu Ca")) {
+                            handleStartShift();
+                        } else if (buttonText.contains("Kết Thúc Ca")) {
+                            handleEndShift();
+                        } else if (buttonText.contains("Báo Cáo Chi Tiết")) {
+                            openDetailReportForm();
+                        } else if (buttonText.contains("Quản Lý Ca Làm")) {
+                            openShiftManagementForm();
+                        } else if (buttonText.contains("Chi Tiết Kho")) {
+                            openInventoryDetailForm();
+                        } else if (buttonText.contains("Chi Tiết Bán Hàng")) {
+                            openSalesDetailForm();
+                        } else if (buttonText.contains("Thống Kê Cá Nhân")) {
+                            openPersonalStatsForm();
+                        }
+                    }
                     break;
             }
         } catch (SQLException ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi xử lý: " + ex.getMessage());
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi hệ thống: " + ex.getMessage());
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi: " + ex.getMessage());
         }
     }
     
@@ -102,8 +125,6 @@ public class ThongKeController implements ActionListener {
      * Xử lý bắt đầu ca cho nhân viên
      */
     private void handleStartShift() throws SQLException {
-        System.out.println("DEBUG: handleStartShift called for employee " + currentEmployeeId);
-        
         if (currentUserRole != 2) { // Chỉ staff mới được bắt đầu ca
             JOptionPane.showMessageDialog(null, "Chỉ nhân viên mới có thể bắt đầu ca!");
             return;
@@ -113,24 +134,19 @@ public class ThongKeController implements ActionListener {
         model.WorkShift inProgressShift = workShiftDAO.getCurrentShift(currentEmployeeId);
         if (inProgressShift != null) {
             JOptionPane.showMessageDialog(null, 
-                "Bạn đang có ca làm việc đang diễn ra (ID: " + inProgressShift.getShiftId() + ")!\n" +
+                "Bạn đang có ca làm việc đang diễn ra (ID: " + inProgressShift.getWorkingSessionId() + ")!\n" +
                 "Vui lòng kết thúc ca hiện tại trước khi bắt đầu ca mới.", 
                 "Lỗi - Ca đang diễn ra", 
                 JOptionPane.WARNING_MESSAGE);
             return; // Exit immediately
         }
         
-        // Debug: Kiểm tra bất kỳ ca nào hôm nay
-        model.WorkShift anyShift = workShiftDAO.getAnyShiftToday(currentEmployeeId);
-        System.out.println("Any shift today: " + (anyShift != null ? anyShift.getShiftId() + " - " + anyShift.getStatus() : "null"));
-        
-        // Kiểm tra ca có thể bắt đầu không
-        model.WorkShift currentShift = workShiftDAO.getScheduledShift(currentEmployeeId);
-        System.out.println("Scheduled shift: " + (currentShift != null ? currentShift.getShiftId() + " - " + currentShift.getStatus() : "null"));
-        
         // Kiểm tra nếu đã có ca COMPLETED hôm nay (chỉ khi không có ca IN_PROGRESS)
-        model.WorkShift completedShift = workShiftDAO.getAnyShiftToday(currentEmployeeId);
-        if (completedShift != null && "COMPLETED".equals(completedShift.getStatus().name())) {
+        List<model.WorkShift> todayShifts = workShiftDAO.getShiftsByEmployee(currentEmployeeId, 1);
+        boolean hasCompletedShift = todayShifts.stream()
+            .anyMatch(shift -> "COMPLETED".equals(shift.getWorkStatus()));
+        
+        if (hasCompletedShift) {
             System.out.println("Found completed shift, creating new shift for additional work");
             int confirm = JOptionPane.showConfirmDialog(null, 
                 "Bạn đã hoàn thành ca làm việc hôm nay.\n" +
@@ -140,40 +156,68 @@ public class ThongKeController implements ActionListener {
                 JOptionPane.YES_NO_OPTION);
             
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean success = workShiftDAO.startUnscheduledShift(currentEmployeeId);
-                if (success) {
+                // Tạo ca làm việc mới
+                model.WorkShift newShift = new model.WorkShift();
+                newShift.setEmployeeId(currentEmployeeId);
+                newShift.setDate(java.sql.Date.valueOf(LocalDate.now()));
+                newShift.setWorkStatus("SCHEDULED");
+                
+                if (workShiftDAO.createShift(newShift)) {
+                    // Bắt đầu ca ngay lập tức
+                    if (workShiftDAO.startShift(currentEmployeeId)) {
                     JOptionPane.showMessageDialog(null, 
                         "Đã bắt đầu ca bổ sung!\nThời gian làm sẽ được tính làm thêm giờ.", 
                         "Thành Công", 
                         JOptionPane.INFORMATION_MESSAGE);
                     loadStatisticsBasedOnRole();
+                        // Cập nhật trạng thái nút
+                        thongKeView.updateShiftButtonStates();
+                        // Force hiển thị nút kết thúc ca
+                        thongKeView.forceShowEndShiftButton();
+                    }
                 }
             }
             return; // Exit early after handling completed shift case
         }
         
-        if (currentShift == null) {
-            // Không có ca trong lịch - cho phép làm ngoài lịch với 75% lương
+        // Kiểm tra có ca SCHEDULED không
+        boolean hasScheduledShift = todayShifts.stream()
+            .anyMatch(shift -> "SCHEDULED".equals(shift.getWorkStatus()));
+        
+        if (!hasScheduledShift) {
+            // Không có ca trong lịch - cho phép làm ngoài lịch
             int confirm = JOptionPane.showConfirmDialog(null, 
                 "Bạn không có ca trong lịch làm hôm nay.\n" +
-                "Bắt đầu ca ngoài lịch sẽ chỉ tính 75% lương.\n" +
+                "Bắt đầu ca ngoài lịch.\n" +
                 "Bạn có muốn tiếp tục?", 
                 "Xác nhận bắt đầu ca ngoài lịch", 
                 JOptionPane.YES_NO_OPTION);
             
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean success = workShiftDAO.startUnscheduledShift(currentEmployeeId);
-                if (success) {
+                // Tạo ca làm việc mới
+                model.WorkShift newShift = new model.WorkShift();
+                newShift.setEmployeeId(currentEmployeeId);
+                newShift.setDate(java.sql.Date.valueOf(LocalDate.now()));
+                newShift.setWorkStatus("SCHEDULED");
+                
+                if (workShiftDAO.createShift(newShift)) {
+                    // Bắt đầu ca ngay lập tức
+                    if (workShiftDAO.startShift(currentEmployeeId)) {
                     JOptionPane.showMessageDialog(null, 
-                        "Đã bắt đầu ca ngoài lịch!\nLương sẽ được tính 75%.", 
+                            "Đã bắt đầu ca ngoài lịch!", 
                         "Thành Công", 
                         JOptionPane.INFORMATION_MESSAGE);
                     loadStatisticsBasedOnRole();
+                        // Cập nhật trạng thái nút
+                        thongKeView.updateShiftButtonStates();
+                        // Force hiển thị nút kết thúc ca
+                        thongKeView.forceShowEndShiftButton();
+                    }
                 }
             }
-        } else if (currentShift.canCheckIn()) {
+        } else {
             // Có ca trong lịch - check in bình thường
-            boolean success = workShiftDAO.checkInShift(currentEmployeeId);
+            boolean success = workShiftDAO.startShift(currentEmployeeId);
             
             if (success) {
                 JOptionPane.showMessageDialog(null, 
@@ -181,17 +225,16 @@ public class ThongKeController implements ActionListener {
                     "Thành Công", 
                     JOptionPane.INFORMATION_MESSAGE);
                 loadStatisticsBasedOnRole();
+                // Cập nhật trạng thái nút
+                thongKeView.updateShiftButtonStates();
+                // Force hiển thị nút kết thúc ca
+                thongKeView.forceShowEndShiftButton();
             } else {
                 JOptionPane.showMessageDialog(null, 
                     "Lỗi khi bắt đầu ca. Vui lòng thử lại!", 
                     "Lỗi", 
                     JOptionPane.ERROR_MESSAGE);
             }
-        } else {
-            JOptionPane.showMessageDialog(null, 
-                "Không thể bắt đầu ca làm việc!\nCa đã được bắt đầu hoặc đã kết thúc.", 
-                "Thông báo", 
-                JOptionPane.WARNING_MESSAGE);
         }
     }
     
@@ -206,21 +249,13 @@ public class ThongKeController implements ActionListener {
         
         // Kiểm tra có ca đang làm không
         model.WorkShift currentShift = workShiftDAO.getCurrentShift(currentEmployeeId);
-        if (currentShift == null || !currentShift.canCheckOut()) {
+        if (currentShift == null || !"IN_PROGRESS".equals(currentShift.getWorkStatus())) {
             JOptionPane.showMessageDialog(null, "Bạn không có ca làm việc nào đang diễn ra!");
             return;
         }
         
-        // Hỏi ghi chú khi kết thúc ca
-        String notes = JOptionPane.showInputDialog(null, 
-            "Nhập ghi chú cho ca làm việc (tùy chọn):", 
-            "Kết Thúc Ca Làm Việc", 
-            JOptionPane.QUESTION_MESSAGE);
-        
-        if (notes == null) return; // User cancelled
-        
-        // Thực hiện kết thúc ca với penalty system
-        boolean success = workShiftDAO.checkOutShift(currentEmployeeId, notes);
+        // Thực hiện kết thúc ca
+        boolean success = workShiftDAO.closeShift(currentEmployeeId);
         
         if (success) {
             JOptionPane.showMessageDialog(null, 
@@ -230,6 +265,10 @@ public class ThongKeController implements ActionListener {
             
             // Refresh lại thống kê
             loadStatisticsBasedOnRole();
+            // Cập nhật trạng thái nút
+            thongKeView.updateShiftButtonStates();
+            // Force ẩn nút kết thúc ca
+            thongKeView.hideEndShiftButton();
         } else {
             JOptionPane.showMessageDialog(null, 
                 "Lỗi khi kết thúc ca. Vui lòng thử lại!", 
@@ -292,34 +331,23 @@ public class ThongKeController implements ActionListener {
     private void loadStaffStatistics() throws SQLException {
         System.out.println("DEBUG: loadStaffStatistics for employee " + currentEmployeeId);
         
-        // Check existing shifts for debugging
-        try {
-            model.WorkShift existingShift = workShiftDAO.getAnyShiftToday(currentEmployeeId);
-            System.out.println("Existing shift today: " + (existingShift != null ? 
-                existingShift.getShiftId() + " - " + existingShift.getStatus() : "none"));
-        } catch (SQLException e) {
-            System.err.println("Error checking shift: " + e.getMessage());
-        }
-        
         // 1. Thống kê hôm nay
         Map<String, Object> todayStats = thongKeDAO.getTodayStats();
         
         // 2. Sản phẩm bán chạy (top 10)
         List<Map<String, Object>> topProducts = thongKeDAO.getTopSellingProducts(10);
         
-        // 3. Doanh thu 7 ngày gần nhất
-        List<Map<String, Object>> recentDays = thongKeDAO.getRecentDaysRevenue();
+        // 3. Thống kê 7 ngày gần nhất
+        List<Map<String, Object>> recentDays = thongKeDAO.getRecentDaysStats(7);
         
         // 4. Thống kê khách hàng
         Map<String, Object> customerStats = thongKeDAO.getCustomerStats();
         
         // 5. Thống kê ca làm của nhân viên
-        Map<String, Object> shiftSummary = thongKeDAO.getEmployeeShiftSummary(currentEmployeeId);
-        System.out.println("DEBUG: shiftSummary = " + shiftSummary);
+        Map<String, Object> shiftSummary = thongKeDAO.getEmployeeShiftStats(currentEmployeeId, 30);
         
-        // 6. Lương dự kiến
+        // 6. Ước tính thu nhập
         Map<String, Object> earningsEstimate = thongKeDAO.getEmployeeEarningsEstimate(currentEmployeeId);
-        System.out.println("DEBUG: earningsEstimate = " + earningsEstimate);
         
         // 7. Ca làm gần đây
         List<Map<String, Object>> recentShifts = thongKeDAO.getRecentShifts(currentEmployeeId);
@@ -343,85 +371,19 @@ public class ThongKeController implements ActionListener {
                                Map<String, Object> shiftOverview,
                                List<Map<String, Object>> shiftPerformance) {
         
-        // Cập nhật bảng hiệu suất ca làm thay vì bán hàng - Dùng Icon cho column đầu tiên
-        String[] adminColumns = {"Ảnh", "Mã NV", "Họ tên", "Chức vụ", "Ca làm", "Giờ làm", "Lương (VNĐ)", "Chuyên cần"};
-        DefaultTableModel adminModel = new DefaultTableModel(adminColumns, 0);
-        
-        // Icon mặc định cho nhân viên
-        javax.swing.ImageIcon defaultIcon;
-        try {
-            defaultIcon = new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/1.png"));
-        } catch (Exception e) {
-            // Tạo icon trống nếu không load được
-            defaultIcon = new javax.swing.ImageIcon();
+        // Cập nhật các label thống kê
+        if (monthlyRevenue != null) {
+            thongKeView.getJLabel1().setText("Doanh thu: " + formatter.format(monthlyRevenue.get("total_revenue")));
         }
         
-        for (Map<String, Object> emp : shiftPerformance) {
-            int totalShifts = (Integer) emp.getOrDefault("total_shifts", 0);
-            int completedShifts = (Integer) emp.getOrDefault("completed_shifts", 0);
-            double attendanceRate = (Double) emp.getOrDefault("attendance_rate", 0.0);
-            double totalHours = (Double) emp.getOrDefault("total_hours", 0.0);
-            double totalEarnings = (Double) emp.getOrDefault("total_earnings", 0.0);
-            
-            Object[] row = {
-                defaultIcon, // Column đầu tiên phải là Icon
-                emp.get("employee_id"),
-                emp.get("full_name"),
-                emp.get("role"),
-                String.format("%d/%d", completedShifts, totalShifts),
-                String.format("%.1f", totalHours),
-                formatter.format((long) totalEarnings),
-                String.format("%.1f%%", attendanceRate)
-            };
-            adminModel.addRow(row);
-        }
+        // Cập nhật bảng hiệu suất nhân viên
+        updateEmployeePerformanceTable(employeePerformance);
         
-        thongKeView.getTable1().setModel(adminModel);
-        thongKeView.getTable1().getColumnModel().getColumn(0).setPreferredWidth(50);
-        thongKeView.getTable1().getColumnModel().getColumn(6).setPreferredWidth(120);
-        thongKeView.getTable1().getColumnModel().getColumn(7).setPreferredWidth(80);
+        // Cập nhật bảng tồn kho
+        updateInventoryTable(inventoryStatus);
         
-        // Cập nhật label thông tin với thiết kế đẹp hơn
-        int totalShifts = (Integer) shiftOverview.getOrDefault("total_shifts", 0);
-        int activeEmployees = (Integer) shiftOverview.getOrDefault("active_employees", 0);
-        int completedShifts = (Integer) shiftOverview.getOrDefault("completed_shifts", 0);
-        int ongoingShifts = (Integer) shiftOverview.getOrDefault("ongoing_shifts", 0);
-        double totalHours = (Double) shiftOverview.getOrDefault("total_hours", 0.0);
-        
-        long revenue = (Long) monthlyRevenue.getOrDefault("total_revenue", 0L);
-        long profit = (Long) profitAnalysis.getOrDefault("profit", 0L);
-        int totalOrders = (Integer) monthlyRevenue.getOrDefault("total_orders", 0);
-        int totalCustomers = (Integer) customerStats.getOrDefault("total_customers", 0);
-        
-        String adminInfo = String.format(
-            "<html><div style='font-family: Arial; font-size: 12px;'>" +
-            "<b style='color: #2E7D32; font-size: 14px;'>📊 DASHBOARD ADMIN - THÁNG %d/%d</b><br/><br/>" +
-            
-            "<table cellpadding='2' cellspacing='0'>" +
-            "<tr><td><b style='color: #1976D2;'>💰 KINH DOANH</b></td><td width='20'></td><td><b style='color: #D32F2F;'>👥 NHÂN SỰ</b></td></tr>" +
-            "<tr><td>• Doanh thu: <b>%s</b> VNĐ</td><td></td><td>• Tổng ca làm: <b>%d</b> ca</td></tr>" +
-            "<tr><td>• Lợi nhuận: <b style='color: %s;'>%s</b> VNĐ</td><td></td><td>• Nhân viên hoạt động: <b>%d</b></td></tr>" +
-            "<tr><td>• Đơn hàng: <b>%s</b> đơn</td><td></td><td>• Ca hoàn thành: <b>%d</b>/%d</td></tr>" +
-            "<tr><td>• Khách hàng: <b>%s</b></td><td></td><td>• Ca đang diễn ra: <b style='color: green;'>%d</b></td></tr>" +
-            "<tr><td colspan='3'><hr style='border: 1px solid #E0E0E0; margin: 5px 0;'></td></tr>" +
-            "<tr><td colspan='3'>⏰ <b>Tổng giờ làm:</b> <b style='color: #FF6F00;'>%.1f</b> giờ | " +
-            "📈 <b>Hiệu suất ca làm ↓</b></td></tr>" +
-            "</table>" +
-            "</div></html>",
-            
-            LocalDate.now().getMonthValue(), LocalDate.now().getYear(),
-            formatter.format(revenue),
-            totalShifts,
-            profit >= 0 ? "green" : "red", formatter.format(profit),
-            activeEmployees,
-            formatter.format(totalOrders),
-            completedShifts, totalShifts,
-            formatter.format(totalCustomers),
-            ongoingShifts,
-            totalHours
-        );
-        
-        thongKeView.getJLabel1().setText(adminInfo);
+        // Cập nhật bảng hiệu suất ca làm
+        updateShiftPerformanceTable(shiftPerformance);
     }
     
     /**
@@ -435,122 +397,67 @@ public class ThongKeController implements ActionListener {
                                Map<String, Object> earningsEstimate,
                                List<Map<String, Object>> recentShifts) {
         
-        // Cập nhật bảng ca làm gần đây thay vì sản phẩm bán chạy
-        String[] staffColumns = {"Ảnh", "Ngày", "Ca làm", "Giờ vào", "Giờ ra", "Trạng thái"};
-        DefaultTableModel staffModel = new DefaultTableModel(staffColumns, 0);
-        
-        // Icon mặc định cho ca làm
-        javax.swing.ImageIcon shiftIcon;
-        try {
-            shiftIcon = new javax.swing.ImageIcon(getClass().getResource("/com/raven/icon/3.png"));
-        } catch (Exception e) {
-            // Tạo icon trống nếu không load được
-            shiftIcon = new javax.swing.ImageIcon();
+        // Cập nhật thống kê hôm nay
+        if (todayStats != null) {
+            thongKeView.getJLabel1().setText("Hôm nay: " + formatter.format(todayStats.get("today_revenue")));
         }
         
-        for (Map<String, Object> shift : recentShifts) {
-            String shiftType = (String) shift.get("shift_type");
-            String displayShiftType = "";
-            switch (shiftType) {
-                case "SANG": displayShiftType = "Ca Sáng"; break;
-                case "CHIEU": displayShiftType = "Ca Chiều"; break;
-                case "TOI": displayShiftType = "Ca Tối"; break;
-                case "FULL": displayShiftType = "Ca Nguyên"; break;
-                default: displayShiftType = shiftType;
-            }
-            
-            String status = (String) shift.get("status");
-            String displayStatus = "";
-            switch (status) {
-                case "COMPLETED": displayStatus = "Hoàn thành"; break;
-                case "IN_PROGRESS": displayStatus = "Đang làm"; break;
-                case "SCHEDULED": displayStatus = "Đã lên lịch"; break;
-                case "ABSENT": displayStatus = "Vắng mặt"; break;
-                default: displayStatus = status;
-            }
-            
-            Object[] row = {
-                shiftIcon, // Column đầu tiên phải là Icon
-                shift.get("shift_date"),
-                displayShiftType,
-                shift.get("start_time"),
-                shift.get("end_time") != null ? shift.get("end_time") : "Chưa kết thúc",
-                displayStatus
-            };
-            staffModel.addRow(row);
-        }
+        // Cập nhật bảng sản phẩm bán chạy
+        updateTopProductsTable(topProducts);
         
-        thongKeView.getTable1().setModel(staffModel);
-        thongKeView.getTable1().getColumnModel().getColumn(0).setPreferredWidth(50);
-        thongKeView.getTable1().getColumnModel().getColumn(5).setPreferredWidth(100);
+        // Cập nhật bảng thống kê 7 ngày
+        updateRecentDaysTable(recentDays);
         
-        // Cập nhật label thông tin với ca làm và lương
-        String todayShiftType = (String) shiftSummary.getOrDefault("today_shift_type", "Không có ca");
-        String todayStatus = (String) shiftSummary.getOrDefault("today_status", "NO_SHIFT");
-        
-        int monthlyShifts = (Integer) shiftSummary.getOrDefault("monthly_shifts", 0);
-        int completedShifts = (Integer) shiftSummary.getOrDefault("completed_shifts", 0);
-        
-        Object totalHoursObj = earningsEstimate.getOrDefault("total_hours", 0.0);
-        double totalHours = totalHoursObj instanceof Number ? ((Number) totalHoursObj).doubleValue() : 0.0;
-        
-        Object totalEarningsObj = earningsEstimate.getOrDefault("total_earnings", 0.0);
-        double totalEarnings = totalEarningsObj instanceof Number ? ((Number) totalEarningsObj).doubleValue() : 0.0;
-        
-        String staffInfo = String.format(
-            "<html><b>THỐNG KÊ NHÂN VIÊN - %s</b><br/>" +
-            "🎯 <b>CA LÀM HÔM NAY:</b> %s<br/>" +
-            "📊 <b>CA TRONG THÁNG:</b> %d ca (%d hoàn thành)<br/>" +
-            "⏰ <b>TỔNG GIỜ LÀM:</b> %.1f giờ<br/>" +
-            "💰 <b>LƯƠNG DỰ KIẾN:</b> %s VNĐ<br/>" +
-            "👥 <b>KHÁCH HÀNG:</b> %s | Ca làm 7 ngày ↓" +
-            "%s</html>",
-            Session.getInstance().getFullName(),
-            todayShiftType,
-            monthlyShifts,
-            completedShifts,
-            totalHours,
-            formatter.format((long) totalEarnings),
-            formatter.format((Integer) customerStats.getOrDefault("total_customers", 0)),
-            "IN_PROGRESS".equals(todayStatus) ? 
-                "<br/><font color='green'>✓ Đang trong ca làm việc</font>" : ""
-        );
-        
-        thongKeView.getJLabel1().setText(staffInfo);
-        
-        // Debug shift status
-        System.out.println("DEBUG ThongKeController - Employee ID: " + currentEmployeeId);
-        System.out.println("Today shift type: " + todayShiftType);
-        System.out.println("Today status: " + todayStatus);
-        
-        // Kiểm tra có ca nào đang IN_PROGRESS không (ưu tiên cao nhất)
-        String actualCurrentStatus = todayStatus;
-        try {
-            model.WorkShift inProgressShift = workShiftDAO.getCurrentShift(currentEmployeeId);
-            if (inProgressShift != null) {
-                actualCurrentStatus = "IN_PROGRESS";
-                System.out.println("Found IN_PROGRESS shift: " + inProgressShift.getShiftId() + ", overriding status");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error checking in-progress shift: " + e.getMessage());
-        }
-        
-        System.out.println("Actual current status: " + actualCurrentStatus);
-        
-        // Hiển thị/ẩn nút ca làm việc - enhanced logic
-        boolean canStartShift = "SCHEDULED".equals(actualCurrentStatus) || "NO_SHIFT".equals(actualCurrentStatus);
-        boolean canEndShift = "IN_PROGRESS".equals(actualCurrentStatus);
-        
-        // Special case: Nếu ca đã COMPLETED và KHÔNG có ca IN_PROGRESS, cho phép tạo ca mới
-        if ("COMPLETED".equals(actualCurrentStatus)) {
-            canStartShift = true; // Cho phép bắt đầu ca mới
-            System.out.println("Shift already completed, allowing new shift creation");
-        }
-        
-        System.out.println("Can start shift: " + canStartShift);
-        System.out.println("Can end shift: " + canEndShift);
-        
-        thongKeView.updateShiftButtons(canStartShift, canEndShift);
+        // Cập nhật bảng ca làm gần đây
+        updateRecentShiftsTable(recentShifts);
+    }
+    
+    /**
+     * Cập nhật bảng hiệu suất nhân viên
+     */
+    private void updateEmployeePerformanceTable(List<Map<String, Object>> employeePerformance) {
+        // Implementation for employee performance table
+        System.out.println("Updating employee performance table with " + employeePerformance.size() + " records");
+    }
+    
+    /**
+     * Cập nhật bảng tồn kho
+     */
+    private void updateInventoryTable(List<Map<String, Object>> inventoryStatus) {
+        // Implementation for inventory table
+        System.out.println("Updating inventory table with " + inventoryStatus.size() + " records");
+    }
+    
+    /**
+     * Cập nhật bảng hiệu suất ca làm
+     */
+    private void updateShiftPerformanceTable(List<Map<String, Object>> shiftPerformance) {
+        // Implementation for shift performance table
+        System.out.println("Updating shift performance table with " + shiftPerformance.size() + " records");
+    }
+    
+    /**
+     * Cập nhật bảng sản phẩm bán chạy
+     */
+    private void updateTopProductsTable(List<Map<String, Object>> topProducts) {
+        // Implementation for top products table
+        System.out.println("Updating top products table with " + topProducts.size() + " records");
+    }
+    
+    /**
+     * Cập nhật bảng thống kê 7 ngày
+     */
+    private void updateRecentDaysTable(List<Map<String, Object>> recentDays) {
+        // Implementation for recent days table
+        System.out.println("Updating recent days table with " + recentDays.size() + " records");
+    }
+    
+    /**
+     * Cập nhật bảng ca làm gần đây
+     */
+    private void updateRecentShiftsTable(List<Map<String, Object>> recentShifts) {
+        // Implementation for recent shifts table
+        System.out.println("Updating recent shifts table with " + recentShifts.size() + " records");
     }
     
     /**
@@ -558,42 +465,25 @@ public class ThongKeController implements ActionListener {
      */
     private void updateAdminCharts(List<Map<String, Object>> shiftPerformance,
                                    List<Map<String, Object>> inventoryStatus) {
-        
-        // Biểu đồ tròn - Lương theo nhân viên (dựa trên ca làm)
-        List<ModelChartPie> pieData = new ArrayList<>();
-        Color[] colors = {
-            new Color(4, 174, 243), new Color(215, 39, 250), new Color(44, 88, 236),
-            new Color(21, 202, 87), new Color(127, 63, 255), new Color(238, 167, 35),
-            new Color(245, 79, 99)
-        };
-        
-        int colorIndex = 0;
-        for (Map<String, Object> emp : shiftPerformance.subList(0, Math.min(7, shiftPerformance.size()))) {
-            String label = (String) emp.get("full_name");
-            Double earnings = (Double) emp.getOrDefault("total_earnings", 0.0);
-            if (earnings > 0) {
-                pieData.add(new ModelChartPie(label, earnings, colors[colorIndex % colors.length]));
-                colorIndex++;
-            }
-        }
-        thongKeView.getChartPie().setModel(pieData);
-        
-        // Biểu đồ line - Chuyên cần nhân viên (attendance rate)
-        List<ModelChartLine> lineData = new ArrayList<>();
-        for (int i = 0; i < Math.min(7, shiftPerformance.size()); i++) {
-            Map<String, Object> emp = shiftPerformance.get(i);
-            String empName = ((String) emp.get("full_name"));
-            // Lấy tên ngắn gọn
-            String shortName = empName.contains(" ") ? 
-                empName.substring(empName.lastIndexOf(" ") + 1) : empName;
-            if (shortName.length() > 8) {
-                shortName = shortName.substring(0, 8);
-            }
+        try {
+            // 1. Biểu đồ line chart - Doanh thu theo ngày trong tuần
+            List<Map<String, Object>> weeklyRevenue = thongKeDAO.getWeeklyRevenueData();
+            updateLineChartForRevenue(weeklyRevenue);
             
-            Double attendanceRate = (Double) emp.getOrDefault("attendance_rate", 0.0);
-            lineData.add(new ModelChartLine(shortName, attendanceRate));
+            // 2. Biểu đồ pie chart - Phân bố doanh thu theo danh mục
+            List<Map<String, Object>> categoryRevenue = thongKeDAO.getCategoryRevenueData();
+            updatePieChartForCategoryRevenue(categoryRevenue);
+            
+            // 3. Biểu đồ line chart - Doanh thu theo tháng
+            List<Map<String, Object>> monthlyTrend = thongKeDAO.getMonthlyRevenueTrend();
+            updateLineChartForMonthlyTrend(monthlyTrend);
+            
+
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi cập nhật biểu đồ Admin: " + e.getMessage());
         }
-        thongKeView.getChartLine1().setModel(lineData);
     }
     
     /**
@@ -601,70 +491,215 @@ public class ThongKeController implements ActionListener {
      */
     private void updateStaffCharts(List<Map<String, Object>> topProducts,
                                    List<Map<String, Object>> recentDays) {
-        
-        // Biểu đồ tròn - Top sản phẩm bán chạy
-        List<ModelChartPie> pieData = new ArrayList<>();
-        Color[] colors = {
-            new Color(21, 202, 87), new Color(4, 174, 243), new Color(215, 39, 250),
-            new Color(44, 88, 236), new Color(127, 63, 255), new Color(238, 167, 35),
-            new Color(245, 79, 99)
-        };
-        
-        if (topProducts != null && !topProducts.isEmpty()) {
-            int colorIndex = 0;
-            int maxItems = Math.min(5, topProducts.size());
-            for (int i = 0; i < maxItems; i++) {
-                Map<String, Object> product = topProducts.get(i);
-                if (product != null) {
-                    String productName = (String) product.get("product_name");
-                    if (productName == null || productName.trim().isEmpty()) {
-                        productName = "Sản phẩm " + (i + 1);
-                    }
-                    String label = productName.substring(0, Math.min(12, productName.length()));
-                    Integer sold = (Integer) product.getOrDefault("total_sold", 0);
-                    if (sold > 0) {
-                        pieData.add(new ModelChartPie(label, sold, colors[colorIndex % colors.length]));
-                        colorIndex++;
-                    }
-                }
-            }
+        try {
+            // 1. Biểu đồ line chart - Ca làm việc theo ngày trong tuần
+            List<Map<String, Object>> weeklyShifts = thongKeDAO.getWeeklyShiftData();
+            updateLineChartForShifts(weeklyShifts);
+            
+            // 2. Biểu đồ pie chart - Top 5 sản phẩm bán chạy
+            List<Map<String, Object>> topProductsPie = thongKeDAO.getTopProductsPieData();
+            updatePieChartForTopProducts(topProductsPie);
+            
+            // 3. Biểu đồ line chart - Doanh thu cá nhân theo ngày
+            List<Map<String, Object>> personalRevenue = thongKeDAO.getRecentDaysRevenue();
+            updateLineChartForPersonalRevenue(personalRevenue);
+            
+            // 4. Biểu đồ pie chart - Phân bố doanh thu theo danh mục (cá nhân)
+            List<Map<String, Object>> personalCategoryRevenue = thongKeDAO.getCategoryRevenueData();
+            updatePieChartForPersonalCategoryRevenue(personalCategoryRevenue);
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Lỗi khi cập nhật biểu đồ Staff: " + e.getMessage());
         }
-        
-        // Nếu không có dữ liệu, thêm một item mặc định
-        if (pieData.isEmpty()) {
-            pieData.add(new ModelChartPie("Chưa có dữ liệu", 1, colors[0]));
-        }
-        thongKeView.getChartPie().setModel(pieData);
-        
-        // Biểu đồ line - Doanh thu 7 ngày gần nhất
-        List<ModelChartLine> lineData = new ArrayList<>();
-        if (recentDays != null && !recentDays.isEmpty()) {
-            for (Map<String, Object> day : recentDays) {
-                if (day != null && day.get("date") != null) {
-                    String dateStr = day.get("date").toString();
-                    String date = dateStr.length() > 5 ? dateStr.substring(5) : dateStr; // MM-dd
-                    Long revenue = (Long) day.getOrDefault("daily_revenue", 0L);
-                    lineData.add(new ModelChartLine(date, revenue.doubleValue() / 1000)); // Chia 1000 cho dễ đọc
-                }
-            }
-        }
-        
-        // Nếu không có dữ liệu, thêm dữ liệu mặc định
-        if (lineData.isEmpty()) {
-            lineData.add(new ModelChartLine("Hôm nay", 0));
-        }
-        thongKeView.getChartLine1().setModel(lineData);
     }
     
     /**
-     * Refresh dữ liệu thống kê
+     * Cập nhật line chart cho doanh thu theo ngày
+     */
+    private void updateLineChartForRevenue(List<Map<String, Object>> weeklyRevenue) {
+        List<com.raven.chart.ModelChartLine> chartData = new ArrayList<>();
+        
+        for (Map<String, Object> day : weeklyRevenue) {
+            String dayName = (String) day.get("day_name");
+            Long revenue = (Long) day.get("daily_revenue");
+            chartData.add(new com.raven.chart.ModelChartLine(dayName, revenue != null ? revenue.intValue() : 0));
+        }
+        
+        if (thongKeView.getChartLine1() != null) {
+            thongKeView.getChartLine1().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật pie chart cho phân bố doanh thu theo danh mục
+     */
+    private void updatePieChartForCategoryRevenue(List<Map<String, Object>> categoryRevenue) {
+        List<com.raven.chart.ModelChartPie> chartData = new ArrayList<>();
+        java.awt.Color[] colors = {
+            new java.awt.Color(4, 174, 243),   // Xanh dương
+            new java.awt.Color(215, 39, 250),  // Tím
+            new java.awt.Color(44, 88, 236),   // Xanh đậm
+            new java.awt.Color(21, 202, 87),   // Xanh lá
+            new java.awt.Color(127, 63, 255),  // Tím đậm
+            new java.awt.Color(238, 167, 35),  // Cam
+            new java.awt.Color(245, 79, 99)    // Đỏ
+        };
+        
+        for (int i = 0; i < categoryRevenue.size(); i++) {
+            Map<String, Object> category = categoryRevenue.get(i);
+            String categoryName = (String) category.get("category_name");
+            Long revenue = (Long) category.get("category_revenue");
+            java.awt.Color color = colors[i % colors.length];
+            
+            chartData.add(new com.raven.chart.ModelChartPie(
+                categoryName, 
+                revenue != null ? revenue.intValue() : 0, 
+                color
+            ));
+        }
+        
+        if (thongKeView.getChartPie() != null) {
+            thongKeView.getChartPie().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật line chart cho doanh thu theo tháng
+     */
+    private void updateLineChartForMonthlyTrend(List<Map<String, Object>> monthlyTrend) {
+        List<com.raven.chart.ModelChartLine> chartData = new ArrayList<>();
+        
+        for (Map<String, Object> month : monthlyTrend) {
+            String monthName = (String) month.get("month_name");
+            Long revenue = (Long) month.get("monthly_revenue");
+            chartData.add(new com.raven.chart.ModelChartLine(monthName, revenue != null ? revenue.intValue() : 0));
+        }
+        
+        if (thongKeView.getChartLine1() != null) {
+            thongKeView.getChartLine1().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật line chart cho ca làm việc theo ngày
+     */
+    private void updateLineChartForShifts(List<Map<String, Object>> weeklyShifts) {
+        List<com.raven.chart.ModelChartLine> chartData = new ArrayList<>();
+        
+        for (Map<String, Object> day : weeklyShifts) {
+            String dayName = (String) day.get("day_name");
+            Double hours = (Double) day.get("total_hours");
+            chartData.add(new com.raven.chart.ModelChartLine(dayName, hours != null ? hours.intValue() : 0));
+        }
+        
+        if (thongKeView.getChartLine1() != null) {
+            thongKeView.getChartLine1().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật pie chart cho top sản phẩm bán chạy
+     */
+    private void updatePieChartForTopProducts(List<Map<String, Object>> topProducts) {
+        List<com.raven.chart.ModelChartPie> chartData = new ArrayList<>();
+        java.awt.Color[] colors = {
+            new java.awt.Color(4, 174, 243),   // Xanh dương
+            new java.awt.Color(215, 39, 250),  // Tím
+            new java.awt.Color(44, 88, 236),   // Xanh đậm
+            new java.awt.Color(21, 202, 87),   // Xanh lá
+            new java.awt.Color(127, 63, 255)   // Tím đậm
+        };
+        
+        for (int i = 0; i < topProducts.size(); i++) {
+            Map<String, Object> product = topProducts.get(i);
+            String productName = (String) product.get("product_name");
+            Integer sold = (Integer) product.get("total_sold");
+            java.awt.Color color = colors[i % colors.length];
+            
+            chartData.add(new com.raven.chart.ModelChartPie(
+                productName, 
+                sold != null ? sold : 0, 
+                color
+            ));
+        }
+        
+        if (thongKeView.getChartPie() != null) {
+            thongKeView.getChartPie().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật line chart cho doanh thu cá nhân
+     */
+    private void updateLineChartForPersonalRevenue(List<Map<String, Object>> personalRevenue) {
+        List<com.raven.chart.ModelChartLine> chartData = new ArrayList<>();
+        
+        for (Map<String, Object> day : personalRevenue) {
+            String date = day.get("date").toString();
+            Long revenue = (Long) day.get("daily_revenue");
+            chartData.add(new com.raven.chart.ModelChartLine(date, revenue != null ? revenue.intValue() : 0));
+        }
+        
+        if (thongKeView.getChartLine1() != null) {
+            thongKeView.getChartLine1().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật pie chart cho phân bố doanh thu cá nhân theo danh mục
+     */
+    private void updatePieChartForPersonalCategoryRevenue(List<Map<String, Object>> categoryRevenue) {
+        List<com.raven.chart.ModelChartPie> chartData = new ArrayList<>();
+        java.awt.Color[] colors = {
+            new java.awt.Color(4, 174, 243),   // Xanh dương
+            new java.awt.Color(215, 39, 250),  // Tím
+            new java.awt.Color(44, 88, 236),   // Xanh đậm
+            new java.awt.Color(21, 202, 87),   // Xanh lá
+            new java.awt.Color(127, 63, 255),  // Tím đậm
+            new java.awt.Color(238, 167, 35),  // Cam
+            new java.awt.Color(245, 79, 99)    // Đỏ
+        };
+        
+        for (int i = 0; i < categoryRevenue.size(); i++) {
+            Map<String, Object> category = categoryRevenue.get(i);
+            String categoryName = (String) category.get("category_name");
+            Long revenue = (Long) category.get("category_revenue");
+            java.awt.Color color = colors[i % colors.length];
+            
+            chartData.add(new com.raven.chart.ModelChartPie(
+                categoryName, 
+                revenue != null ? revenue.intValue() : 0, 
+                color
+            ));
+        }
+        
+        if (thongKeView.getChartPie() != null) {
+            thongKeView.getChartPie().setModel(chartData);
+        }
+    }
+    
+    /**
+     * Cập nhật trạng thái nút ca làm việc
+     */
+    public void updateShiftButtonStates() {
+        if (thongKeView != null) {
+            thongKeView.updateShiftButtonStates();
+        }
+    }
+    
+    /**
+     * Refresh thống kê
      */
     public void refreshStatistics() {
         try {
             loadStatisticsBasedOnRole();
-        } catch (SQLException ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi tải lại dữ liệu: " + ex.getMessage());
+            // Cập nhật trạng thái nút ca làm việc
+            updateShiftButtonStates();
+            JOptionPane.showMessageDialog(null, "Đã làm mới thống kê!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi khi làm mới thống kê: " + e.getMessage());
         }
     }
     
@@ -673,42 +708,43 @@ public class ThongKeController implements ActionListener {
      */
     private void openDetailReportForm() {
         try {
-            view.DetailReportForm detailReportForm = new view.DetailReportForm(currentUserRole, currentEmployeeId);
-            detailReportForm.setVisible(true);
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi mở báo cáo chi tiết: " + ex.getMessage());
+            view.DetailReportForm detailForm = new view.DetailReportForm(currentUserRole, currentEmployeeId);
+            detailForm.setVisible(true);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi mở báo cáo chi tiết: " + e.getMessage());
         }
     }
     
     /**
-     * Mở form quản lý ca làm (chỉ admin)
+     * Mở form quản lý ca làm việc
      */
     private void openShiftManagementForm() {
-        if (currentUserRole != 1) {
-            JOptionPane.showMessageDialog(null, "Chỉ admin mới có quyền quản lý ca làm!");
-            return;
-        }
-        
-        try {
-            view.WorkShiftForm workShiftForm = new view.WorkShiftForm();
-            workShiftForm.setVisible(true);
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi mở quản lý ca làm: " + ex.getMessage());
+        if (currentUserRole == 1) { // Chỉ Admin mới được truy cập
+            try {
+                WorkShiftForm shiftForm = new WorkShiftForm();
+                JFrame frame = new JFrame("Quản lý ca làm việc");
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setSize(1200, 800);
+                frame.setLocationRelativeTo(null);
+                frame.add(shiftForm);
+                frame.setVisible(true);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Lỗi mở quản lý ca làm việc: " + e.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "Chỉ Admin mới có quyền truy cập quản lý ca làm việc!");
         }
     }
     
     /**
-     * Mở form chi tiết kho
+     * Mở form chi tiết tồn kho
      */
     private void openInventoryDetailForm() {
         try {
             view.InventoryDetailForm inventoryForm = new view.InventoryDetailForm(currentUserRole);
             inventoryForm.setVisible(true);
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi mở chi tiết kho: " + ex.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi mở chi tiết kho: " + e.getMessage());
         }
     }
     
@@ -719,39 +755,32 @@ public class ThongKeController implements ActionListener {
         try {
             view.SalesDetailForm salesForm = new view.SalesDetailForm(currentUserRole, currentEmployeeId);
             salesForm.setVisible(true);
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi mở chi tiết bán hàng: " + ex.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi mở chi tiết bán hàng: " + e.getMessage());
         }
     }
     
     /**
-     * Mở form thống kê cá nhân (chỉ staff)
+     * Mở form thống kê cá nhân
      */
     private void openPersonalStatsForm() {
-        if (currentUserRole != 2) {
-            JOptionPane.showMessageDialog(null, "Chức năng này chỉ dành cho nhân viên!");
-            return;
-        }
-        
         try {
             view.PersonalStatsForm personalForm = new view.PersonalStatsForm(currentEmployeeId);
             personalForm.setVisible(true);
-        } catch (Exception ex) {
-            Logger.getLogger(ThongKeController.class.getName()).log(Level.SEVERE, null, ex);
-            JOptionPane.showMessageDialog(null, "Lỗi mở thống kê cá nhân: " + ex.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Lỗi mở thống kê cá nhân: " + e.getMessage());
         }
     }
     
     /**
-     * Giải phóng tài nguyên
+     * Cleanup resources
      */
     public void cleanup() {
-        if (thongKeDAO != null) {
-            thongKeDAO.closeConnection();
-        }
         if (workShiftDAO != null) {
             workShiftDAO.closeConnection();
+        }
+        if (thongKeDAO != null) {
+            thongKeDAO.closeConnection();
         }
     }
 }

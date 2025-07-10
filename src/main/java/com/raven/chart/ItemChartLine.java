@@ -9,7 +9,7 @@ public class ItemChartLine extends javax.swing.JPanel {
     public ItemChartLine(ModelChartLine data) {
         initComponents();
         setOpaque(false);
-        DecimalFormat df = new DecimalFormat("$ #,##0.##");
+        DecimalFormat df = new DecimalFormat("đ #,##0.##");
         lbName.setText(data.getName());
         lbValues.setText(df.format(data.getValue()));
     }

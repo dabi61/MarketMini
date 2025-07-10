@@ -4,14 +4,15 @@
  */
 package view.Salary;
 
-import dao.EmployeeDAO;
+import controller.SalaryController;
+import dao.SalaryDAO;
 import java.math.BigDecimal;
-import java.sql.SQLDataException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import model.Salary;
 
 /**
@@ -20,19 +21,142 @@ import model.Salary;
  */
 public class SuaLuongForm extends javax.swing.JDialog {
 
-    public EmployeeDAO dao;
+    private SalaryController salaryController;
+    private SalaryDAO salaryDAO;
+    private Salary currentSalary;
+    
     /**
-     * Creates new form salary1Form
+     * Creates new form SuaLuongForm
      */
     public SuaLuongForm(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        initializeController();
+        setupEventListeners();
+    }
+
+    /**
+     * Khởi tạo controller và DAO
+     */
+    private void initializeController() {
         try {
-            dao = new EmployeeDAO();
-        } catch (SQLException ex) {
-            Logger.getLogger(SuaLuongForm.class.getName()).log(Level.SEVERE, null, ex);
+            salaryDAO = new SalaryDAO();
+            salaryController = new SalaryController(salaryDAO, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi khởi tạo: " + e.getMessage());
         }
-      
+    }
+
+    /**
+     * Thiết lập các event listener
+     */
+    private void setupEventListeners() {
+        btnSua.addActionListener(e -> handleUpdateSalary());
+        btnHuy.addActionListener(e -> dispose());
+    }
+
+    /**
+     * Set giá trị cho form từ đối tượng Salary
+     * @param salary đối tượng Salary
+     * @param employeeName tên nhân viên
+     */
+    public void setValue(Salary salary, String employeeName) {
+        this.currentSalary = salary;
+        
+        txtMa.setText(String.valueOf(salary.getSalary_id()));
+        txtName.setText(employeeName);
+        txtTotalHour.setText(salary.getTotal_hours().toString());
+        txtLuongH.setText(String.valueOf(salary.getHourly_wage()));
+        txtBonus.setText(String.valueOf(salary.getBonus()));   
+        txtPanelty.setText(String.valueOf(salary.getPenalty_deduction()));
+        dateThanhtoan.setDate(salary.getPayment_date());
+        
+        // Disable các trường không được chỉnh sửa (tính toán tự động)
+        txtMa.setEnabled(false);
+        txtName.setEnabled(false);
+        txtTotalHour.setEnabled(false);
+        
+        // Các trường có thể chỉnh sửa
+        txtLuongH.setEnabled(true);
+        txtBonus.setEnabled(true);
+        txtPanelty.setEnabled(true);
+        dateThanhtoan.setEnabled(true);
+    }
+    
+    /**
+     * Lấy đối tượng Salary từ form
+     * @return đối tượng Salary
+     */
+    public Salary getModel() {
+        try {
+            int salaryId = Integer.parseInt(txtMa.getText());
+            BigDecimal totalHours = new BigDecimal(txtTotalHour.getText());
+            int hourlyWage = Integer.parseInt(txtLuongH.getText());
+            int bonus = Integer.parseInt(txtBonus.getText());
+            int penalty = Integer.parseInt(txtPanelty.getText());
+            Date paymentDate = dateThanhtoan.getDate();
+            
+            Salary salary = new Salary();
+            salary.setSalary_id(salaryId);
+            salary.setEmployee_id(currentSalary.getEmployee_id());
+            salary.setTotal_hours(totalHours);
+            salary.setHourly_wage(hourlyWage);
+            salary.setBonus(bonus);
+            salary.setPenalty_deduction(penalty);
+            salary.setPayment_date(paymentDate);
+            salary.setCreated_date(currentSalary.getCreated_date());
+            
+            return salary;
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đúng định dạng số!");
+            return null;
+        }
+    }
+    
+    /**
+     * Xử lý cập nhật lương
+     */
+    private void handleUpdateSalary() {
+        try {
+            // Validation
+            if (txtLuongH.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập lương theo giờ!");
+                return;
+            }
+            
+            if (txtBonus.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập thưởng!");
+                return;
+            }
+            
+            if (txtPanelty.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập tiền phạt!");
+                return;
+            }
+            
+            if (dateThanhtoan.getDate() == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày thanh toán!");
+                return;
+            }
+            
+            // Lấy dữ liệu từ form
+            Salary updatedSalary = getModel();
+            if (updatedSalary != null) {
+                // Cập nhật vào database
+                boolean success = salaryController.updateSalary(updatedSalary);
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Cập nhật lương thành công!");
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Cập nhật lương thất bại!");
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+        }
     }
 
     public JButton getBtnHuy() {
@@ -43,30 +167,6 @@ public class SuaLuongForm extends javax.swing.JDialog {
         return btnSua;
     }
 
-    public void setValue(Salary sl, String name){
-        txtMa.setText(String.valueOf(sl.getSalary_id()));
-        txtName.setText(name);
-        txtTotalHour.setText(sl.getTotal_hours().toString());
-        txtLuongH.setText(sl.getHourly_wage().toString());
-        txtBonus.setText(sl.getBonus().toString());   
-        dateThanhtoan.setDate(sl.getPayment_date());
-        txtMa.setEnabled(false);
-        txtName.setEnabled(false);
-        txtLuongH.setEnabled(false);
-        txtTotalHour.setEnabled(false);
-    }
-    
-    public Salary getModel(){
-        String maLuong = txtMa.getText();
-        String name= txtName.getText();
-        String tongH = txtTotalHour.getText();
-        String bonus = txtBonus.getText();
-        String luongH = txtLuongH.getText();
-        Date ngayTh = dateThanhtoan.getDate();
-        Salary sl = new Salary(Integer.parseInt(maLuong), 0, new BigDecimal(tongH), new BigDecimal(luongH),
-        new BigDecimal(bonus), ngayTh, null);
-        return sl;
-    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -123,6 +223,9 @@ public class SuaLuongForm extends javax.swing.JDialog {
         btnHuy = new javax.swing.JButton();
         jScrollPane9 = new javax.swing.JScrollPane();
         txtName = new javax.swing.JTextPane();
+        jLabel16 = new javax.swing.JLabel();
+        jScrollPane13 = new javax.swing.JScrollPane();
+        txtPanelty = new javax.swing.JTextPane();
 
         jDialog1.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jDialog1.setTitle("Thêm nhà cung cấp mới\n");
@@ -266,15 +369,15 @@ public class SuaLuongForm extends javax.swing.JDialog {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(177, 177, 177)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(95, 95, 95)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .addComponent(jLabel1)
+                .addGap(14, 14, 14)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -288,7 +391,7 @@ public class SuaLuongForm extends javax.swing.JDialog {
 
         jScrollPane10.setViewportView(txtTotalHour);
 
-        jLabel13.setText("Lương theo h");
+        jLabel13.setText("Lương theo giờ");
 
         jScrollPane11.setViewportView(txtLuongH);
 
@@ -308,75 +411,75 @@ public class SuaLuongForm extends javax.swing.JDialog {
 
         jScrollPane9.setViewportView(txtName);
 
+        jLabel16.setText("Tiền phạt");
+
+        jScrollPane13.setViewportView(txtPanelty);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane9))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 99, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(143, 143, 143)
-                        .addComponent(jLabel14))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel13, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(90, 90, 90)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane12)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(90, 90, 90)
-                        .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(64, 64, 64))
             .addGroup(layout.createSequentialGroup()
-                .addGap(227, 227, 227)
-                .addComponent(btnSua)
-                .addGap(75, 75, 75)
-                .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel10)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel12)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel13)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel14)
+                    .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel15)
+                    .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel16)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(55, 55, 55)
+                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
                     .addComponent(jLabel12)
-                    .addComponent(jLabel14))
-                .addGap(18, 18, 18)
+                    .addComponent(jLabel14)
+                    .addComponent(jLabel16))
+                .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane8, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane12, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel11)
                     .addComponent(jLabel13)
                     .addComponent(jLabel15))
-                .addGap(18, 18, 18)
+                .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                    .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dateThanhtoan, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(30, 30, 30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSua, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnHuy, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(32, 32, 32))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
 
         pack();
@@ -401,6 +504,7 @@ public class SuaLuongForm extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -415,6 +519,7 @@ public class SuaLuongForm extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane10;
     private javax.swing.JScrollPane jScrollPane11;
     private javax.swing.JScrollPane jScrollPane12;
+    private javax.swing.JScrollPane jScrollPane13;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -434,6 +539,7 @@ public class SuaLuongForm extends javax.swing.JDialog {
     private javax.swing.JTextPane txtLuongH;
     private javax.swing.JTextPane txtMa;
     private javax.swing.JTextPane txtName;
+    private javax.swing.JTextPane txtPanelty;
     private javax.swing.JTextPane txtTotalHour;
     // End of variables declaration//GEN-END:variables
 }

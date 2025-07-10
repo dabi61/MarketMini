@@ -1,6 +1,6 @@
 package view;
 
-import dao.WorkShiftDAO;
+import controller.WorkShiftController;
 import dao.EmployeeDAO;
 import com.toedter.calendar.JDateChooser;
 import java.awt.*;
@@ -23,8 +23,9 @@ import javax.swing.SortOrder;
 import model.WorkShift;
 import java.util.List;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Calendar;
+import java.sql.Date;
+import view.WorkShiftDetailPanel;
 
 /**
  * Form quản lý ca làm việc cho Admin - Enhanced UI
@@ -32,7 +33,7 @@ import java.util.Calendar;
  */
 public class WorkShiftForm extends JPanel {
     
-    private WorkShiftDAO workShiftDAO;
+    private WorkShiftController workShiftController;
     private EmployeeDAO employeeDAO;
     private Map<String, Integer> employeeMap;
     private DefaultTableModel tableModel;
@@ -58,7 +59,7 @@ public class WorkShiftForm extends JPanel {
     
     public WorkShiftForm() {
         try {
-            this.workShiftDAO = new WorkShiftDAO();
+            this.workShiftController = new WorkShiftController();
             this.employeeDAO = new EmployeeDAO();
             this.employeeMap = new HashMap<>();
             
@@ -198,7 +199,7 @@ public class WorkShiftForm extends JPanel {
     private JDateChooser createDateChooser() {
         dateChooser = new JDateChooser();
         dateChooser.setDateFormatString("dd/MM/yyyy");
-        dateChooser.setDate(new Date()); // Set ngày hiện tại
+        dateChooser.setDate(new java.util.Date()); // Set ngày hiện tại
         
         // Style DateChooser
         dateChooser.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -361,7 +362,7 @@ public class WorkShiftForm extends JPanel {
         panel.add(tableTitle, BorderLayout.NORTH);
         
         // Table
-        String[] columns = {"ID", " Nhân viên", " Ngày", " Ca làm", " Giờ vào", " Giờ ra", " Dự kiến (h)", " Thực tế (h)", " Trạng thái"};
+        String[] columns = {"ID", " Nhân viên", " Ngày", " Giờ vào", " Giờ ra", " Giờ làm", " Trạng thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -395,9 +396,9 @@ public class WorkShiftForm extends JPanel {
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
         tblShifts.setRowSorter(sorter);
         
-        // Enable sorting only for Date (column 2) and Status (column 8)
+        // Enable sorting only for Date (column 2) and Status (column 6)
         for (int i = 0; i < tableModel.getColumnCount(); i++) {
-            if (i != 2 && i != 8) { // Only allow sorting on Date and Status columns
+            if (i != 2 && i != 6) { // Only allow sorting on Date and Status columns
                 sorter.setSortable(i, false);
             }
         }
@@ -430,7 +431,7 @@ public class WorkShiftForm extends JPanel {
             @Override
             public void mouseMoved(java.awt.event.MouseEvent e) {
                 int column = header.columnAtPoint(e.getPoint());
-                if (column == 2 || column == 8) {
+                if (column == 2 || column == 6) {
                     header.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 } else {
                     header.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -444,16 +445,16 @@ public class WorkShiftForm extends JPanel {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 
-                if (column == 8) { // Status column
+                if (column == 6) { // Status column
                     String status = value.toString();
                     setHorizontalAlignment(JLabel.CENTER);
                     
                     if (!isSelected) {
                         switch (status) {
-                            case "Hoàn thành" -> setBackground(new Color(200, 230, 201));
-                            case "Đang làm" -> setBackground(new Color(255, 243, 224));
-                            case "Đã lên lịch" -> setBackground(new Color(227, 242, 253));
-                            case "Vắng mặt" -> setBackground(new Color(255, 205, 210));
+                            case "COMPLETED" -> setBackground(new Color(200, 230, 201));
+                            case "IN_PROGRESS" -> setBackground(new Color(255, 243, 224));
+                            case "SCHEDULED" -> setBackground(new Color(227, 242, 253));
+                            case "ABSENT" -> setBackground(new Color(255, 205, 210));
                             default -> setBackground(Color.WHITE);
                         }
                     }
@@ -462,7 +463,7 @@ public class WorkShiftForm extends JPanel {
             }
         };
         
-        tblShifts.getColumnModel().getColumn(8).setCellRenderer(statusRenderer);
+        tblShifts.getColumnModel().getColumn(6).setCellRenderer(statusRenderer);
         
         // Center align date column
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -473,14 +474,14 @@ public class WorkShiftForm extends JPanel {
         tblShifts.getColumnModel().getColumn(0).setPreferredWidth(50);
         tblShifts.getColumnModel().getColumn(1).setPreferredWidth(150);
         tblShifts.getColumnModel().getColumn(2).setPreferredWidth(100);
-        tblShifts.getColumnModel().getColumn(8).setPreferredWidth(120);
+        tblShifts.getColumnModel().getColumn(6).setPreferredWidth(120);
         
         // Double click to edit
         tblShifts.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 2) {
-                    fillFormFromTable();
+                    showShiftDetail();
                 }
             }
         });
@@ -564,10 +565,12 @@ public class WorkShiftForm extends JPanel {
     
     private void loadShifts() {
         try {
-            List<WorkShift> shifts = workShiftDAO.getAllShifts();
+            List<WorkShift> shifts = workShiftController.getAllShifts();
+            if (shifts != null) {
             updateTable(shifts);
             showStatusMessage("Đã tải " + shifts.size() + " ca làm việc", false);
-        } catch (SQLException ex) {
+            }
+        } catch (Exception ex) {
             Logger.getLogger(WorkShiftForm.class.getName()).log(Level.SEVERE, null, ex);
             showErrorMessage("Lỗi tải danh sách ca làm: " + ex.getMessage());
         }
@@ -578,15 +581,13 @@ public class WorkShiftForm extends JPanel {
         
         for (WorkShift shift : shifts) {
             Object[] row = {
-                shift.getShiftId(),
+                shift.getWorkingSessionId(),
                 shift.getEmployeeName(),
-                shift.getShiftDate(),
-                shift.getShiftType().getDisplayName(),
-                shift.getStartTime(),
-                shift.getEndTime() != null ? shift.getEndTime() : "Chưa kết thúc",
-                shift.getPlannedHours(),
-                shift.getActualHours() != null ? shift.getActualHours() : "N/A",
-                shift.getStatus().getDisplayName()
+                shift.getDate(),
+                shift.getLoginTime(),
+                shift.getLogoutTime(),
+                shift.getWorkingHours(),
+                shift.getWorkStatus()
             };
             tableModel.addRow(row);
         }
@@ -595,7 +596,7 @@ public class WorkShiftForm extends JPanel {
     private void addShift() {
         try {
             WorkShift shift = getFormData();
-            if (workShiftDAO.createShift(shift)) {
+            if (workShiftController.createShift(shift)) {
                 showSuccessMessage("Thêm ca làm thành công!");
                 clearForm();
                 loadShifts();
@@ -619,9 +620,9 @@ public class WorkShiftForm extends JPanel {
             int modelRow = tblShifts.convertRowIndexToModel(selectedRow);
             
             WorkShift shift = getFormData();
-            shift.setShiftId((Integer) tableModel.getValueAt(modelRow, 0));
+            shift.setWorkingSessionId((Integer) tableModel.getValueAt(modelRow, 0));
             
-            if (workShiftDAO.updateShift(shift)) {
+            if (workShiftController.updateShift(shift)) {
                 showSuccessMessage("Cập nhật ca làm thành công!");
                 clearForm();
                 loadShifts();
@@ -649,9 +650,9 @@ public class WorkShiftForm extends JPanel {
             if (confirm == JOptionPane.YES_OPTION) {
                 // Convert view row to model row for sorting support
                 int modelRow = tblShifts.convertRowIndexToModel(selectedRow);
-                int shiftId = (Integer) tableModel.getValueAt(modelRow, 0);
+                int workingSessionId = (Integer) tableModel.getValueAt(modelRow, 0);
                 
-                if (workShiftDAO.deleteShift(shiftId)) {
+                if (workShiftController.deleteShift(workingSessionId)) {
                     showSuccessMessage("Xóa ca làm thành công!");
                     clearForm();
                     loadShifts();
@@ -691,7 +692,7 @@ public class WorkShiftForm extends JPanel {
         
         // Parse date
         java.sql.Date date = java.sql.Date.valueOf(new SimpleDateFormat("yyyy-MM-dd").format(dateChooser.getDate()));
-        shift.setShiftDate(date);
+        shift.setDate(date);
         
         // Parse shift type
         String shiftTypeStr = (String) cboShiftType.getSelectedItem();
@@ -725,48 +726,55 @@ public class WorkShiftForm extends JPanel {
             // Convert view row index to model row index for sorting support
             int modelRow = tblShifts.convertRowIndexToModel(selectedRow);
             
-            // Find employee in combo
+            // Find employee in combo (column 1)
             String empName = (String) tableModel.getValueAt(modelRow, 1);
+            if (empName != null) {
             for (int i = 0; i < cboEmployee.getItemCount(); i++) {
                 String item = cboEmployee.getItemAt(i);
-                if (item.contains(empName)) {
+                    if (item != null && item.contains(empName)) {
                     cboEmployee.setSelectedIndex(i);
                     break;
+                    }
                 }
             }
             
-            // Set date
+            // Set date (column 2)
             Object dateValue = tableModel.getValueAt(modelRow, 2);
             if (dateValue instanceof java.sql.Date) {
-                dateChooser.setDate(new Date(((java.sql.Date) dateValue).getTime()));
+                dateChooser.setDate(new java.util.Date(((java.sql.Date) dateValue).getTime()));
             }
             
-            // Set shift type
-            String shiftType = (String) tableModel.getValueAt(modelRow, 3);
-            for (int i = 0; i < cboShiftType.getItemCount(); i++) {
-                String item = cboShiftType.getItemAt(i);
-                if (item.contains("Ca Sáng") && shiftType.equals("Ca Sáng") ||
-                    item.contains("Ca Chiều") && shiftType.equals("Ca Chiều") ||
-                    item.contains("Ca Tối") && shiftType.equals("Ca Tối") ||
-                    item.contains("Ca Nguyên") && shiftType.equals("Ca Nguyên")) {
-                    cboShiftType.setSelectedIndex(i);
-                    break;
-                }
-            }
-            
-            // Set start time
-            Object timeValue = tableModel.getValueAt(modelRow, 4);
+            // Set start time (column 3 - Giờ vào)
+            Object timeValue = tableModel.getValueAt(modelRow, 3);
             if (timeValue instanceof java.sql.Time) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime((java.sql.Time) timeValue);
                 timeSpinner.setValue(cal.getTime());
+            }
+            
+            // Note: Shift type is not displayed in the table, so we'll keep the current selection
+            // or set a default value based on the time
+            if (timeValue instanceof java.sql.Time) {
+                java.sql.Time startTime = (java.sql.Time) timeValue;
+                int hour = startTime.getHours();
+                
+                // Auto-select shift type based on time
+                if (hour >= 6 && hour < 12) {
+                    cboShiftType.setSelectedItem("🌅 Ca Sáng");
+                } else if (hour >= 12 && hour < 18) {
+                    cboShiftType.setSelectedItem("☀️ Ca Chiều");
+                } else if (hour >= 18 && hour < 22) {
+                    cboShiftType.setSelectedItem("🌙 Ca Tối");
+                } else {
+                    cboShiftType.setSelectedItem("⭐ Ca Nguyên");
+                }
             }
         }
     }
     
     private void clearForm() {
         cboEmployee.setSelectedIndex(0);
-        dateChooser.setDate(new Date());
+        dateChooser.setDate(new java.util.Date());
         cboShiftType.setSelectedIndex(0);
         
         // Reset time to 8:00 AM
@@ -781,9 +789,41 @@ public class WorkShiftForm extends JPanel {
     }
     
     public void cleanup() {
-        if (workShiftDAO != null) {
-            workShiftDAO.closeConnection();
+        if (workShiftController != null) {
+            workShiftController.cleanup();
         }
         // EmployeeDAO doesn't have a close method
+    }
+
+    private void showShiftDetail() {
+        int selectedRow = tblShifts.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Convert view row index to model row index for sorting support
+            int modelRow = tblShifts.convertRowIndexToModel(selectedRow);
+            
+            // Get working session ID from table
+            Integer workingSessionId = (Integer) tableModel.getValueAt(modelRow, 0);
+            
+            if (workingSessionId != null) {
+                try {
+                    // Get detailed shift information
+                    WorkShift shift = workShiftController.getShiftById(workingSessionId);
+                    
+                    if (shift != null) {
+                        // Show detail panel
+                        WorkShiftDetailPanel.showShiftDetail(shift, this);
+                    } else {
+                        showErrorMessage("Không thể tải thông tin chi tiết ca làm việc!");
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(WorkShiftForm.class.getName()).log(Level.SEVERE, null, ex);
+                    showErrorMessage("Lỗi khi tải chi tiết: " + ex.getMessage());
+                }
+            } else {
+                showErrorMessage("Dữ liệu không hợp lệ!");
+            }
+        } else {
+            showErrorMessage("Vui lòng chọn ca làm việc để xem chi tiết!");
+        }
     }
 } 
